@@ -8,7 +8,7 @@ export function Card({ children, className = '', ...props }: CardProps) {
   return (
     <div
       className={[
-        'rounded-2xl border border-[#E4DFD6] bg-white p-5 shadow-sm',
+        'rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] p-5 shadow-sm',
         className,
       ].join(' ')}
       {...props}

@@ -1,3 +1,5 @@
+import { NavLink } from 'react-router'
+
 import type { ReactNode } from 'react'
 
 type AdminLayoutProps = {
@@ -5,17 +7,27 @@ type AdminLayoutProps = {
 }
 
 const navigationItems = [
-  'Visão geral',
-  'Alunos',
-  'Treinos',
-  'Exercícios',
-  'Atribuições',
-  'Relatórios',
+  {
+    label: 'Visão geral',
+    href: '/admin',
+  },
+  {
+    label: 'Alunos',
+    href: '/admin/students',
+  },
+  {
+    label: 'Treinos',
+    href: '/admin/workouts',
+  },
+  {
+    label: 'Exercícios',
+    href: '/admin/exercises',
+  },
 ]
 
 export function AdminLayout({ children }: AdminLayoutProps) {
   return (
-    <div className="min-h-screen bg-[#F6F4EF] text-[#1F1F1F]">
+    <div className="min-h-screen bg-[#F3F0E8] text-[#1F1F1F]">
       <aside className="hidden border-r border-[#243D30]/20 bg-[#0F2A20] text-white lg:fixed lg:inset-y-0 lg:left-0 lg:block lg:w-64">
         <div className="flex h-20 items-center border-b border-white/10 px-6">
           <div>
@@ -27,24 +39,23 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         </div>
 
         <nav className="space-y-1 px-4 py-6">
-          {navigationItems.map((item) => {
-            const isActive = item === 'Treinos'
-
-            return (
-              <button
-                key={item}
-                type="button"
-                className={[
-                  'w-full rounded-xl px-4 py-3 text-left text-sm font-medium transition',
+          {navigationItems.map((item) => (
+            <NavLink
+              key={item.href}
+              to={item.href}
+              end={item.href === '/admin'}
+              className={({ isActive }) =>
+                [
+                  'block w-full rounded-xl px-4 py-3 text-left text-sm font-medium transition',
                   isActive
                     ? 'bg-white/10 text-white'
                     : 'text-white/70 hover:bg-white/10 hover:text-white',
-                ].join(' ')}
-              >
-                {item}
-              </button>
-            )
-          })}
+                ].join(' ')
+              }
+            >
+              {item.label}
+            </NavLink>
+          ))}
         </nav>
 
         <div className="absolute bottom-0 left-0 right-0 border-t border-white/10 p-4">
@@ -62,7 +73,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       </aside>
 
       <div className="lg:pl-64">
-        <header className="sticky top-0 z-10 border-b border-[#E4DFD6] bg-[#F6F4EF]/90 backdrop-blur">
+        <header className="sticky top-0 z-10 border-b border-[#E4DFD6] bg-[#F3F0E8]/90 backdrop-blur">
           <div className="flex h-16 items-center justify-between px-5 sm:px-6">
             <div>
               <p className="text-sm font-bold text-[#1F1F1F] lg:hidden">
@@ -79,24 +90,23 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           </div>
 
           <nav className="flex gap-2 overflow-x-auto border-t border-[#E4DFD6] px-4 py-3 lg:hidden">
-            {navigationItems.map((item) => {
-              const isActive = item === 'Treinos'
-
-              return (
-                <button
-                  key={item}
-                  type="button"
-                  className={[
+            {navigationItems.map((item) => (
+              <NavLink
+                key={item.href}
+                to={item.href}
+                end={item.href === '/admin'}
+                className={({ isActive }) =>
+                  [
                     'shrink-0 rounded-full px-4 py-2 text-xs font-medium transition',
                     isActive
                       ? 'bg-[#2F4F3E] text-white'
                       : 'bg-white text-[#6F6A62] hover:bg-[#EDEAE3] hover:text-[#1F1F1F]',
-                  ].join(' ')}
-                >
-                  {item}
-                </button>
-              )
-            })}
+                  ].join(' ')
+                }
+              >
+                {item.label}
+              </NavLink>
+            ))}
           </nav>
         </header>
 

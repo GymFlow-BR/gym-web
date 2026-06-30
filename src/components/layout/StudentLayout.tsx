@@ -1,9 +1,26 @@
+import { NavLink } from 'react-router'
+
 import type { ReactNode } from 'react'
 
 type StudentLayoutProps = {
   children: ReactNode
   preview?: boolean
 }
+
+const navigationItems = [
+  {
+    label: 'Treino',
+    href: '/student/current-workout',
+  },
+  {
+    label: 'Exercícios',
+    href: '/student/exercises',
+  },
+  {
+    label: 'Perfil',
+    href: '/student/profile',
+  },
+]
 
 export function StudentLayout({
   children,
@@ -13,8 +30,8 @@ export function StudentLayout({
     <div
       className={
         preview
-          ? 'bg-[#F6F4EF] text-[#1F1F1F]'
-          : 'min-h-screen bg-[#F6F4EF] text-[#1F1F1F]'
+          ? 'bg-[#F3F0E8] text-[#1F1F1F]'
+          : 'min-h-screen bg-[#F3F0E8] text-[#1F1F1F]'
       }
     >
       <div
@@ -54,26 +71,22 @@ export function StudentLayout({
           ].join(' ')}
         >
           <div className="grid grid-cols-3 gap-2">
-            <button
-              type="button"
-              className="rounded-xl bg-[#2F4F3E] px-3 py-2 text-xs font-semibold text-white"
-            >
-              Treino
-            </button>
-
-            <button
-              type="button"
-              className="rounded-xl px-3 py-2 text-xs font-medium text-[#6F6A62] hover:bg-[#EDEAE3] hover:text-[#1F1F1F]"
-            >
-              Exercícios
-            </button>
-
-            <button
-              type="button"
-              className="rounded-xl px-3 py-2 text-xs font-medium text-[#6F6A62] hover:bg-[#EDEAE3] hover:text-[#1F1F1F]"
-            >
-              Perfil
-            </button>
+            {navigationItems.map((item) => (
+              <NavLink
+                key={item.href}
+                to={item.href}
+                className={({ isActive }) =>
+                  [
+                    'rounded-xl px-3 py-2 text-center text-xs font-medium transition',
+                    isActive
+                      ? 'bg-[#2F4F3E] text-white'
+                      : 'text-[#6F6A62] hover:bg-[#EDEAE3] hover:text-[#1F1F1F]',
+                  ].join(' ')
+                }
+              >
+                {item.label}
+              </NavLink>
+            ))}
           </div>
         </nav>
       </div>
