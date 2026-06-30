@@ -100,7 +100,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           </nav>
         </header>
 
-        <main className="mx-auto max-w-7xl px-5 py-8 sm:px-6lg:px-10">
+        <main className="mx-auto max-w-7xl px-5 py-8 sm:px-6 lg:px-10">
           {children}
         </main>
       </div>
