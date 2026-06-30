@@ -30,7 +30,7 @@ export function Input({
       <input
         id={inputId}
         className={[
-          'w-full rounded-xl border bg-white px-4 py-3 text-sm text-[#1F1F1F] outline-none transition placeholder:text-[#9A948A]',
+          'w-full rounded-xl border bg-[#FFFEFB] px-4 py-3 text-sm text-[#1F1F1F] outline-none transition placeholder:text-[#9A948A]',
           error
             ? 'border-red-400 focus:border-red-500 focus:ring-4 focus:ring-red-500/10'
             : 'border-[#D8D3CA] focus:border-[#2F4F3E] focus:ring-4 focus:ring-[#2F4F3E]/10',
