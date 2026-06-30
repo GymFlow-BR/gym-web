@@ -10,23 +10,32 @@ export function StudentLayout({
   preview = false,
 }: StudentLayoutProps) {
   return (
-    <div className={preview ? 'bg-slate-950 text-white' : 'min-h-screen bg-slate-950 text-white'}>
+    <div
+      className={
+        preview
+          ? 'bg-[#F6F4EF] text-[#1F1F1F]'
+          : 'min-h-screen bg-[#F6F4EF] text-[#1F1F1F]'
+      }
+    >
       <div
         className={[
-          'mx-auto flex w-full max-w-md flex-col border-x border-slate-900 bg-slate-950',
-          preview ? 'h-[640px]' : 'min-h-screen',
+          'mx-auto flex w-full max-w-md flex-col bg-[#FAF9F6]',
+          preview
+            ? 'h-[560px]'
+            : 'min-h-screen border-x border-[#E4DFD6]',
         ].join(' ')}
       >
-        <header className="sticky top-0 z-10 border-b border-slate-800 bg-slate-950/90 px-5 py-4 backdrop-blur">
+        <header className="sticky top-0 z-10 border-b border-[#E4DFD6] bg-[#FAF9F6]/95 px-5 py-4 backdrop-blur">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-emerald-400">
+              <p className="text-xs font-semibold uppercase tracking-wide text-[#2F4F3E]">
                 GymFlow
               </p>
-              <h1 className="text-lg font-bold">Meu treino</h1>
+
+              <h1 className="text-lg font-bold text-[#1F1F1F]">Meu treino</h1>
             </div>
 
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-800 text-sm font-semibold">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#2F4F3E] text-sm font-semibold text-white">
               S
             </div>
           </div>
@@ -38,7 +47,7 @@ export function StudentLayout({
 
         <nav
           className={[
-            'z-10 w-full max-w-md border-t border-slate-800 bg-slate-950/95 px-5 py-3 backdrop-blur',
+            'z-10 w-full max-w-md border-t border-[#E4DFD6] bg-[#FAF9F6]/95 px-5 py-3 backdrop-blur',
             preview
               ? 'sticky bottom-0'
               : 'fixed bottom-0 left-1/2 -translate-x-1/2',
@@ -47,21 +56,21 @@ export function StudentLayout({
           <div className="grid grid-cols-3 gap-2">
             <button
               type="button"
-              className="rounded-xl bg-slate-800 px-3 py-2 text-xs font-medium text-white"
+              className="rounded-xl bg-[#2F4F3E] px-3 py-2 text-xs font-semibold text-white"
             >
               Treino
             </button>
 
             <button
               type="button"
-              className="rounded-xl px-3 py-2 text-xs font-medium text-slate-400 hover:bg-slate-900 hover:text-white"
+              className="rounded-xl px-3 py-2 text-xs font-medium text-[#6F6A62] hover:bg-[#EDEAE3] hover:text-[#1F1F1F]"
             >
               Exercícios
             </button>
 
             <button
               type="button"
-              className="rounded-xl px-3 py-2 text-xs font-medium text-slate-400 hover:bg-slate-900 hover:text-white"
+              className="rounded-xl px-3 py-2 text-xs font-medium text-[#6F6A62] hover:bg-[#EDEAE3] hover:text-[#1F1F1F]"
             >
               Perfil
             </button>
