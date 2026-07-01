@@ -16,6 +16,7 @@ async function request<TResponse>(
 
   const response = await fetch(`${API_URL}${endpoint}`, {
     ...fetchOptions,
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
       ...headers,
