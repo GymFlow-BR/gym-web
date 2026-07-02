@@ -2,6 +2,8 @@ import { Navigate, Route, Routes } from 'react-router'
 
 import { AdminLayout } from '../components/layout/AdminLayout'
 import { StudentLayout } from '../components/layout/StudentLayout'
+import { ProtectedRoute } from '../features/auth/components/ProtectedRoute'
+import { PublicOnlyRoute } from '../features/auth/components/PublicOnlyRoute'
 import { AdminDashboardPage } from '../features/admin/pages/AdminDashboardPage'
 import { LoginPage } from '../features/auth/pages/LoginPage'
 import { AdminExercisesPage } from '../features/exercises/pages/AdminExercisesPage'
@@ -15,50 +17,67 @@ export function AppRouter() {
     <Routes>
       <Route path="/" element={<Navigate to="/login" replace />} />
 
-      <Route path="/login" element={<LoginPage />} />
+      <Route
+        path="/login"
+        element={
+          <PublicOnlyRoute>
+            <LoginPage />
+          </PublicOnlyRoute>
+        }
+      />
 
       <Route
         path="/admin"
         element={
-          <AdminLayout>
-            <AdminDashboardPage />
-          </AdminLayout>
+          <ProtectedRoute allowedRoles={['ADMIN', 'TEACHER']}>
+            <AdminLayout>
+              <AdminDashboardPage />
+            </AdminLayout>
+          </ProtectedRoute>
         }
       />
 
       <Route
         path="/admin/workouts"
         element={
-          <AdminLayout>
-            <AdminWorkoutsPage />
-          </AdminLayout>
+          <ProtectedRoute allowedRoles={['ADMIN', 'TEACHER']}>
+            <AdminLayout>
+              <AdminWorkoutsPage />
+            </AdminLayout>
+          </ProtectedRoute>
         }
       />
 
       <Route
         path="/admin/exercises"
         element={
-          <AdminLayout>
-            <AdminExercisesPage />
-          </AdminLayout>
+          <ProtectedRoute allowedRoles={['ADMIN', 'TEACHER']}>
+            <AdminLayout>
+              <AdminExercisesPage />
+            </AdminLayout>
+          </ProtectedRoute>
         }
       />
 
       <Route
         path="/admin/students"
         element={
-          <AdminLayout>
-            <AdminStudentsPage />
-          </AdminLayout>
+          <ProtectedRoute allowedRoles={['ADMIN', 'TEACHER']}>
+            <AdminLayout>
+              <AdminStudentsPage />
+            </AdminLayout>
+          </ProtectedRoute>
         }
       />
 
       <Route
         path="/student/current-workout"
         element={
-          <StudentLayout>
-            <StudentCurrentWorkoutPage />
-          </StudentLayout>
+          <ProtectedRoute allowedRoles={['STUDENT']}>
+            <StudentLayout>
+              <StudentCurrentWorkoutPage />
+            </StudentLayout>
+          </ProtectedRoute>
         }
       />
 
