@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 
 import { PageHeader } from '../../../components/layout/PageHeader'
-import { Button } from '../../../components/ui/Button'
 import { Card } from '../../../components/ui/Card'
+import { CreateExerciseForm } from '../components/CreateExerciseForm'
 import { getExercises } from '../services/exerciseService'
 
 export function AdminExercisesPage() {
@@ -17,12 +17,13 @@ export function AdminExercisesPage() {
   })
 
   return (
-    <>
+    <div className="space-y-6">
       <PageHeader
         title="Exercícios"
         description="Gerencie a biblioteca de exercícios da sua organização."
-        action={<Button>Novo exercício</Button>}
       />
+
+      <CreateExerciseForm />
 
       {isLoading && (
         <Card>
@@ -63,8 +64,6 @@ export function AdminExercisesPage() {
             <p className="mt-2 text-sm text-[#6F6A62]">
               Quando exercícios forem cadastrados, eles aparecerão nesta lista.
             </p>
-
-            <Button className="mt-5">Cadastrar primeiro exercício</Button>
           </div>
         </Card>
       )}
@@ -86,7 +85,7 @@ export function AdminExercisesPage() {
           <div className="divide-y divide-[#EDEAE3]">
             {exercises.map((exercise) => (
               <div
-                key={exercise.exerciseId}
+                key={exercise.id}
                 className="grid gap-4 p-5 transition hover:bg-[#FAF9F6] md:grid-cols-[1fr_auto_auto_auto] md:items-center"
               >
                 <div>
@@ -128,6 +127,6 @@ export function AdminExercisesPage() {
           </div>
         </Card>
       )}
-    </>
+    </div>
   )
 }

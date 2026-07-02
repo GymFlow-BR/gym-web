@@ -1,5 +1,6 @@
 export type Exercise = {
-  exerciseId: number
+  id: number
+  organizationId: number
   exerciseName: string
   muscleGroup: string
   equipmentName: string
@@ -9,4 +10,14 @@ export type Exercise = {
   active: boolean
   createdAt: string
   updatedAt: string
+}
+
+export type CreateExerciseRequest = {
+  organizationId: number
+  exerciseName: string
+  muscleGroup: string
+  equipmentName: string
+  description?: string
+  imageUrl?: string
+  videoUrl?: string
 }
