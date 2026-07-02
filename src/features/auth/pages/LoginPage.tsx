@@ -7,6 +7,7 @@ import { z } from 'zod'
 import { Button } from '../../../components/ui/Button'
 import { Card } from '../../../components/ui/Card'
 import { Input } from '../../../components/ui/Input'
+import { isApiError } from '../../../services/apiError'
 import { login } from '../services/authService'
 import type { AuthenticatedUser } from '../types/auth'
 
@@ -55,6 +56,11 @@ export function LoginPage() {
     },
   })
 
+  const loginErrorMessage =
+    isApiError(loginMutation.error) && loginMutation.error.status === 401
+      ? 'E-mail ou senha inválidos.'
+      : 'Verifique seus dados e tente novamente.'
+
   function handleLogin(data: LoginFormData) {
     loginMutation.mutate({
       email: data.email,
@@ -89,9 +95,7 @@ export function LoginPage() {
               Não foi possível realizar o login.
             </p>
 
-            <p className="mt-1 text-sm text-red-600">
-              Verifique seu e-mail e senha e tente novamente.
-            </p>
+            <p className="mt-1 text-sm text-red-600">{loginErrorMessage}</p>
           </div>
         )}
 
