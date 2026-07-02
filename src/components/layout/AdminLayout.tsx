@@ -1,55 +1,58 @@
-import { NavLink } from 'react-router'
-
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
+import { NavLink, useNavigate } from 'react-router'
+
+import { logout } from '../../features/auth/services/authService'
 
 type AdminLayoutProps = {
   children: ReactNode
 }
 
-const navigationItems = [
-  {
-    label: 'Visão geral',
-    href: '/admin',
-  },
-  {
-    label: 'Alunos',
-    href: '/admin/students',
-  },
-  {
-    label: 'Treinos',
-    href: '/admin/workouts',
-  },
-  {
-    label: 'Exercícios',
-    href: '/admin/exercises',
-  },
+const navItems = [
+  { label: 'Dashboard', to: '/admin' },
+  { label: 'Treinos', to: '/admin/workouts' },
+  { label: 'Exercícios', to: '/admin/exercises' },
+  { label: 'Alunos', to: '/admin/students' },
 ]
 
 export function AdminLayout({ children }: AdminLayoutProps) {
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
+
+  const logoutMutation = useMutation({
+    mutationFn: logout,
+    onSuccess: () => {
+      queryClient.removeQueries({ queryKey: ['authenticated-user'] })
+      navigate('/login', { replace: true })
+    },
+  })
+
+  function handleLogout() {
+    logoutMutation.mutate()
+  }
+
   return (
     <div className="min-h-screen bg-[#F3F0E8] text-[#1F1F1F]">
-      <aside className="hidden border-r border-[#243D30]/20 bg-[#0F2A20] text-white lg:fixed lg:inset-y-0 lg:left-0 lg:block lg:w-64">
-        <div className="flex h-20 items-center border-b border-white/10 px-6">
-          <div>
-            <p className="text-xl font-bold tracking-tight">GymFlow</p>
-            <p className="mt-1 text-xs text-white/60">
-              Entenda. Execute. Evolua.
-            </p>
-          </div>
+      <aside className="fixed hidden h-screen w-72 border-r border-[#E4DFD6] bg-[#FAF9F6] px-6 py-6 lg:block">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">GymFlow</h1>
+          <p className="mt-1 text-sm font-medium text-[#2F4F3E]">
+            Painel administrativo
+          </p>
         </div>
 
-        <nav className="space-y-1 px-4 py-6">
-          {navigationItems.map((item) => (
+        <nav className="mt-10 space-y-2">
+          {navItems.map((item) => (
             <NavLink
-              key={item.href}
-              to={item.href}
-              end={item.href === '/admin'}
+              key={item.to}
+              to={item.to}
+              end={item.to === '/admin'}
               className={({ isActive }) =>
                 [
-                  'block w-full rounded-xl px-4 py-3 text-left text-sm font-medium transition',
+                  'block rounded-2xl px-4 py-3 text-sm font-medium transition',
                   isActive
-                    ? 'bg-white/10 text-white'
-                    : 'text-white/70 hover:bg-white/10 hover:text-white',
+                    ? 'bg-[#2F4F3E] text-[#FAF9F6]'
+                    : 'text-[#6F6A62] hover:bg-[#EFEAE1] hover:text-[#1F1F1F]',
                 ].join(' ')
               }
             >
@@ -58,49 +61,50 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           ))}
         </nav>
 
-        <div className="absolute bottom-0 left-0 right-0 border-t border-white/10 p-4">
-          <div className="flex items-center gap-3 rounded-2xl bg-white/10 p-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#F6F4EF] text-sm font-semibold text-[#2F4F3E]">
-              JS
-            </div>
-
-            <div>
-              <p className="text-sm font-semibold text-white">João Silva</p>
-              <p className="text-xs text-white/60">Professor</p>
-            </div>
-          </div>
+        <div className="absolute bottom-6 left-6 right-6">
+          <button
+            type="button"
+            onClick={handleLogout}
+            disabled={logoutMutation.isPending}
+            className="w-full rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] px-4 py-3 text-sm font-semibold text-[#6F6A62] transition hover:border-[#2F4F3E] hover:text-[#2F4F3E] disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {logoutMutation.isPending ? 'Saindo...' : 'Sair'}
+          </button>
         </div>
       </aside>
 
-      <div className="lg:pl-64">
-        <header className="sticky top-0 z-10 border-b border-[#E4DFD6] bg-[#F3F0E8]/90 backdrop-blur">
-          <div className="flex h-16 items-center justify-between px-5 sm:px-6">
+      <div className="lg:pl-72">
+        <header className="border-b border-[#E4DFD6] bg-[#FAF9F6] px-5 py-4 lg:hidden">
+          <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="text-sm font-bold text-[#1F1F1F] lg:hidden">
-                GymFlow
-              </p>
-              <p className="text-xs text-[#6F6A62]">
-                Área do professor/admin
+              <h1 className="text-xl font-bold">GymFlow</h1>
+              <p className="text-xs font-medium text-[#2F4F3E]">
+                Painel administrativo
               </p>
             </div>
 
-            <div className="rounded-full border border-[#D8D3CA] bg-white px-3 py-1 text-xs font-medium text-[#2F4F3E]">
-              MVP
-            </div>
+            <button
+              type="button"
+              onClick={handleLogout}
+              disabled={logoutMutation.isPending}
+              className="rounded-xl border border-[#E4DFD6] bg-[#FFFEFB] px-3 py-2 text-xs font-semibold text-[#6F6A62] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {logoutMutation.isPending ? 'Saindo...' : 'Sair'}
+            </button>
           </div>
 
-          <nav className="flex gap-2 overflow-x-auto border-t border-[#E4DFD6] px-4 py-3 lg:hidden">
-            {navigationItems.map((item) => (
+          <nav className="mt-4 flex gap-2 overflow-x-auto">
+            {navItems.map((item) => (
               <NavLink
-                key={item.href}
-                to={item.href}
-                end={item.href === '/admin'}
+                key={item.to}
+                to={item.to}
+                end={item.to === '/admin'}
                 className={({ isActive }) =>
                   [
-                    'shrink-0 rounded-full px-4 py-2 text-xs font-medium transition',
+                    'whitespace-nowrap rounded-xl px-3 py-2 text-sm font-medium transition',
                     isActive
-                      ? 'bg-[#2F4F3E] text-white'
-                      : 'bg-white text-[#6F6A62] hover:bg-[#EDEAE3] hover:text-[#1F1F1F]',
+                      ? 'bg-[#2F4F3E] text-[#FAF9F6]'
+                      : 'bg-[#FFFEFB] text-[#6F6A62]',
                   ].join(' ')
                 }
               >
@@ -110,9 +114,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           </nav>
         </header>
 
-        <main className="mx-auto max-w-7xl px-5 py-8 sm:px-6 lg:px-10">
-          {children}
-        </main>
+        <main className="px-5 py-6 lg:px-8 lg:py-8">{children}</main>
       </div>
     </div>
   )
