@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { Navigate } from 'react-router'
 
+import { isApiError } from '../../../services/apiError'
 import { useAuthenticatedUser } from '../hooks/useAuthenticatedUser'
 import type { UserRole } from '../types/auth'
 
@@ -19,6 +20,7 @@ function getDefaultPathByRole(role: UserRole) {
 export function PublicOnlyRoute({ children }: PublicOnlyRouteProps) {
   const {
     data: user,
+    error,
     isLoading,
     isError,
   } = useAuthenticatedUser()
@@ -37,6 +39,10 @@ export function PublicOnlyRoute({ children }: PublicOnlyRouteProps) {
 
   if (!isError && user) {
     return <Navigate to={getDefaultPathByRole(user.role)} replace />
+  }
+
+  if (isApiError(error) && error.status === 401) {
+    return children
   }
 
   return children
