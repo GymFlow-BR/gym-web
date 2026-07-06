@@ -8,3 +8,7 @@ export function getExercises() {
 export function createExercise(data: CreateExerciseRequest) {
   return api.post<Exercise, CreateExerciseRequest>('/api/exercises', data)
 }
+
+export function deactivateExercise(exerciseId: number) {
+  return api.delete<void>(`/api/exercises/${exerciseId}`)
+}

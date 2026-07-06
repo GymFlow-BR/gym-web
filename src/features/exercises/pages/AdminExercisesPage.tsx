@@ -1,11 +1,17 @@
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { PageHeader } from '../../../components/layout/PageHeader'
 import { Card } from '../../../components/ui/Card'
+import { isApiError } from '../../../services/apiError'
 import { CreateExerciseForm } from '../components/CreateExerciseForm'
-import { getExercises } from '../services/exerciseService'
+import {
+  deactivateExercise,
+  getExercises,
+} from '../services/exerciseService'
 
 export function AdminExercisesPage() {
+  const queryClient = useQueryClient()
+
   const {
     data: exercises,
     isLoading,
@@ -16,6 +22,23 @@ export function AdminExercisesPage() {
     queryFn: getExercises,
   })
 
+  const deactivateExerciseMutation = useMutation<void, Error, number>({
+    mutationFn: (exerciseId: number) => deactivateExercise(exerciseId),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['exercises'] })
+    },
+  })
+
+  const deactivateErrorMessage =
+    isApiError(deactivateExerciseMutation.error) &&
+    deactivateExerciseMutation.error.status === 403
+      ? 'Você não possui permissão para inativar exercícios.'
+      : 'Não foi possível inativar o exercício. Tente novamente.'
+
+  function handleDeactivateExercise(exerciseId: number) {
+    deactivateExerciseMutation.mutate(exerciseId)
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -24,6 +47,20 @@ export function AdminExercisesPage() {
       />
 
       <CreateExerciseForm />
+
+      {deactivateExerciseMutation.isError && (
+        <Card>
+          <div className="rounded-2xl border border-red-200 bg-red-50 p-4">
+            <p className="text-sm font-semibold text-red-700">
+              Erro ao inativar exercício.
+            </p>
+
+            <p className="mt-1 text-sm text-red-600">
+              {deactivateErrorMessage}
+            </p>
+          </div>
+        </Card>
+      )}
 
       {isLoading && (
         <Card>
@@ -112,16 +149,29 @@ export function AdminExercisesPage() {
                   </p>
                 </div>
 
-                <span
-                  className={[
-                    'w-fit rounded-full px-3 py-1 text-xs font-semibold',
-                    exercise.active
-                      ? 'bg-[#2F4F3E]/10 text-[#2F4F3E]'
-                      : 'bg-[#EDEAE3] text-[#6F6A62]',
-                  ].join(' ')}
-                >
-                  {exercise.active ? 'Ativo' : 'Inativo'}
-                </span>
+                <div className="flex flex-col gap-2 md:items-end">
+                  <span
+                    className={[
+                      'w-fit rounded-full px-3 py-1 text-xs font-semibold',
+                      exercise.active
+                        ? 'bg-[#2F4F3E]/10 text-[#2F4F3E]'
+                        : 'bg-[#EDEAE3] text-[#6F6A62]',
+                    ].join(' ')}
+                  >
+                    {exercise.active ? 'Ativo' : 'Inativo'}
+                  </span>
+
+                  <button
+                    type="button"
+                    onClick={() => handleDeactivateExercise(exercise.id)}
+                    disabled={deactivateExerciseMutation.isPending}
+                    className="w-fit rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs font-semibold text-red-700 transition hover:border-red-300 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {deactivateExerciseMutation.isPending
+                      ? 'Inativando...'
+                      : 'Inativar'}
+                  </button>
+                </div>
               </div>
             ))}
           </div>
