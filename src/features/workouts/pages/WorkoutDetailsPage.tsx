@@ -1,67 +1,68 @@
-import { useQuery } from '@tanstack/react-query'
-import { Link, useParams } from 'react-router'
+import { useQuery } from "@tanstack/react-query";
+import { Link, useParams } from "react-router";
 
-import { PageHeader } from '../../../components/layout/PageHeader'
-import { Card } from '../../../components/ui/Card'
+import { PageHeader } from "../../../components/layout/PageHeader";
+import { Card } from "../../../components/ui/Card";
 import {
   getWorkoutById,
   getWorkoutExercises,
-} from '../services/workoutService'
+} from "../services/workoutService";
+import { CreateWorkoutExerciseForm } from "../components/CreateWorkoutExerciseForm";
 
 function formatWorkoutStatus(status: string) {
   const statusMap: Record<string, string> = {
-    ACTIVE: 'Ativo',
-    INACTIVE: 'Inativo',
-    ARCHIVED: 'Arquivado',
-  }
+    ACTIVE: "Ativo",
+    INACTIVE: "Inativo",
+    ARCHIVED: "Arquivado",
+  };
 
-  return statusMap[status] ?? status
+  return statusMap[status] ?? status;
 }
 
 function getWorkoutStatusClassName(status: string) {
-  if (status === 'ACTIVE') {
-    return 'bg-[#2F4F3E]/10 text-[#2F4F3E]'
+  if (status === "ACTIVE") {
+    return "bg-[#2F4F3E]/10 text-[#2F4F3E]";
   }
 
-  if (status === 'ARCHIVED') {
-    return 'bg-[#EDEAE3] text-[#6F6A62]'
+  if (status === "ARCHIVED") {
+    return "bg-[#EDEAE3] text-[#6F6A62]";
   }
 
-  return 'bg-yellow-50 text-yellow-700'
+  return "bg-yellow-50 text-yellow-700";
 }
 
 function formatRestTime(seconds: number | null) {
   if (seconds === null) {
-    return 'Não informado'
+    return "Não informado";
   }
 
   if (seconds < 60) {
-    return `${seconds}s`
+    return `${seconds}s`;
   }
 
-  const minutes = Math.floor(seconds / 60)
-  const remainingSeconds = seconds % 60
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
 
   if (remainingSeconds === 0) {
-    return `${minutes}min`
+    return `${minutes}min`;
   }
 
-  return `${minutes}min ${remainingSeconds}s`
+  return `${minutes}min ${remainingSeconds}s`;
 }
 
 function formatRecommendedLoad(value: number | null) {
   if (value === null) {
-    return 'Não informado'
+    return "Não informado";
   }
 
-  return `${value} kg`
+  return `${value} kg`;
 }
 
 export function WorkoutDetailsPage() {
-  const { workoutId } = useParams()
+  const { workoutId } = useParams();
 
-  const parsedWorkoutId = Number(workoutId)
-  const isValidWorkoutId = Number.isFinite(parsedWorkoutId)
+  const parsedWorkoutId = Number(workoutId);
+  const isValidWorkoutId = Number.isFinite(parsedWorkoutId);
 
   const {
     data: workout,
@@ -69,10 +70,10 @@ export function WorkoutDetailsPage() {
     isError: isWorkoutError,
     error: workoutError,
   } = useQuery({
-    queryKey: ['workout', parsedWorkoutId],
+    queryKey: ["workout", parsedWorkoutId],
     queryFn: () => getWorkoutById(parsedWorkoutId),
     enabled: isValidWorkoutId,
-  })
+  });
 
   const {
     data: workoutExercises,
@@ -80,14 +81,14 @@ export function WorkoutDetailsPage() {
     isError: isWorkoutExercisesError,
     error: workoutExercisesError,
   } = useQuery({
-    queryKey: ['workout-exercises', parsedWorkoutId],
+    queryKey: ["workout-exercises", parsedWorkoutId],
     queryFn: () => getWorkoutExercises(parsedWorkoutId),
     enabled: isValidWorkoutId,
-  })
+  });
 
-  const isLoading = isLoadingWorkout || isLoadingWorkoutExercises
-  const isError = isWorkoutError || isWorkoutExercisesError
-  const error = workoutError || workoutExercisesError
+  const isLoading = isLoadingWorkout || isLoadingWorkoutExercises;
+  const isError = isWorkoutError || isWorkoutExercisesError;
+  const error = workoutError || workoutExercisesError;
 
   if (!isValidWorkoutId) {
     return (
@@ -106,7 +107,7 @@ export function WorkoutDetailsPage() {
           </Link>
         </Card>
       </div>
-    )
+    );
   }
 
   return (
@@ -121,7 +122,7 @@ export function WorkoutDetailsPage() {
       </div>
 
       <PageHeader
-        title={workout?.workoutName ?? 'Detalhes do treino'}
+        title={workout?.workoutName ?? "Detalhes do treino"}
         description="Visualize os detalhes do treino modelo e os exercícios vinculados."
       />
 
@@ -148,7 +149,7 @@ export function WorkoutDetailsPage() {
             <p className="mt-3 text-xs text-red-500">
               {error instanceof Error
                 ? error.message
-                : 'Erro inesperado ao comunicar com a API.'}
+                : "Erro inesperado ao comunicar com a API."}
             </p>
           </div>
         </Card>
@@ -177,15 +178,19 @@ export function WorkoutDetailsPage() {
 
               <span
                 className={[
-                  'h-fit w-fit rounded-full px-3 py-1 text-xs font-semibold',
+                  "h-fit w-fit rounded-full px-3 py-1 text-xs font-semibold",
                   getWorkoutStatusClassName(workout.status),
-                ].join(' ')}
+                ].join(" ")}
               >
                 {formatWorkoutStatus(workout.status)}
               </span>
             </div>
           </div>
         </Card>
+      )}
+
+      {!isLoading && !isError && workout && (
+        <CreateWorkoutExerciseForm workoutId={parsedWorkoutId} />
       )}
 
       {!isLoading &&
@@ -218,14 +223,16 @@ export function WorkoutDetailsPage() {
 
               <p className="mt-1 text-sm text-[#6F6A62]">
                 Mostrando {workoutExercises.length} exercício
-                {workoutExercises.length === 1 ? '' : 's'} vinculado
-                {workoutExercises.length === 1 ? '' : 's'}.
+                {workoutExercises.length === 1 ? "" : "s"} vinculado
+                {workoutExercises.length === 1 ? "" : "s"}.
               </p>
             </div>
 
             <div className="divide-y divide-[#EDEAE3]">
               {[...workoutExercises]
-                .sort((first, second) => first.exerciseOrder - second.exerciseOrder)
+                .sort(
+                  (first, second) => first.exerciseOrder - second.exerciseOrder,
+                )
                 .map((workoutExercise) => (
                   <div
                     key={workoutExercise.id}
@@ -241,8 +248,8 @@ export function WorkoutDetailsPage() {
                       </h3>
 
                       <p className="mt-1 text-sm text-[#6F6A62]">
-                        {workoutExercise.muscleGroup} •{' '}
-                        {workoutExercise.equipmentName || 'Sem equipamento'}
+                        {workoutExercise.muscleGroup} •{" "}
+                        {workoutExercise.equipmentName || "Sem equipamento"}
                       </p>
 
                       {workoutExercise.notes && (
@@ -276,7 +283,8 @@ export function WorkoutDetailsPage() {
                       </p>
 
                       <p className="mt-1 text-xs text-[#8A8378]">
-                        Carga: {formatRecommendedLoad(workoutExercise.recommendedLoad)}
+                        Carga:{" "}
+                        {formatRecommendedLoad(workoutExercise.recommendedLoad)}
                       </p>
                     </div>
                   </div>
@@ -285,5 +293,5 @@ export function WorkoutDetailsPage() {
           </Card>
         )}
     </div>
-  )
+  );
 }
