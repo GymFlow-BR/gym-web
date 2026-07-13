@@ -1,16 +1,22 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useState } from 'react'
 
 import { PageHeader } from '../../../components/layout/PageHeader'
 import { Card } from '../../../components/ui/Card'
 import { isApiError } from '../../../services/apiError'
 import { CreateExerciseForm } from '../components/CreateExerciseForm'
+import { EditExerciseForm } from '../components/EditExerciseForm'
 import {
   deactivateExercise,
   getExercises,
 } from '../services/exerciseService'
+import type { Exercise } from '../types/exercise'
 
 export function AdminExercisesPage() {
   const queryClient = useQueryClient()
+  const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(
+    null,
+  )
 
   const {
     data: exercises,
@@ -39,6 +45,19 @@ export function AdminExercisesPage() {
     deactivateExerciseMutation.mutate(exerciseId)
   }
 
+  function handleEditExercise(exercise: Exercise) {
+    setSelectedExercise(exercise)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  function handleCancelEdit() {
+    setSelectedExercise(null)
+  }
+
+  function handleUpdateSuccess() {
+    setSelectedExercise(null)
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -46,7 +65,15 @@ export function AdminExercisesPage() {
         description="Gerencie a biblioteca de exercícios da sua organização."
       />
 
-      <CreateExerciseForm />
+      {selectedExercise ? (
+        <EditExerciseForm
+          exercise={selectedExercise}
+          onCancel={handleCancelEdit}
+          onSuccess={handleUpdateSuccess}
+        />
+      ) : (
+        <CreateExerciseForm />
+      )}
 
       {deactivateExerciseMutation.isError && (
         <Card>
@@ -161,16 +188,27 @@ export function AdminExercisesPage() {
                     {exercise.active ? 'Ativo' : 'Inativo'}
                   </span>
 
-                  <button
-                    type="button"
-                    onClick={() => handleDeactivateExercise(exercise.id)}
-                    disabled={deactivateExerciseMutation.isPending}
-                    className="w-fit rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs font-semibold text-red-700 transition hover:border-red-300 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    {deactivateExerciseMutation.isPending
-                      ? 'Inativando...'
-                      : 'Inativar'}
-                  </button>
+                  <div className="flex flex-wrap gap-2 md:justify-end">
+                    <button
+                      type="button"
+                      onClick={() => handleEditExercise(exercise)}
+                      disabled={deactivateExerciseMutation.isPending}
+                      className="w-fit rounded-full border border-[#E4DFD6] bg-[#FFFEFB] px-3 py-1 text-xs font-semibold text-[#2F4F3E] transition hover:border-[#2F4F3E] hover:bg-[#2F4F3E]/5 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      Editar
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleDeactivateExercise(exercise.id)}
+                      disabled={deactivateExerciseMutation.isPending}
+                      className="w-fit rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs font-semibold text-red-700 transition hover:border-red-300 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {deactivateExerciseMutation.isPending
+                        ? 'Inativando...'
+                        : 'Inativar'}
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
