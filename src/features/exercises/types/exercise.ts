@@ -21,3 +21,12 @@ export type CreateExerciseRequest = {
   imageUrl?: string
   videoUrl?: string
 }
+
+export type UpdateExerciseRequest = {
+  exerciseName: string
+  muscleGroup: string
+  equipmentName: string
+  description?: string
+  imageUrl?: string
+  videoUrl?: string
+}
