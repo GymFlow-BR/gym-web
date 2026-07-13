@@ -1,5 +1,6 @@
 import { api } from '../../../services/api'
 import type {
+  CreateWorkoutExerciseRequest,
   CreateWorkoutRequest,
   UpdateWorkoutRequest,
   Workout,
@@ -31,4 +32,14 @@ export function updateWorkout(workoutId: number, data: UpdateWorkoutRequest) {
 
 export function deactivateWorkout(workoutId: number) {
   return api.delete<void>(`/api/workouts/${workoutId}`)
+}
+
+export function createWorkoutExercise(
+  workoutId: number,
+  data: CreateWorkoutExerciseRequest,
+) {
+  return api.post<WorkoutExercise, CreateWorkoutExerciseRequest>(
+    `/api/workouts/${workoutId}/exercises`,
+    data,
+  )
 }

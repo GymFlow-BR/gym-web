@@ -35,3 +35,13 @@ export type WorkoutExercise = {
   createdAt: string
   updatedAt: string
 }
+
+export type CreateWorkoutExerciseRequest = {
+  exerciseId: number
+  exerciseOrder: number
+  sets: number
+  reps: string
+  recommendedLoad?: number
+  restTimeSeconds?: number
+  notes?: string
+}
