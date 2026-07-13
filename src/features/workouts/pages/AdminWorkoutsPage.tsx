@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { PageHeader } from '../../../components/layout/PageHeader'
 import { Card } from '../../../components/ui/Card'
 import { getWorkouts } from '../services/workoutService'
+import { CreateWorkoutForm } from '../components/CreateWorkoutForm'
 
 function formatWorkoutStatus(status: string) {
   const statusMap: Record<string, string> = {
@@ -51,6 +52,8 @@ export function AdminWorkoutsPage() {
         title="Treinos"
         description="Gerencie os treinos modelo da sua organização."
       />
+
+      <CreateWorkoutForm />
 
       {isLoading && (
         <Card>
