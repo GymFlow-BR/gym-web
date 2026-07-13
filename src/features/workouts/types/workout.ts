@@ -8,3 +8,8 @@ export type Workout = {
   createdAt: string
   updatedAt: string
 }
+
+export type CreateWorkoutRequest = {
+  teacherId: number
+  workoutName: string
+}
