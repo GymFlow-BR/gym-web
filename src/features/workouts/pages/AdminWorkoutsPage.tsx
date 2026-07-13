@@ -8,6 +8,7 @@ import { CreateWorkoutForm } from "../components/CreateWorkoutForm";
 import { isApiError } from "../../../services/apiError";
 import { EditWorkoutForm } from "../components/EditWorkoutForm";
 import type { Workout } from "../types/workout";
+import { Link } from "react-router";
 
 function formatWorkoutStatus(status: string) {
   const statusMap: Record<string, string> = {
@@ -212,6 +213,13 @@ export function AdminWorkoutsPage() {
                   >
                     {formatWorkoutStatus(workout.status)}
                   </span>
+
+                  <Link
+                    to={`/admin/workouts/${workout.workoutId}`}
+                    className="w-fit rounded-full border border-[#E4DFD6] bg-[#FFFEFB] px-3 py-1 text-xs font-semibold text-[#2F4F3E] transition hover:border-[#2F4F3E] hover:bg-[#2F4F3E]/5"
+                  >
+                    Gerenciar
+                  </Link>
 
                   <button
                     type="button"
