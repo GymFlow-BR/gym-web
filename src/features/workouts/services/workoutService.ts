@@ -8,3 +8,7 @@ export function getWorkouts() {
 export function createWorkout(data: CreateWorkoutRequest) {
   return api.post<Workout, CreateWorkoutRequest>('/api/workouts', data)
 }
+
+export function deactivateWorkout(workoutId: number) {
+  return api.delete<void>(`/api/workouts/${workoutId}`)
+}
