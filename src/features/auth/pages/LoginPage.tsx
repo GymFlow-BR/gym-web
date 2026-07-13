@@ -36,14 +36,20 @@ function LogoMark({ className = '' }: { className?: string }) {
     <span
       className={`flex items-center justify-center rounded-xl bg-gradient-to-br from-[#22C55E] to-[#0F3D31] ${className}`}
     >
-      <svg viewBox="0 0 24 24" fill="none" className="h-[58%] w-[58%]">
+      <svg viewBox="0 0 24 24" fill="none" className="h-[64%] w-[64%]">
         <path
-          d="M7.5 18c0-2.8 3-2.6 3-5.5s-3-2.5-3-5.5"
+          d="M8.3 19c0-3.1 6-2.7 6-6.4s-6-2.5-6-6.4"
           stroke="#FFFFFF"
-          strokeWidth={2.2}
+          strokeWidth={2.7}
           strokeLinecap="round"
         />
-        <circle cx="15.8" cy="6.4" r="2" fill="#FFFFFF" />
+        <circle
+          cx="15.4"
+          cy="5.6"
+          r="2.1"
+          stroke="#FFFFFF"
+          strokeWidth={2.2}
+        />
       </svg>
     </span>
   )
