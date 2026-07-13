@@ -1,97 +1,97 @@
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useForm } from 'react-hook-form'
-import { z } from 'zod'
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
-import { Button } from '../../../components/ui/Button'
-import { Card } from '../../../components/ui/Card'
-import { Input } from '../../../components/ui/Input'
-import { isApiError } from '../../../services/apiError'
-import { getExercises } from '../../exercises/services/exerciseService'
-import { createWorkoutExercise } from '../services/workoutService'
-import type { CreateWorkoutExerciseRequest } from '../types/workout'
+import { Button } from "../../../components/ui/Button";
+import { Card } from "../../../components/ui/Card";
+import { Input } from "../../../components/ui/Input";
+import { isApiError } from "../../../services/apiError";
+import { getExercises } from "../../exercises/services/exerciseService";
+import { createWorkoutExercise } from "../services/workoutService";
+import type { CreateWorkoutExerciseRequest } from "../types/workout";
 
 const createWorkoutExerciseSchema = z.object({
   exerciseId: z
     .string()
-    .min(1, 'Selecione um exercício.')
-    .refine((value) => Number(value) >= 1, 'Selecione um exercício.'),
+    .min(1, "Selecione um exercício.")
+    .refine((value) => Number(value) >= 1, "Selecione um exercício."),
 
   exerciseOrder: z
     .string()
-    .min(1, 'A ordem é obrigatória.')
+    .min(1, "A ordem é obrigatória.")
     .refine(
       (value) => Number.isInteger(Number(value)),
-      'A ordem deve ser um número inteiro.',
+      "A ordem deve ser um número inteiro.",
     )
     .refine(
       (value) => Number(value) >= 1,
-      'A ordem deve ser maior ou igual a 1.',
+      "A ordem deve ser maior ou igual a 1.",
     ),
 
   sets: z
     .string()
-    .min(1, 'A quantidade de séries é obrigatória.')
+    .min(1, "A quantidade de séries é obrigatória.")
     .refine(
       (value) => Number.isInteger(Number(value)),
-      'A quantidade de séries deve ser um número inteiro.',
+      "A quantidade de séries deve ser um número inteiro.",
     )
     .refine(
       (value) => Number(value) >= 1,
-      'A quantidade de séries deve ser maior ou igual a 1.',
+      "A quantidade de séries deve ser maior ou igual a 1.",
     ),
 
   reps: z
     .string()
     .trim()
-    .min(1, 'As repetições são obrigatórias.')
-    .max(50, 'As repetições devem ter no máximo 50 caracteres.'),
+    .min(1, "As repetições são obrigatórias.")
+    .max(50, "As repetições devem ter no máximo 50 caracteres."),
 
   recommendedLoad: z
     .string()
     .trim()
     .optional()
-    .or(z.literal(''))
+    .or(z.literal(""))
     .refine((value) => {
-      if (!value) return true
-      return Number(value) >= 0
-    }, 'A carga recomendada não pode ser negativa.'),
+      if (!value) return true;
+      return Number(value) >= 0;
+    }, "A carga recomendada não pode ser negativa."),
 
   restTimeSeconds: z
     .string()
     .trim()
     .optional()
-    .or(z.literal(''))
+    .or(z.literal(""))
     .refine((value) => {
-      if (!value) return true
-      return Number.isInteger(Number(value)) && Number(value) >= 0
-    }, 'O tempo de descanso deve ser um número inteiro maior ou igual a 0.'),
+      if (!value) return true;
+      return Number.isInteger(Number(value)) && Number(value) >= 0;
+    }, "O tempo de descanso deve ser um número inteiro maior ou igual a 0."),
 
-  notes: z.string().trim().optional().or(z.literal('')),
-})
+  notes: z.string().trim().optional().or(z.literal("")),
+});
 
 type CreateWorkoutExerciseFormData = z.infer<
   typeof createWorkoutExerciseSchema
->
+>;
 
 type CreateWorkoutExerciseFormProps = {
-  workoutId: number
-}
+  workoutId: number;
+};
 
 function normalizeOptionalNumber(value?: string) {
-  if (!value || value.trim() === '') {
-    return undefined
+  if (!value || value.trim() === "") {
+    return undefined;
   }
 
-  return Number(value)
+  return Number(value);
 }
 
 function normalizeOptionalText(value?: string) {
-  if (!value || value.trim() === '') {
-    return undefined
+  if (!value || value.trim() === "") {
+    return undefined;
   }
 
-  return value.trim()
+  return value.trim();
 }
 
 function toCreateWorkoutExerciseRequest(
@@ -105,22 +105,22 @@ function toCreateWorkoutExerciseRequest(
     recommendedLoad: normalizeOptionalNumber(data.recommendedLoad),
     restTimeSeconds: normalizeOptionalNumber(data.restTimeSeconds),
     notes: normalizeOptionalText(data.notes),
-  }
+  };
 }
 
 export function CreateWorkoutExerciseForm({
   workoutId,
 }: CreateWorkoutExerciseFormProps) {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   const {
     data: exercises,
     isLoading: isLoadingExercises,
     isError: isExercisesError,
   } = useQuery({
-    queryKey: ['exercises'],
+    queryKey: ["exercises"],
     queryFn: getExercises,
-  })
+  });
 
   const {
     register,
@@ -130,46 +130,56 @@ export function CreateWorkoutExerciseForm({
   } = useForm<CreateWorkoutExerciseFormData>({
     resolver: zodResolver(createWorkoutExerciseSchema),
     defaultValues: {
-      exerciseId: '',
-      exerciseOrder: '1',
-      sets: '3',
-      reps: '',
-      recommendedLoad: '',
-      restTimeSeconds: '',
-      notes: '',
+      exerciseId: "",
+      exerciseOrder: "1",
+      sets: "3",
+      reps: "",
+      recommendedLoad: "",
+      restTimeSeconds: "",
+      notes: "",
     },
-  })
+  });
 
   const createWorkoutExerciseMutation = useMutation({
     mutationFn: (data: CreateWorkoutExerciseRequest) =>
       createWorkoutExercise(workoutId, data),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: ['workout-exercises', workoutId],
-      })
+        queryKey: ["workout-exercises", workoutId],
+      });
 
       reset({
-        exerciseId: '',
-        exerciseOrder: '1',
-        sets: '3',
-        reps: '',
-        recommendedLoad: '',
-        restTimeSeconds: '',
-        notes: '',
-      })
+        exerciseId: "",
+        exerciseOrder: "1",
+        sets: "3",
+        reps: "",
+        recommendedLoad: "",
+        restTimeSeconds: "",
+        notes: "",
+      });
     },
-  })
+  });
 
-  const errorMessage =
-    isApiError(createWorkoutExerciseMutation.error) &&
-    createWorkoutExerciseMutation.error.status === 403
-      ? 'Você não possui permissão para adicionar exercícios ao treino.'
-      : 'Não foi possível adicionar o exercício ao treino. Tente novamente.'
+  function getCreateWorkoutExerciseErrorMessage() {
+    if (!isApiError(createWorkoutExerciseMutation.error)) {
+      return "Não foi possível adicionar o exercício ao treino. Tente novamente.";
+    }
+
+    if (createWorkoutExerciseMutation.error.status === 403) {
+      return "Você não possui permissão para adicionar exercícios ao treino.";
+    }
+
+    if (createWorkoutExerciseMutation.error.status === 409) {
+      return "Já existe um exercício com essa ordem neste treino. Escolha outra ordem.";
+    }
+
+    return "Não foi possível adicionar o exercício ao treino. Tente novamente.";
+  }
+
+  const errorMessage = getCreateWorkoutExerciseErrorMessage();
 
   function handleCreateWorkoutExercise(data: CreateWorkoutExerciseFormData) {
-    createWorkoutExerciseMutation.mutate(
-      toCreateWorkoutExerciseRequest(data),
-    )
+    createWorkoutExerciseMutation.mutate(toCreateWorkoutExerciseRequest(data));
   }
 
   return (
@@ -227,12 +237,12 @@ export function CreateWorkoutExerciseForm({
           <select
             className="h-12 w-full rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] px-4 text-sm text-[#1F1F1F] outline-none transition focus:border-[#2F4F3E] focus:ring-2 focus:ring-[#2F4F3E]/10"
             disabled={isLoadingExercises || isExercisesError}
-            {...register('exerciseId')}
+            {...register("exerciseId")}
           >
             <option value="">
               {isLoadingExercises
-                ? 'Carregando exercícios...'
-                : 'Selecione um exercício'}
+                ? "Carregando exercícios..."
+                : "Selecione um exercício"}
             </option>
 
             {exercises?.map((exercise) => (
@@ -255,7 +265,7 @@ export function CreateWorkoutExerciseForm({
           min={1}
           placeholder="Ex: 1"
           error={errors.exerciseOrder?.message}
-          {...register('exerciseOrder')}
+          {...register("exerciseOrder")}
         />
 
         <Input
@@ -264,14 +274,14 @@ export function CreateWorkoutExerciseForm({
           min={1}
           placeholder="Ex: 3"
           error={errors.sets?.message}
-          {...register('sets')}
+          {...register("sets")}
         />
 
         <Input
           label="Repetições"
           placeholder="Ex: 8-12"
           error={errors.reps?.message}
-          {...register('reps')}
+          {...register("reps")}
         />
 
         <Input
@@ -281,7 +291,7 @@ export function CreateWorkoutExerciseForm({
           step="0.01"
           placeholder="Ex: 40"
           error={errors.recommendedLoad?.message}
-          {...register('recommendedLoad')}
+          {...register("recommendedLoad")}
         />
 
         <Input
@@ -290,7 +300,7 @@ export function CreateWorkoutExerciseForm({
           min={0}
           placeholder="Ex: 90"
           error={errors.restTimeSeconds?.message}
-          {...register('restTimeSeconds')}
+          {...register("restTimeSeconds")}
         />
 
         <div className="lg:col-span-2">
@@ -301,13 +311,11 @@ export function CreateWorkoutExerciseForm({
           <textarea
             className="min-h-24 w-full rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] px-4 py-3 text-sm text-[#1F1F1F] outline-none transition placeholder:text-[#B7B2A8] focus:border-[#2F4F3E] focus:ring-2 focus:ring-[#2F4F3E]/10"
             placeholder="Ex: Controlar a descida e manter amplitude completa"
-            {...register('notes')}
+            {...register("notes")}
           />
 
           {errors.notes?.message && (
-            <p className="mt-2 text-sm text-red-600">
-              {errors.notes.message}
-            </p>
+            <p className="mt-2 text-sm text-red-600">{errors.notes.message}</p>
           )}
         </div>
 
@@ -321,11 +329,11 @@ export function CreateWorkoutExerciseForm({
             }
           >
             {createWorkoutExerciseMutation.isPending
-              ? 'Adicionando...'
-              : 'Adicionar exercício ao treino'}
+              ? "Adicionando..."
+              : "Adicionar exercício ao treino"}
           </Button>
         </div>
       </form>
     </Card>
-  )
+  );
 }

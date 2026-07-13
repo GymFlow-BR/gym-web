@@ -43,3 +43,12 @@ export function createWorkoutExercise(
     data,
   )
 }
+
+export function removeWorkoutExercise(
+  workoutId: number,
+  workoutExerciseId: number,
+) {
+  return api.delete<void>(
+    `/api/workouts/${workoutId}/exercises/${workoutExerciseId}`,
+  )
+}
