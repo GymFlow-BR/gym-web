@@ -1,10 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 
 import { PageHeader } from "../../../components/layout/PageHeader";
 import { Card } from "../../../components/ui/Card";
 import { deactivateWorkout, getWorkouts } from "../services/workoutService";
 import { CreateWorkoutForm } from "../components/CreateWorkoutForm";
 import { isApiError } from "../../../services/apiError";
+import { EditWorkoutForm } from "../components/EditWorkoutForm";
+import type { Workout } from "../types/workout";
 
 function formatWorkoutStatus(status: string) {
   const statusMap: Record<string, string> = {
@@ -38,6 +41,7 @@ function formatDate(value: string) {
 
 export function AdminWorkoutsPage() {
   const queryClient = useQueryClient();
+  const [selectedWorkout, setSelectedWorkout] = useState<Workout | null>(null);
 
   const {
     data: workouts,
@@ -66,6 +70,19 @@ export function AdminWorkoutsPage() {
     deactivateWorkoutMutation.mutate(workoutId);
   }
 
+  function handleEditWorkout(workout: Workout) {
+    setSelectedWorkout(workout);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function handleCancelEdit() {
+    setSelectedWorkout(null);
+  }
+
+  function handleUpdateSuccess() {
+    setSelectedWorkout(null);
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -73,7 +90,15 @@ export function AdminWorkoutsPage() {
         description="Gerencie os treinos modelo da sua organização."
       />
 
-      <CreateWorkoutForm />
+      {selectedWorkout ? (
+        <EditWorkoutForm
+          workout={selectedWorkout}
+          onCancel={handleCancelEdit}
+          onSuccess={handleUpdateSuccess}
+        />
+      ) : (
+        <CreateWorkoutForm />
+      )}
 
       {deactivateWorkoutMutation.isError && (
         <Card>
@@ -187,6 +212,15 @@ export function AdminWorkoutsPage() {
                   >
                     {formatWorkoutStatus(workout.status)}
                   </span>
+
+                  <button
+                    type="button"
+                    onClick={() => handleEditWorkout(workout)}
+                    disabled={deactivateWorkoutMutation.isPending}
+                    className="w-fit rounded-full border border-[#E4DFD6] bg-[#FFFEFB] px-3 py-1 text-xs font-semibold text-[#2F4F3E] transition hover:border-[#2F4F3E] hover:bg-[#2F4F3E]/5 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    Editar
+                  </button>
 
                   <button
                     type="button"
