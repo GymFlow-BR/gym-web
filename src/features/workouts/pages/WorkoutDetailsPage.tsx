@@ -1,4 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { isApiError } from "../../../services/apiError";
 import { Link, useParams } from "react-router";
 
 import { PageHeader } from "../../../components/layout/PageHeader";
@@ -6,6 +7,7 @@ import { Card } from "../../../components/ui/Card";
 import {
   getWorkoutById,
   getWorkoutExercises,
+  removeWorkoutExercise,
 } from "../services/workoutService";
 import { CreateWorkoutExerciseForm } from "../components/CreateWorkoutExerciseForm";
 
@@ -59,6 +61,7 @@ function formatRecommendedLoad(value: number | null) {
 }
 
 export function WorkoutDetailsPage() {
+  const queryClient = useQueryClient();
   const { workoutId } = useParams();
 
   const parsedWorkoutId = Number(workoutId);
@@ -85,6 +88,26 @@ export function WorkoutDetailsPage() {
     queryFn: () => getWorkoutExercises(parsedWorkoutId),
     enabled: isValidWorkoutId,
   });
+
+  const removeWorkoutExerciseMutation = useMutation<void, Error, number>({
+    mutationFn: (workoutExerciseId: number) =>
+      removeWorkoutExercise(parsedWorkoutId, workoutExerciseId),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ["workout-exercises", parsedWorkoutId],
+      });
+    },
+  });
+
+  const removeWorkoutExerciseErrorMessage =
+    isApiError(removeWorkoutExerciseMutation.error) &&
+    removeWorkoutExerciseMutation.error.status === 403
+      ? "Você não possui permissão para remover exercícios deste treino."
+      : "Não foi possível remover o exercício do treino. Tente novamente.";
+
+  function handleRemoveWorkoutExercise(workoutExerciseId: number) {
+    removeWorkoutExerciseMutation.mutate(workoutExerciseId);
+  }
 
   const isLoading = isLoadingWorkout || isLoadingWorkoutExercises;
   const isError = isWorkoutError || isWorkoutExercisesError;
@@ -193,6 +216,20 @@ export function WorkoutDetailsPage() {
         <CreateWorkoutExerciseForm workoutId={parsedWorkoutId} />
       )}
 
+      {removeWorkoutExerciseMutation.isError && (
+        <Card>
+          <div className="rounded-2xl border border-red-200 bg-red-50 p-4">
+            <p className="text-sm font-semibold text-red-700">
+              Erro ao remover exercício.
+            </p>
+
+            <p className="mt-1 text-sm text-red-600">
+              {removeWorkoutExerciseErrorMessage}
+            </p>
+          </div>
+        </Card>
+      )}
+
       {!isLoading &&
         !isError &&
         workoutExercises &&
@@ -236,7 +273,7 @@ export function WorkoutDetailsPage() {
                 .map((workoutExercise) => (
                   <div
                     key={workoutExercise.id}
-                    className="grid gap-4 p-5 transition hover:bg-[#FAF9F6] lg:grid-cols-[auto_1fr_auto_auto_auto] lg:items-center"
+                    className="grid gap-4 p-5 transition hover:bg-[#FAF9F6] lg:grid-cols-[auto_1fr_auto_auto_auto_auto] lg:items-center"
                   >
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#2F4F3E]/10 text-sm font-bold text-[#2F4F3E]">
                       {workoutExercise.exerciseOrder}
@@ -286,6 +323,20 @@ export function WorkoutDetailsPage() {
                         Carga:{" "}
                         {formatRecommendedLoad(workoutExercise.recommendedLoad)}
                       </p>
+                    </div>
+                    <div className="lg:text-right">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleRemoveWorkoutExercise(workoutExercise.id)
+                        }
+                        disabled={removeWorkoutExerciseMutation.isPending}
+                        className="w-fit rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs font-semibold text-red-700 transition hover:border-red-300 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {removeWorkoutExerciseMutation.isPending
+                          ? "Removendo..."
+                          : "Remover"}
+                      </button>
                     </div>
                   </div>
                 ))}
