@@ -52,7 +52,7 @@ function getProgressMessage(
   }
 
   if (progressPercentage === 100) {
-    return "Parabéns! Você concluiu todos os exercícios deste treino.";
+    return "Todos os exercícios foram concluídos.";
   }
 
   return "Continue no seu ritmo. Seu progresso está sendo salvo.";
@@ -377,8 +377,12 @@ export function StudentCurrentWorkoutPage() {
     return (
       <Card>
         <div className="rounded-2xl border border-[#E4DFD6] bg-[#FAF9F6] p-5 text-center">
-          <p className="text-lg font-semibold text-[#1F1F1F]">
-            Nenhum treino atual encontrado
+          <p className="text-xs font-semibold uppercase tracking-wide text-[#8A8378]">
+            Treino atual
+          </p>
+
+          <p className="mt-2 text-lg font-semibold text-[#1F1F1F]">
+            Nenhum treino disponível no momento
           </p>
 
           <p className="mt-2 text-sm text-[#6F6A62]">
@@ -386,8 +390,8 @@ export function StudentCurrentWorkoutPage() {
           </p>
 
           <p className="mt-3 text-sm text-[#8A8378]">
-            Quando um treino for atribuído, ele aparecerá automaticamente nesta
-            tela.
+            Quando um treino for liberado, ele aparecerá automaticamente nesta
+            tela para você acompanhar os exercícios.
           </p>
         </div>
       </Card>
@@ -518,12 +522,13 @@ export function StudentCurrentWorkoutPage() {
           <Card className="mt-5">
             <div className="rounded-2xl border border-yellow-200 bg-yellow-50 p-4">
               <p className="text-sm font-semibold text-yellow-800">
-                Não foi possível carregar o progresso do treino.
+                Progresso temporariamente indisponível
               </p>
 
               <p className="mt-1 text-sm text-yellow-700">
-                Você ainda pode visualizar os exercícios, mas talvez o progresso
-                não seja atualizado agora.
+                Você ainda pode visualizar os exercícios do treino. Caso marque
+                ou desmarque algum exercício agora, tente conferir o progresso
+                novamente em alguns instantes.
               </p>
             </div>
           </Card>
@@ -533,17 +538,22 @@ export function StudentCurrentWorkoutPage() {
       {sortedExercises.length === 0 && (
         <Card className="mt-5">
           <div className="text-center">
-            <p className="text-lg font-semibold text-[#1F1F1F]">
-              Treino sem exercícios
+            <p className="text-xs font-semibold uppercase tracking-wide text-[#8A8378]">
+              Treino em preparação
+            </p>
+
+            <p className="mt-2 text-lg font-semibold text-[#1F1F1F]">
+              Seu treino ainda não possui exercícios
             </p>
 
             <p className="mt-2 text-sm text-[#6F6A62]">
-              Este treino já foi atribuído, mas ainda não possui exercícios
-              cadastrados.
+              O treino já foi atribuído ao seu perfil, mas os exercícios ainda
+              não foram adicionados.
             </p>
 
             <p className="mt-3 text-sm text-[#8A8378]">
-              Fale com seu professor para que ele finalize a montagem do treino.
+              Fale com seu professor para confirmar quando a montagem do treino
+              for finalizada.
             </p>
           </div>
         </Card>
