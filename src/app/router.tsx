@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from 'react-router'
+import { Route, Routes } from 'react-router'
 
 import { AdminLayout } from '../components/layout/AdminLayout'
 import { StudentLayout } from '../components/layout/StudentLayout'
@@ -12,11 +12,12 @@ import { AdminStudentsPage } from '../features/students/pages/AdminStudentsPage'
 import { StudentCurrentWorkoutPage } from '../features/student-workout/pages/StudentCurrentWorkoutPage'
 import { AdminWorkoutsPage } from '../features/workouts/pages/AdminWorkoutsPage'
 import { WorkoutDetailsPage } from '../features/workouts/pages/WorkoutDetailsPage'
+import { AppEntryRoute } from '../features/auth/components/AppEntryRoute'
 
 export function AppRouter() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/" element={<AppEntryRoute />} />
 
       <Route
         path="/login"
