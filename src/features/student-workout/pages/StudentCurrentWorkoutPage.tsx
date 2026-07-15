@@ -1,52 +1,57 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { Button } from '../../../components/ui/Button'
-import { Card } from '../../../components/ui/Card'
-import { useAuthenticatedUser } from '../../auth/hooks/useAuthenticatedUser'
+import { Button } from "../../../components/ui/Button";
+import { Card } from "../../../components/ui/Card";
+import { useAuthenticatedUser } from "../../auth/hooks/useAuthenticatedUser";
 import {
   completeStudentWorkoutExercise,
   getStudentCurrentWorkout,
   getStudentCurrentWorkoutProgress,
   uncompleteStudentWorkoutExercise,
-} from '../services/studentWorkoutService'
+} from "../services/studentWorkoutService";
 
 function formatRestTime(seconds: number | null) {
   if (seconds === null) {
-    return 'Não informado'
+    return "Não informado";
   }
 
   if (seconds < 60) {
-    return `${seconds}s`
+    return `${seconds}s`;
   }
 
-  const minutes = Math.floor(seconds / 60)
-  const remainingSeconds = seconds % 60
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
 
   if (remainingSeconds === 0) {
-    return `${minutes}min`
+    return `${minutes}min`;
   }
 
-  return `${minutes}min ${remainingSeconds}s`
+  return `${minutes}min ${remainingSeconds}s`;
 }
 
 function formatRecommendedLoad(value: number | null) {
   if (value === null) {
-    return 'Não informado'
+    return "Não informado";
   }
 
-  return `${value} kg`
+  return `${value} kg`;
 }
 
 export function StudentCurrentWorkoutPage() {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
+
+  const [updatingWorkoutExerciseId, setUpdatingWorkoutExerciseId] = useState<
+    number | null
+  >(null);
 
   const {
     data: authenticatedUser,
     isLoading: isLoadingAuthenticatedUser,
     isError: isAuthenticatedUserError,
-  } = useAuthenticatedUser()
+  } = useAuthenticatedUser();
 
-  const studentId = authenticatedUser?.userId
+  const studentId = authenticatedUser?.userId;
 
   const {
     data: currentWorkout,
@@ -54,81 +59,89 @@ export function StudentCurrentWorkoutPage() {
     isError: isCurrentWorkoutError,
     error: currentWorkoutError,
   } = useQuery({
-    queryKey: ['student-current-workout', studentId],
+    queryKey: ["student-current-workout", studentId],
     queryFn: () => getStudentCurrentWorkout(studentId!),
     enabled: !!studentId,
     retry: false,
-  })
+  });
 
   const {
     data: currentWorkoutProgress,
     isLoading: isLoadingCurrentWorkoutProgress,
     isError: isCurrentWorkoutProgressError,
   } = useQuery({
-    queryKey: ['student-current-workout-progress', studentId],
+    queryKey: ["student-current-workout-progress", studentId],
     queryFn: () => getStudentCurrentWorkoutProgress(studentId!),
     enabled: !!studentId && !!currentWorkout,
     retry: false,
-  })
+  });
 
   const completeExerciseMutation = useMutation({
     mutationFn: (workoutExerciseId: number) =>
       completeStudentWorkoutExercise(studentId!, workoutExerciseId),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: ['student-current-workout-progress', studentId],
-      })
+        queryKey: ["student-current-workout-progress", studentId],
+      });
     },
-  })
+    onSettled: () => {
+      setUpdatingWorkoutExerciseId(null);
+    },
+  });
 
   const uncompleteExerciseMutation = useMutation({
     mutationFn: (workoutExerciseId: number) =>
       uncompleteStudentWorkoutExercise(studentId!, workoutExerciseId),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
-        queryKey: ['student-current-workout-progress', studentId],
-      })
+        queryKey: ["student-current-workout-progress", studentId],
+      });
     },
-  })
-
-  const isUpdatingExercise =
-    completeExerciseMutation.isPending || uncompleteExerciseMutation.isPending
+    onSettled: () => {
+      setUpdatingWorkoutExerciseId(null);
+    },
+  });
 
   function handleToggleExerciseCompletion(
     workoutExerciseId: number,
     completed: boolean,
   ) {
+    setUpdatingWorkoutExerciseId(workoutExerciseId);
+
     if (completed) {
-      uncompleteExerciseMutation.mutate(workoutExerciseId)
-      return
+      uncompleteExerciseMutation.mutate(workoutExerciseId);
+      return;
     }
 
-    completeExerciseMutation.mutate(workoutExerciseId)
+    completeExerciseMutation.mutate(workoutExerciseId);
   }
 
   const isLoading =
     isLoadingAuthenticatedUser ||
     isLoadingCurrentWorkout ||
-    isLoadingCurrentWorkoutProgress
+    isLoadingCurrentWorkoutProgress;
 
   const sortedExercises = currentWorkout?.exercises
     ? [...currentWorkout.exercises].sort(
         (first, second) => first.exerciseOrder - second.exerciseOrder,
       )
-    : []
+    : [];
 
   function getExerciseProgress(workoutExerciseId: number) {
     return currentWorkoutProgress?.exercises.find(
       (exercise) => exercise.workoutExerciseId === workoutExerciseId,
-    )
+    );
   }
+
+  const hasToggleExerciseError =
+    completeExerciseMutation.isError || uncompleteExerciseMutation.isError;
 
   if (isLoading) {
     return (
       <Card>
         <p className="text-sm text-[#6F6A62]">Carregando treino atual...</p>
       </Card>
-    )
+    );
   }
 
   if (isAuthenticatedUserError) {
@@ -144,10 +157,10 @@ export function StudentCurrentWorkoutPage() {
           </p>
         </div>
       </Card>
-    )
+    );
   }
 
-  if (authenticatedUser?.role !== 'STUDENT') {
+  if (authenticatedUser?.role !== "STUDENT") {
     return (
       <Card>
         <div className="rounded-2xl border border-yellow-200 bg-yellow-50 p-4">
@@ -160,7 +173,7 @@ export function StudentCurrentWorkoutPage() {
           </p>
         </div>
       </Card>
-    )
+    );
   }
 
   if (isCurrentWorkoutError) {
@@ -179,11 +192,11 @@ export function StudentCurrentWorkoutPage() {
           <p className="mt-3 text-xs text-[#8A8378]">
             {currentWorkoutError instanceof Error
               ? currentWorkoutError.message
-              : 'Treino atual não encontrado.'}
+              : "Treino atual não encontrado."}
           </p>
         </div>
       </Card>
-    )
+    );
   }
 
   if (!currentWorkout) {
@@ -193,7 +206,7 @@ export function StudentCurrentWorkoutPage() {
           Nenhum treino atual disponível no momento.
         </p>
       </Card>
-    )
+    );
   }
 
   return (
@@ -209,7 +222,7 @@ export function StudentCurrentWorkoutPage() {
 
             <p className="text-sm font-medium text-[#2F4F3E]">
               {sortedExercises.length} exercício
-              {sortedExercises.length === 1 ? '' : 's'} no treino
+              {sortedExercises.length === 1 ? "" : "s"} no treino
             </p>
           </div>
 
@@ -236,11 +249,25 @@ export function StudentCurrentWorkoutPage() {
           </div>
 
           <p className="mt-2 text-xs text-[#6F6A62]">
-            {currentWorkoutProgress?.completedExercises ?? 0} de{' '}
-            {currentWorkoutProgress?.totalExercises ?? sortedExercises.length}{' '}
+            {currentWorkoutProgress?.completedExercises ?? 0} de{" "}
+            {currentWorkoutProgress?.totalExercises ?? sortedExercises.length}{" "}
             exercícios concluídos
           </p>
         </Card>
+
+        {hasToggleExerciseError && (
+          <Card className="mt-5">
+            <div className="rounded-2xl border border-red-200 bg-red-50 p-4">
+              <p className="text-sm font-semibold text-red-700">
+                Não foi possível atualizar o exercício.
+              </p>
+
+              <p className="mt-1 text-sm text-red-600">
+                Tente novamente em alguns instantes.
+              </p>
+            </div>
+          </Card>
+        )}
 
         {isCurrentWorkoutProgressError && (
           <Card className="mt-5">
@@ -277,18 +304,20 @@ export function StudentCurrentWorkoutPage() {
           {sortedExercises.map((exercise) => {
             const exerciseProgress = getExerciseProgress(
               exercise.workoutExerciseId,
-            )
-            const isCompleted = exerciseProgress?.completed ?? false
+            );
+            const isCompleted = exerciseProgress?.completed ?? false;
+            const isUpdatingThisExercise =
+              updatingWorkoutExerciseId === exercise.workoutExerciseId;
 
             return (
               <div
                 key={exercise.workoutExerciseId}
                 className={[
-                  'rounded-2xl border p-4 text-[#1F1F1F] shadow-sm transition',
+                  "rounded-2xl border p-4 text-[#1F1F1F] shadow-sm transition",
                   isCompleted
-                    ? 'border-[#2F4F3E]/30 bg-[#2F4F3E]/5'
-                    : 'border-[#E4DFD6] bg-[#FFFEFB]',
-                ].join(' ')}
+                    ? "border-[#2F4F3E]/40 bg-[#2F4F3E]/10"
+                    : "border-[#E4DFD6] bg-[#FFFEFB]",
+                ].join(" ")}
               >
                 <div className="flex items-start justify-between gap-4">
                   <div>
@@ -297,8 +326,8 @@ export function StudentCurrentWorkoutPage() {
                     </p>
 
                     <p className="mt-1 text-xs text-[#6F6A62]">
-                      {exercise.muscleGroup || 'Grupo muscular não informado'} •{' '}
-                      {exercise.equipmentName || 'Sem equipamento'}
+                      {exercise.muscleGroup || "Grupo muscular não informado"} •{" "}
+                      {exercise.equipmentName || "Sem equipamento"}
                     </p>
                   </div>
 
@@ -310,20 +339,22 @@ export function StudentCurrentWorkoutPage() {
                         isCompleted,
                       )
                     }
-                    disabled={isUpdatingExercise || isCurrentWorkoutProgressError}
+                    disabled={
+                      isUpdatingThisExercise || isCurrentWorkoutProgressError
+                    }
                     className={[
-                      'flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-xs font-bold transition disabled:cursor-not-allowed disabled:opacity-60',
+                      "flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-xs font-bold transition disabled:cursor-not-allowed disabled:opacity-60",
                       isCompleted
-                        ? 'border-[#2F4F3E] bg-[#2F4F3E] text-white'
-                        : 'border-[#B7B2A8] text-[#6F6A62]',
-                    ].join(' ')}
+                        ? "border-[#2F4F3E] bg-[#2F4F3E] text-white"
+                        : "border-[#B7B2A8] text-[#6F6A62]",
+                    ].join(" ")}
                     aria-label={
                       isCompleted
-                        ? 'Desmarcar exercício como concluído'
-                        : 'Marcar exercício como concluído'
+                        ? "Desmarcar exercício como concluído"
+                        : "Marcar exercício como concluído"
                     }
                   >
-                    {isCompleted ? '✓' : ''}
+                    {isUpdatingThisExercise ? "..." : isCompleted ? "✓" : ""}
                   </button>
                 </div>
 
@@ -401,16 +432,20 @@ export function StudentCurrentWorkoutPage() {
                   </div>
                 )}
               </div>
-            )
+            );
           })}
         </div>
       )}
 
-      <Button className="mt-5" fullWidth disabled={sortedExercises.length === 0}>
+      <Button
+        className="mt-5"
+        fullWidth
+        disabled={sortedExercises.length === 0}
+      >
         {currentWorkoutProgress?.progressPercentage === 100
-          ? 'Treino concluído'
-          : 'Continuar treino'}
+          ? "Treino concluído"
+          : "Continuar treino"}
       </Button>
     </>
-  )
+  );
 }
