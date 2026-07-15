@@ -24,3 +24,30 @@ export type StudentCurrentWorkout = {
   status: 'ACTIVE' | 'INACTIVE' | 'ARCHIVED'
   exercises: StudentCurrentWorkoutExercise[]
 }
+
+export type StudentCurrentWorkoutExerciseProgress = {
+  workoutExerciseId: number
+  exerciseId: number
+  exerciseName: string
+  exerciseOrder: number
+  completed: boolean
+  completedAt: string | null
+}
+
+export type StudentCurrentWorkoutProgress = {
+  studentId: number
+  studentWorkoutId: number
+  workoutId: number
+  workoutName: string
+  totalExercises: number
+  completedExercises: number
+  progressPercentage: number
+  exercises: StudentCurrentWorkoutExerciseProgress[]
+}
+
+export type StudentWorkoutExerciseProgress = {
+  studentWorkoutId: number
+  workoutExerciseId: number
+  completed: boolean
+  completedAt: string | null
+}
