@@ -4,18 +4,11 @@ import { Navigate } from 'react-router'
 import { isApiError } from '../../../services/apiError'
 import { useAuthenticatedUser } from '../hooks/useAuthenticatedUser'
 import type { UserRole } from '../types/auth'
+import { getDefaultPathByRole } from '../utils/getDefaultPathByRole'
 
 type ProtectedRouteProps = {
   children: ReactNode
   allowedRoles?: UserRole[]
-}
-
-function getDefaultPathByRole(role: UserRole) {
-  if (role === 'STUDENT') {
-    return '/student/current-workout'
-  }
-
-  return '/admin'
 }
 
 export function ProtectedRoute({

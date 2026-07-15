@@ -1,37 +1,29 @@
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useMutation } from '@tanstack/react-query'
-import { useState } from 'react'
-import type { SVGProps } from 'react'
-import { useForm } from 'react-hook-form'
-import { useNavigate } from 'react-router'
-import { z } from 'zod'
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import type { SVGProps } from "react";
+import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router";
+import { z } from "zod";
 
-import { isApiError } from '../../../services/apiError'
-import { login } from '../services/authService'
-import type { AuthenticatedUser } from '../types/auth'
+import { isApiError } from "../../../services/apiError";
+import { login } from "../services/authService";
+import { getDefaultPathByRole } from "../utils/getDefaultPathByRole";
 
 const loginSchema = z.object({
   email: z
-    .string()
-    .min(1, 'O e-mail é obrigatório.')
-    .email('Informe um e-mail válido.'),
+  .string()
+  .min(1, 'O e-mail é obrigatório.')
+  .pipe(z.email('Informe um e-mail válido.')),
   password: z
     .string()
-    .min(1, 'A senha é obrigatória.')
-    .min(6, 'A senha deve ter pelo menos 6 caracteres.'),
-})
+    .min(1, "A senha é obrigatória.")
+    .min(6, "A senha deve ter pelo menos 6 caracteres."),
+});
 
-type LoginFormData = z.infer<typeof loginSchema>
+type LoginFormData = z.infer<typeof loginSchema>;
 
-function getRedirectPath(user: AuthenticatedUser) {
-  if (user.role === 'STUDENT') {
-    return '/student/current-workout'
-  }
-
-  return '/admin'
-}
-
-function LogoMark({ className = '' }: { className?: string }) {
+function LogoMark({ className = "" }: { className?: string }) {
   return (
     <span
       className={`flex items-center justify-center rounded-xl bg-gradient-to-br from-[#22C55E] to-[#0F3D31] ${className}`}
@@ -43,19 +35,13 @@ function LogoMark({ className = '' }: { className?: string }) {
           strokeWidth={2.7}
           strokeLinecap="round"
         />
-        <circle
-          cx="15.4"
-          cy="5.6"
-          r="2.1"
-          stroke="#FFFFFF"
-          strokeWidth={2.2}
-        />
+        <circle cx="15.4" cy="5.6" r="2.1" stroke="#FFFFFF" strokeWidth={2.2} />
       </svg>
     </span>
-  )
+  );
 }
 
-function BrandRings({ className = '' }: { className?: string }) {
+function BrandRings({ className = "" }: { className?: string }) {
   return (
     <svg viewBox="0 0 200 200" fill="none" className={className}>
       {[36, 68, 100, 132, 164, 196].map((radius) => (
@@ -69,7 +55,7 @@ function BrandRings({ className = '' }: { className?: string }) {
         />
       ))}
     </svg>
-  )
+  );
 }
 
 function MailIcon(props: SVGProps<SVGSVGElement>) {
@@ -86,7 +72,7 @@ function MailIcon(props: SVGProps<SVGSVGElement>) {
       <rect x="3" y="5" width="18" height="14" rx="2" />
       <path d="m3.5 6.5 8.5 6 8.5-6" />
     </svg>
-  )
+  );
 }
 
 function LockIcon(props: SVGProps<SVGSVGElement>) {
@@ -103,7 +89,7 @@ function LockIcon(props: SVGProps<SVGSVGElement>) {
       <rect x="4" y="11" width="16" height="9" rx="2" />
       <path d="M8 11V7.5a4 4 0 0 1 8 0V11" />
     </svg>
-  )
+  );
 }
 
 function EyeIcon(props: SVGProps<SVGSVGElement>) {
@@ -120,7 +106,7 @@ function EyeIcon(props: SVGProps<SVGSVGElement>) {
       <path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12Z" />
       <circle cx="12" cy="12" r="3" />
     </svg>
-  )
+  );
 }
 
 function EyeOffIcon(props: SVGProps<SVGSVGElement>) {
@@ -138,7 +124,7 @@ function EyeOffIcon(props: SVGProps<SVGSVGElement>) {
       <path d="M10.6 5.1A10.6 10.6 0 0 1 12 5c7 0 10.5 7 10.5 7a13.4 13.4 0 0 1-3.2 4.1M6.5 6.6C3.4 8.5 1.5 12 1.5 12s3.5 7 10.5 7a10.4 10.4 0 0 0 4.6-1" />
       <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2" />
     </svg>
-  )
+  );
 }
 
 function ArrowRightIcon(props: SVGProps<SVGSVGElement>) {
@@ -154,7 +140,7 @@ function ArrowRightIcon(props: SVGProps<SVGSVGElement>) {
     >
       <path d="M5 12h14M13 6l6 6-6 6" />
     </svg>
-  )
+  );
 }
 
 function GoogleIcon(props: SVGProps<SVGSVGElement>) {
@@ -177,12 +163,13 @@ function GoogleIcon(props: SVGProps<SVGSVGElement>) {
         d="M12 4.77c1.76 0 3.35.61 4.6 1.8l3.42-3.42C17.94 1.19 15.24 0 12 0A12 12 0 0 0 1.27 6.61l4 3.12C6.22 6.88 8.87 4.77 12 4.77Z"
       />
     </svg>
-  )
+  );
 }
 
 export function LoginPage() {
-  const navigate = useNavigate()
-  const [showPassword, setShowPassword] = useState(false)
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     register,
@@ -191,25 +178,26 @@ export function LoginPage() {
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: '',
-      password: '',
+      email: "",
+      password: "",
     },
-  })
+  });
 
   const loginMutation = useMutation({
     mutationFn: login,
     onSuccess: (user) => {
-      navigate(getRedirectPath(user))
+      queryClient.setQueryData(["authenticated-user"], user);
+      navigate(getDefaultPathByRole(user.role), { replace: true });
     },
-  })
+  });
 
   const loginErrorMessage =
     isApiError(loginMutation.error) && loginMutation.error.status === 401
-      ? 'E-mail ou senha inválidos.'
-      : 'Verifique seus dados e tente novamente.'
+      ? "E-mail ou senha inválidos."
+      : "Verifique seus dados e tente novamente.";
 
   function handleLogin(data: LoginFormData) {
-    loginMutation.mutate(data)
+    loginMutation.mutate(data);
   }
 
   return (
@@ -267,7 +255,7 @@ export function LoginPage() {
                   type="email"
                   placeholder="seu@email.com"
                   className="w-full rounded-xl border border-gray-200 bg-white py-3 pl-11 pr-4 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-[#1BA65A] focus:ring-4 focus:ring-[#1BA65A]/10"
-                  {...register('email')}
+                  {...register("email")}
                 />
               </div>
 
@@ -291,17 +279,17 @@ export function LoginPage() {
 
                 <input
                   id="password"
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   placeholder="Sua senha"
                   className="w-full rounded-xl border border-gray-200 bg-white py-3 pl-11 pr-11 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-[#1BA65A] focus:ring-4 focus:ring-[#1BA65A]/10"
-                  {...register('password')}
+                  {...register("password")}
                 />
 
                 <button
                   type="button"
                   onClick={() => setShowPassword((value) => !value)}
                   className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                  aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
                 >
                   {showPassword ? (
                     <EyeOffIcon className="h-5 w-5" />
@@ -332,7 +320,7 @@ export function LoginPage() {
               disabled={loginMutation.isPending}
               className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#0F3D31] py-3 text-sm font-semibold text-white transition hover:bg-[#0B2E25] disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {loginMutation.isPending ? 'Entrando...' : 'Entrar'}
+              {loginMutation.isPending ? "Entrando..." : "Entrar"}
               <ArrowRightIcon className="h-4 w-4" />
             </button>
           </form>
@@ -352,7 +340,7 @@ export function LoginPage() {
           </button>
 
           <p className="mt-6 text-center text-sm text-gray-500">
-            Ainda não tem conta?{' '}
+            Ainda não tem conta?{" "}
             <button type="button" className="font-semibold text-[#1BA65A]">
               Cadastre-se
             </button>
@@ -360,5 +348,5 @@ export function LoginPage() {
         </div>
       </div>
     </main>
-  )
+  );
 }
