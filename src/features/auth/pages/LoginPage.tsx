@@ -12,9 +12,9 @@ import { getDefaultPathByRole } from "../utils/getDefaultPathByRole";
 
 const loginSchema = z.object({
   email: z
-  .string()
-  .min(1, 'O e-mail é obrigatório.')
-  .pipe(z.email('Informe um e-mail válido.')),
+    .string()
+    .min(1, "O e-mail é obrigatório.")
+    .pipe(z.email("Informe um e-mail válido.")),
   password: z
     .string()
     .min(1, "A senha é obrigatória.")

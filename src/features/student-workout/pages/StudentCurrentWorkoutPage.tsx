@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { Button } from "../../../components/ui/Button";
@@ -36,6 +36,16 @@ function formatRecommendedLoad(value: number | null) {
   }
 
   return `${value} kg`;
+}
+
+function formatTimer(seconds: number) {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+
+  const formattedMinutes = String(minutes).padStart(2, "0");
+  const formattedSeconds = String(remainingSeconds).padStart(2, "0");
+
+  return `${formattedMinutes}:${formattedSeconds}`;
 }
 
 function getProgressMessage(
@@ -86,6 +96,17 @@ export function StudentCurrentWorkoutPage() {
   const [expandedWorkoutExerciseIds, setExpandedWorkoutExerciseIds] = useState<
     number[]
   >([]);
+
+  const [activeRestWorkoutExerciseId, setActiveRestWorkoutExerciseId] =
+    useState<number | null>(null);
+
+  const [remainingRestSeconds, setRemainingRestSeconds] = useState<
+    number | null
+  >(null);
+
+  const [restFinishedExerciseName, setRestFinishedExerciseName] = useState<
+    string | null
+  >(null);
 
   const {
     data: authenticatedUser,
@@ -167,16 +188,37 @@ export function StudentCurrentWorkoutPage() {
     });
   }
 
+  function handleStartRestTimer(
+    workoutExerciseId: number,
+    restTimeSeconds: number,
+  ) {
+    setRestFinishedExerciseName(null);
+    setActiveRestWorkoutExerciseId(workoutExerciseId);
+    setRemainingRestSeconds(restTimeSeconds);
+  }
+
+  function handleCancelRestTimer() {
+    setActiveRestWorkoutExerciseId(null);
+    setRemainingRestSeconds(null);
+    setRestFinishedExerciseName(null);
+  }
+
   const isLoading =
     isLoadingAuthenticatedUser ||
     isLoadingCurrentWorkout ||
     isLoadingCurrentWorkoutProgress;
 
-  const sortedExercises = currentWorkout?.exercises
-    ? [...currentWorkout.exercises].sort(
-        (first, second) => first.exerciseOrder - second.exerciseOrder,
-      )
-    : [];
+  const workoutExercises = currentWorkout?.exercises;
+
+  const sortedExercises = useMemo(() => {
+    if (!workoutExercises) {
+      return [];
+    }
+
+    return [...workoutExercises].sort(
+      (first, second) => first.exerciseOrder - second.exerciseOrder,
+    );
+  }, [workoutExercises]);
 
   const progressPercentage = currentWorkoutProgress?.progressPercentage ?? 0;
   const completedExercises = currentWorkoutProgress?.completedExercises ?? 0;
@@ -212,6 +254,40 @@ export function StudentCurrentWorkoutPage() {
       exercise.videoUrl,
     );
   }
+
+  useEffect(() => {
+    if (remainingRestSeconds === null) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setRemainingRestSeconds((currentSeconds) => {
+        if (currentSeconds === null) {
+          return null;
+        }
+
+        if (currentSeconds <= 1) {
+          const finishedExercise = sortedExercises.find(
+            (exercise) =>
+              exercise.workoutExerciseId === activeRestWorkoutExerciseId,
+          );
+
+          setRestFinishedExerciseName(
+            finishedExercise?.exerciseName ?? "exercício",
+          );
+          setActiveRestWorkoutExerciseId(null);
+
+          return null;
+        }
+
+        return currentSeconds - 1;
+      });
+    }, 1000);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [activeRestWorkoutExerciseId, remainingRestSeconds, sortedExercises]);
 
   const hasToggleExerciseError =
     completeExerciseMutation.isError || uncompleteExerciseMutation.isError;
@@ -351,6 +427,21 @@ export function StudentCurrentWorkoutPage() {
           </p>
         </Card>
 
+        {restFinishedExerciseName && (
+          <Card className="mt-5">
+            <div className="rounded-2xl border border-[#2F4F3E]/20 bg-[#2F4F3E]/10 p-4">
+              <p className="text-sm font-semibold text-[#2F4F3E]">
+                Descanso finalizado
+              </p>
+
+              <p className="mt-1 text-sm text-[#6F6A62]">
+                O descanso de {restFinishedExerciseName} terminou. Você pode
+                seguir para a próxima série ou para o próximo exercício.
+              </p>
+            </div>
+          </Card>
+        )}
+
         {hasToggleExerciseError && (
           <Card className="mt-5">
             <div className="rounded-2xl border border-red-200 bg-red-50 p-4">
@@ -413,6 +504,9 @@ export function StudentCurrentWorkoutPage() {
               exercise.workoutExerciseId,
             );
             const exerciseHasDetails = hasExerciseDetails(exercise);
+            const isRestActiveForThisExercise =
+              activeRestWorkoutExerciseId === exercise.workoutExerciseId &&
+              remainingRestSeconds !== null;
 
             return (
               <div
@@ -492,6 +586,58 @@ export function StudentCurrentWorkoutPage() {
                     </p>
                   </div>
                 </div>
+
+                {exercise.restTimeSeconds !== null &&
+                  exercise.restTimeSeconds > 0 && (
+                    <div className="mt-4 rounded-2xl border border-[#E4DFD6] bg-[#FAF9F6] p-3">
+                      {isRestActiveForThisExercise ? (
+                        <div className="flex items-center justify-between gap-3">
+                          <div>
+                            <p className="text-xs font-semibold text-[#8A8378]">
+                              Descanso em andamento
+                            </p>
+
+                            <p className="mt-1 text-lg font-bold text-[#2F4F3E]">
+                              {formatTimer(remainingRestSeconds)}
+                            </p>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={handleCancelRestTimer}
+                            className="rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs font-semibold text-red-700 transition hover:bg-red-100"
+                          >
+                            Cancelar
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-between gap-3">
+                          <div>
+                            <p className="text-xs font-semibold text-[#8A8378]">
+                              Descanso recomendado
+                            </p>
+
+                            <p className="mt-1 text-sm font-semibold text-[#1F1F1F]">
+                              {formatRestTime(exercise.restTimeSeconds)}
+                            </p>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleStartRestTimer(
+                                exercise.workoutExerciseId,
+                                exercise.restTimeSeconds!,
+                              )
+                            }
+                            className="rounded-full border border-[#2F4F3E]/20 bg-[#2F4F3E]/10 px-3 py-1 text-xs font-semibold text-[#2F4F3E] transition hover:bg-[#2F4F3E]/15"
+                          >
+                            Iniciar descanso
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                 {exerciseHasDetails && (
                   <div className="mt-4 border-t border-[#EDEAE3] pt-4">
