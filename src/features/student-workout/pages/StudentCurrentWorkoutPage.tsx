@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { Card } from "../../../components/ui/Card";
 import { useAuthenticatedUser } from "../../auth/hooks/useAuthenticatedUser";
 import {
   completeStudentWorkoutExercise,
@@ -362,33 +361,29 @@ export function StudentCurrentWorkoutPage() {
 
   if (isAuthenticatedUserError) {
     return (
-      <Card>
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-4">
-          <p className="text-sm font-semibold text-red-700">
-            Não foi possível identificar o aluno autenticado.
-          </p>
+      <div className="rounded-2xl border border-red-400/20 bg-red-500/10 p-4 shadow-lg shadow-black/10">
+        <p className="text-sm font-semibold text-red-200">
+          Não foi possível identificar o aluno autenticado.
+        </p>
 
-          <p className="mt-1 text-sm text-red-600">
-            Faça login novamente para acessar seu treino atual.
-          </p>
-        </div>
-      </Card>
+        <p className="mt-1 text-sm text-red-100/80">
+          Faça login novamente para acessar seu treino atual.
+        </p>
+      </div>
     );
   }
 
   if (authenticatedUser?.role !== "STUDENT") {
     return (
-      <Card>
-        <div className="rounded-2xl border border-yellow-200 bg-yellow-50 p-4">
-          <p className="text-sm font-semibold text-yellow-800">
-            Esta área é exclusiva para alunos.
-          </p>
+      <div className="rounded-2xl border border-yellow-400/20 bg-yellow-500/10 p-4 shadow-lg shadow-black/10">
+        <p className="text-sm font-semibold text-yellow-100">
+          Esta área é exclusiva para alunos.
+        </p>
 
-          <p className="mt-1 text-sm text-yellow-700">
-            Acesse com uma conta de aluno para visualizar o treino atual.
-          </p>
-        </div>
-      </Card>
+        <p className="mt-1 text-sm text-yellow-100/80">
+          Acesse com uma conta de aluno para visualizar o treino atual.
+        </p>
+      </div>
     );
   }
 
@@ -417,11 +412,11 @@ export function StudentCurrentWorkoutPage() {
 
   if (!currentWorkout) {
     return (
-      <Card>
-        <p className="text-sm text-[#6F6A62]">
+      <div className="rounded-2xl border border-white/10 bg-[#16221B] p-5 shadow-lg shadow-black/10">
+        <p className="text-sm text-[#C9C3B8]">
           Nenhum treino atual disponível no momento.
         </p>
-      </Card>
+      </div>
     );
   }
 
