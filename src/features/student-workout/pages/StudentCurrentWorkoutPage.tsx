@@ -750,7 +750,7 @@ export function StudentCurrentWorkoutPage() {
       <Button
         className="mt-5"
         fullWidth
-        disabled={sortedExercises.length === 0}
+        disabled={sortedExercises.length === 0 || isWorkoutCompleted}
       >
         {isWorkoutCompleted ? "Treino concluído" : workoutActionLabel}
       </Button>
