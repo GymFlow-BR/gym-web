@@ -1,11 +1,9 @@
-import { Card } from '../../../components/ui/Card'
-
 type StudentWorkoutProgressCardProps = {
-  progressPercentage: number
-  completedExercises: number
-  totalExercises: number
-  progressMessage: string
-}
+  progressPercentage: number;
+  completedExercises: number;
+  totalExercises: number;
+  progressMessage: string;
+};
 
 export function StudentWorkoutProgressCard({
   progressPercentage,
@@ -14,30 +12,31 @@ export function StudentWorkoutProgressCard({
   progressMessage,
 }: StudentWorkoutProgressCardProps) {
   return (
-    <Card className="mt-5">
-      <div className="flex items-center justify-between text-sm">
-        <span className="text-[#6F6A62]">Progresso do treino</span>
-        <span className="font-semibold text-[#1F1F1F]">
+    <div className="mt-5 rounded-2xl border border-white/10 bg-[#16221B] p-5 shadow-lg shadow-black/10">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm font-medium text-[#C9C3B8]">
+          Progresso do treino
+        </p>
+
+        <p className="text-sm font-bold text-[#F6F4EF]">
           {progressPercentage}%
-        </span>
+        </p>
       </div>
 
-      <div className="mt-3 h-2 rounded-full bg-[#EDEAE3]">
+      <div className="mt-4 h-2 rounded-full bg-white/10">
         <div
-          className="h-2 rounded-full bg-[#2F4F3E]"
-          style={{
-            width: `${progressPercentage}%`,
-          }}
+          className="h-2 rounded-full bg-[#9FC5AE]"
+          style={{ width: `${progressPercentage}%` }}
         />
       </div>
 
-      <p className="mt-2 text-xs text-[#6F6A62]">
+      <p className="mt-3 text-xs text-[#9CA89F]">
         {completedExercises} de {totalExercises} exercícios concluídos
       </p>
 
-      <p className="mt-2 text-sm font-medium text-[#2F4F3E]">
+      <p className="mt-3 text-sm font-medium text-[#9FC5AE]">
         {progressMessage}
       </p>
-    </Card>
-  )
+    </div>
+  );
 }
