@@ -25,7 +25,7 @@ export function StudentWorkoutProgressCard({
 
       <div className="mt-4 h-2 rounded-full bg-white/10">
         <div
-          className="h-2 rounded-full bg-[#9FC5AE]"
+          className="h-2 rounded-full bg-[#F6F4EF]"
           style={{ width: `${progressPercentage}%` }}
         />
       </div>
@@ -34,7 +34,7 @@ export function StudentWorkoutProgressCard({
         {completedExercises} de {totalExercises} exercícios concluídos
       </p>
 
-      <p className="mt-3 text-sm font-medium text-[#9FC5AE]">
+      <p className="mt-3 text-sm font-medium text-[#F6F4EF]">
         {progressMessage}
       </p>
     </div>

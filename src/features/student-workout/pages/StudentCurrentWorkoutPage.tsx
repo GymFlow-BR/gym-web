@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { Button } from "../../../components/ui/Button";
 import { Card } from "../../../components/ui/Card";
 import { useAuthenticatedUser } from "../../auth/hooks/useAuthenticatedUser";
 import {
@@ -59,25 +58,6 @@ function getProgressMessage(
   }
 
   return "Continue no seu ritmo. Seu progresso está sendo salvo.";
-}
-
-function getWorkoutActionLabel(
-  progressPercentage: number,
-  totalExercises: number,
-) {
-  if (totalExercises === 0) {
-    return "Aguardando exercícios";
-  }
-
-  if (progressPercentage === 100) {
-    return "Treino concluído";
-  }
-
-  if (progressPercentage === 0) {
-    return "Começar treino";
-  }
-
-  return "Continuar treino";
 }
 
 export function StudentCurrentWorkoutPage() {
@@ -239,22 +219,6 @@ export function StudentCurrentWorkoutPage() {
     totalExercises,
   );
 
-  const workoutActionLabel = getWorkoutActionLabel(
-    progressPercentage,
-    totalExercises,
-  );
-
-  const workoutStatusLabel = getWorkoutStatusLabel(
-    progressPercentage,
-    totalExercises,
-  );
-
-  function getExerciseProgress(workoutExerciseId: number) {
-    return currentWorkoutProgress?.exercises.find(
-      (exercise) => exercise.workoutExerciseId === workoutExerciseId,
-    );
-  }
-
   function getWorkoutStatusLabel(
     progressPercentage: number,
     totalExercises: number,
@@ -272,6 +236,17 @@ export function StudentCurrentWorkoutPage() {
     }
 
     return "Em andamento";
+  }
+
+  const workoutStatusLabel = getWorkoutStatusLabel(
+    progressPercentage,
+    totalExercises,
+  );
+
+  function getExerciseProgress(workoutExerciseId: number) {
+    return currentWorkoutProgress?.exercises.find(
+      (exercise) => exercise.workoutExerciseId === workoutExerciseId,
+    );
   }
 
   function hasExerciseDetails(exercise: {
@@ -363,25 +338,25 @@ export function StudentCurrentWorkoutPage() {
 
   if (isLoading) {
     return (
-      <Card>
+      <div className="rounded-2xl border border-white/10 bg-[#16221B] p-5 shadow-lg shadow-black/10">
         <div className="space-y-4">
           <div>
             <p className="text-sm font-semibold text-[#F6F4EF]">
               Carregando seu treino
             </p>
 
-            <p className="mt-1 text-sm text-[#6F6A62]">
+            <p className="mt-1 text-sm text-[#C9C3B8]">
               Estamos buscando seu treino atual e o progresso salvo.
             </p>
           </div>
 
           <div className="space-y-3">
-            <div className="h-4 w-2/3 rounded-full bg-[#EDEAE3]" />
-            <div className="h-3 w-full rounded-full bg-[#EDEAE3]" />
-            <div className="h-3 w-5/6 rounded-full bg-[#EDEAE3]" />
+            <div className="h-4 w-2/3 rounded-full bg-white/10" />
+            <div className="h-3 w-full rounded-full bg-white/10" />
+            <div className="h-3 w-5/6 rounded-full bg-white/10" />
           </div>
         </div>
-      </Card>
+      </div>
     );
   }
 
@@ -419,26 +394,24 @@ export function StudentCurrentWorkoutPage() {
 
   if (isCurrentWorkoutError) {
     return (
-      <Card>
-        <div className="rounded-2xl border border-[#E4DFD6] bg-[#FAF9F6] p-5 text-center">
-          <p className="text-xs font-semibold uppercase tracking-wide text-[#8A8378]">
-            Treino atual
-          </p>
+      <div className="rounded-2xl border border-white/10 bg-[#16221B] p-5 text-center shadow-lg shadow-black/10">
+        <p className="text-xs font-semibold uppercase tracking-wide text-[#9CA89F]">
+          Treino atual
+        </p>
 
-          <p className="mt-2 text-lg font-semibold text-[#1F1F1F]">
-            Nenhum treino disponível no momento
-          </p>
+        <p className="mt-2 text-lg font-semibold text-[#F6F4EF]">
+          Nenhum treino disponível no momento
+        </p>
 
-          <p className="mt-2 text-sm text-[#6F6A62]">
-            Seu professor ainda não atribuiu um treino ativo para você.
-          </p>
+        <p className="mt-2 text-sm text-[#C9C3B8]">
+          Seu professor ainda não atribuiu um treino ativo para você.
+        </p>
 
-          <p className="mt-3 text-sm text-[#8A8378]">
-            Quando um treino for liberado, ele aparecerá automaticamente nesta
-            tela para você acompanhar os exercícios.
-          </p>
-        </div>
-      </Card>
+        <p className="mt-3 text-sm text-[#9CA89F]">
+          Quando um treino for liberado, ele aparecerá automaticamente nesta
+          tela para você acompanhar os exercícios.
+        </p>
+      </div>
     );
   }
 
@@ -457,19 +430,14 @@ export function StudentCurrentWorkoutPage() {
       <section>
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-sm text-[#6F6A62]">Treino atual</p>
+            <p className="text-sm text-[#C9C3B8]">Treino atual</p>
 
-            <h2 className="mt-1 text-2xl font-bold text-[#1F1F1F]">
+            <h2 className="mt-1 text-2xl font-bold text-[#F6F4EF]">
               {currentWorkout.workoutName}
             </h2>
-
-            <p className="text-sm font-medium text-[#2F4F3E]">
-              {sortedExercises.length} exercício
-              {sortedExercises.length === 1 ? "" : "s"} no treino
-            </p>
           </div>
 
-          <span className="rounded-full bg-[#2F4F3E]/10 px-3 py-1 text-xs font-semibold text-[#2F4F3E]">
+          <span className="rounded-full border border-[#9FC5AE]/20 bg-[#9FC5AE]/10 px-3 py-1 text-xs font-semibold text-[#9FC5AE]">
             Ativo
           </span>
         </div>
@@ -498,74 +466,66 @@ export function StudentCurrentWorkoutPage() {
         )}
 
         {restFinishedExerciseName && (
-          <Card className="mt-5">
-            <div className="rounded-2xl border border-[#2F4F3E]/20 bg-[#2F4F3E]/10 p-4">
-              <p className="text-sm font-semibold text-[#2F4F3E]">
-                Descanso finalizado
-              </p>
+          <div className="mt-5 rounded-2xl border border-[#9FC5AE]/20 bg-[#16221B] p-4 shadow-lg shadow-black/10">
+            <p className="text-sm font-semibold text-[#9FC5AE]">
+              Descanso finalizado
+            </p>
 
-              <p className="mt-1 text-sm text-[#6F6A62]">
-                O descanso de {restFinishedExerciseName} terminou. Você pode
-                seguir para a próxima série ou para o próximo exercício.
-              </p>
-            </div>
-          </Card>
+            <p className="mt-1 text-sm text-[#C9C3B8]">
+              O descanso de {restFinishedExerciseName} terminou. Você pode
+              seguir para a próxima série ou para o próximo exercício.
+            </p>
+          </div>
         )}
 
         {hasToggleExerciseError && (
-          <Card className="mt-5">
-            <div className="rounded-2xl border border-red-200 bg-red-50 p-4">
-              <p className="text-sm font-semibold text-red-700">
-                Não foi possível salvar sua alteração.
-              </p>
+          <div className="mt-5 rounded-2xl border border-red-400/20 bg-red-500/10 p-4 shadow-lg shadow-black/10">
+            <p className="text-sm font-semibold text-red-200">
+              Não foi possível salvar sua alteração.
+            </p>
 
-              <p className="mt-1 text-sm text-red-600">
-                O exercício não foi marcado ou desmarcado. Verifique sua conexão
-                e tente novamente.
-              </p>
-            </div>
-          </Card>
+            <p className="mt-1 text-sm text-red-100/80">
+              O exercício não foi marcado ou desmarcado. Verifique sua conexão e
+              tente novamente.
+            </p>
+          </div>
         )}
 
         {isCurrentWorkoutProgressError && (
-          <Card className="mt-5">
-            <div className="rounded-2xl border border-yellow-200 bg-yellow-50 p-4">
-              <p className="text-sm font-semibold text-yellow-800">
-                Progresso temporariamente indisponível
-              </p>
+          <div className="mt-5 rounded-2xl border border-yellow-400/20 bg-yellow-500/10 p-4 shadow-lg shadow-black/10">
+            <p className="text-sm font-semibold text-yellow-100">
+              Progresso temporariamente indisponível
+            </p>
 
-              <p className="mt-1 text-sm text-yellow-700">
-                Você ainda pode visualizar os exercícios do treino. Caso marque
-                ou desmarque algum exercício agora, tente conferir o progresso
-                novamente em alguns instantes.
-              </p>
-            </div>
-          </Card>
+            <p className="mt-1 text-sm text-yellow-100/80">
+              Você ainda pode visualizar os exercícios do treino. Caso marque ou
+              desmarque algum exercício agora, tente conferir o progresso
+              novamente em alguns instantes.
+            </p>
+          </div>
         )}
       </section>
 
       {sortedExercises.length === 0 && (
-        <Card className="mt-5">
-          <div className="text-center">
-            <p className="text-xs font-semibold uppercase tracking-wide text-[#8A8378]">
-              Treino em preparação
-            </p>
+        <div className="mt-5 rounded-2xl border border-white/10 bg-[#16221B] p-5 text-center shadow-lg shadow-black/10">
+          <p className="text-xs font-semibold uppercase tracking-wide text-[#9CA89F]">
+            Treino em preparação
+          </p>
 
-            <p className="mt-2 text-lg font-semibold text-[#1F1F1F]">
-              Seu treino ainda não possui exercícios
-            </p>
+          <p className="mt-2 text-lg font-semibold text-[#F6F4EF]">
+            Seu treino ainda não possui exercícios
+          </p>
 
-            <p className="mt-2 text-sm text-[#6F6A62]">
-              O treino já foi atribuído ao seu perfil, mas os exercícios ainda
-              não foram adicionados.
-            </p>
+          <p className="mt-2 text-sm text-[#C9C3B8]">
+            O treino já foi atribuído ao seu perfil, mas os exercícios ainda não
+            foram adicionados.
+          </p>
 
-            <p className="mt-3 text-sm text-[#8A8378]">
-              Fale com seu professor para confirmar quando a montagem do treino
-              for finalizada.
-            </p>
-          </div>
-        </Card>
+          <p className="mt-3 text-sm text-[#9CA89F]">
+            Fale com seu professor para confirmar quando a montagem do treino
+            for finalizada.
+          </p>
+        </div>
       )}
 
       {sortedExercises.length > 0 && (
@@ -747,7 +707,7 @@ export function StudentCurrentWorkoutPage() {
                               Descrição
                             </p>
 
-                            <p className="mt-1 text-sm text-[#C9C3B8]">
+                            <p className="mt-1 text-sm text-[#F6F4EF]">
                               {exercise.description}
                             </p>
                           </div>
@@ -799,14 +759,6 @@ export function StudentCurrentWorkoutPage() {
           })}
         </div>
       )}
-
-      <Button
-        className="mt-5"
-        fullWidth
-        disabled={sortedExercises.length === 0 || isWorkoutCompleted}
-      >
-        {isWorkoutCompleted ? "Treino concluído" : workoutActionLabel}
-      </Button>
     </>
   );
 }
