@@ -3,12 +3,20 @@ import { Card } from '../../../components/ui/Card'
 type StudentWorkoutCompletionCardProps = {
   completedExercises: number
   totalExercises: number
+  studentName?: string | null
 }
 
 export function StudentWorkoutCompletionCard({
   completedExercises,
   totalExercises,
+  studentName,
 }: StudentWorkoutCompletionCardProps) {
+  const formattedStudentName = studentName?.trim()
+
+  const completionTitle = formattedStudentName
+    ? `Parabéns, ${formattedStudentName}! Treino concluído.`
+    : 'Parabéns! Treino concluído.'
+
   return (
     <Card className="mt-5">
       <div className="rounded-2xl border border-[#2F4F3E]/20 bg-[#2F4F3E]/10 p-5">
@@ -17,7 +25,7 @@ export function StudentWorkoutCompletionCard({
         </p>
 
         <h3 className="mt-2 text-xl font-bold text-[#1F1F1F]">
-          Parabéns, você concluiu seu treino!
+          {completionTitle}
         </h3>
 
         <p className="mt-2 text-sm text-[#6F6A62]">

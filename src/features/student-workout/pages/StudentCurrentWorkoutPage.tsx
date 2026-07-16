@@ -493,6 +493,7 @@ export function StudentCurrentWorkoutPage() {
           <StudentWorkoutCompletionCard
             completedExercises={completedExercises}
             totalExercises={totalExercises}
+            studentName={authenticatedUser.name}
           />
         )}
 
