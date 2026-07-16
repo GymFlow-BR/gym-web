@@ -29,7 +29,7 @@ export function StudentWorkoutSummaryCard({
         <div className="rounded-2xl border border-white/10 bg-[#1D2B23] p-4">
           <p className="text-xs font-semibold text-[#9CA89F]">Concluídos</p>
 
-          <p className="mt-2 text-xl font-bold text-[#9FC5AE]">
+          <p className="mt-2 text-xl font-bold text-[#F6F4EF]">
             {completedExercises}
           </p>
 
