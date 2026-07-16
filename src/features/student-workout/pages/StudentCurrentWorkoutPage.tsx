@@ -11,6 +11,9 @@ import {
   uncompleteStudentWorkoutExercise,
 } from "../services/studentWorkoutService";
 import { RestTimer } from "../components/RestTimer";
+import { StudentWorkoutSummaryCard } from "../components/StudentWorkoutSummaryCard";
+import { StudentWorkoutProgressCard } from "../components/StudentWorkoutProgressCard";
+import { StudentWorkoutCompletionCard } from "../components/StudentWorkoutCompletionCard";
 
 function formatRestTime(seconds: number | null) {
   if (seconds === null) {
@@ -455,109 +458,26 @@ export function StudentCurrentWorkoutPage() {
           </span>
         </div>
 
-        <Card className="mt-5">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="rounded-2xl bg-[#FAF9F6] p-3">
-              <p className="text-xs font-semibold text-[#8A8378]">Total</p>
+        <StudentWorkoutSummaryCard
+          totalExercises={totalExercises}
+          completedExercises={completedExercises}
+          pendingExercises={pendingExercises}
+          progressPercentage={progressPercentage}
+          statusLabel={workoutStatusLabel}
+        />
 
-              <p className="mt-1 text-lg font-bold text-[#1F1F1F]">
-                {totalExercises}
-              </p>
-
-              <p className="text-xs text-[#6F6A62]">exercícios</p>
-            </div>
-
-            <div className="rounded-2xl bg-[#FAF9F6] p-3">
-              <p className="text-xs font-semibold text-[#8A8378]">Concluídos</p>
-
-              <p className="mt-1 text-lg font-bold text-[#2F4F3E]">
-                {completedExercises}
-              </p>
-
-              <p className="text-xs text-[#6F6A62]">feitos</p>
-            </div>
-
-            <div className="rounded-2xl bg-[#FAF9F6] p-3">
-              <p className="text-xs font-semibold text-[#8A8378]">Pendentes</p>
-
-              <p className="mt-1 text-lg font-bold text-[#1F1F1F]">
-                {pendingExercises}
-              </p>
-
-              <p className="text-xs text-[#6F6A62]">restantes</p>
-            </div>
-
-            <div className="rounded-2xl bg-[#FAF9F6] p-3">
-              <p className="text-xs font-semibold text-[#8A8378]">Status</p>
-
-              <p className="mt-1 text-lg font-bold text-[#1F1F1F]">
-                {workoutStatusLabel}
-              </p>
-
-              <p className="text-xs text-[#6F6A62]">
-                {progressPercentage}% concluído
-              </p>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="mt-5">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-[#6F6A62]">Progresso do treino</span>
-            <span className="font-semibold text-[#1F1F1F]">
-              {progressPercentage}%
-            </span>
-          </div>
-
-          <div className="mt-3 h-2 rounded-full bg-[#EDEAE3]">
-            <div
-              className="h-2 rounded-full bg-[#2F4F3E]"
-              style={{
-                width: `${progressPercentage}%`,
-              }}
-            />
-          </div>
-
-          <p className="mt-2 text-xs text-[#6F6A62]">
-            {completedExercises} de {totalExercises} exercícios concluídos
-          </p>
-
-          <p className="mt-2 text-sm font-medium text-[#2F4F3E]">
-            {progressMessage}
-          </p>
-        </Card>
+        <StudentWorkoutProgressCard
+          progressPercentage={progressPercentage}
+          completedExercises={completedExercises}
+          totalExercises={totalExercises}
+          progressMessage={progressMessage}
+        />
 
         {isWorkoutCompleted && (
-          <Card className="mt-5">
-            <div className="rounded-2xl border border-[#2F4F3E]/20 bg-[#2F4F3E]/10 p-5">
-              <p className="text-sm font-semibold text-[#2F4F3E]">
-                Treino concluído
-              </p>
-
-              <h3 className="mt-2 text-xl font-bold text-[#1F1F1F]">
-                Parabéns, você concluiu seu treino!
-              </h3>
-
-              <p className="mt-2 text-sm text-[#6F6A62]">
-                Você finalizou todos os exercícios planejados para este treino.
-              </p>
-
-              <div className="mt-4 rounded-2xl bg-[#FFFEFB] p-4">
-                <p className="text-xs font-semibold text-[#8A8378]">
-                  Resumo do treino
-                </p>
-
-                <p className="mt-1 text-sm font-semibold text-[#1F1F1F]">
-                  {completedExercises} de {totalExercises} exercícios concluídos
-                </p>
-
-                <p className="mt-1 text-xs text-[#6F6A62]">
-                  Continue acompanhando seus treinos com consistência para
-                  evoluir.
-                </p>
-              </div>
-            </div>
-          </Card>
+          <StudentWorkoutCompletionCard
+            completedExercises={completedExercises}
+            totalExercises={totalExercises}
+          />
         )}
 
         {restFinishedExerciseName && (
