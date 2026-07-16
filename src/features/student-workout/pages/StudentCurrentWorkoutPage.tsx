@@ -227,6 +227,7 @@ export function StudentCurrentWorkoutPage() {
   const completedExercises = currentWorkoutProgress?.completedExercises ?? 0;
   const totalExercises =
     currentWorkoutProgress?.totalExercises ?? sortedExercises.length;
+  const pendingExercises = Math.max(totalExercises - completedExercises, 0);
 
   const isWorkoutCompleted = totalExercises > 0 && progressPercentage === 100;
 
@@ -240,10 +241,34 @@ export function StudentCurrentWorkoutPage() {
     totalExercises,
   );
 
+  const workoutStatusLabel = getWorkoutStatusLabel(
+    progressPercentage,
+    totalExercises,
+  );
+
   function getExerciseProgress(workoutExerciseId: number) {
     return currentWorkoutProgress?.exercises.find(
       (exercise) => exercise.workoutExerciseId === workoutExerciseId,
     );
+  }
+
+  function getWorkoutStatusLabel(
+    progressPercentage: number,
+    totalExercises: number,
+  ) {
+    if (totalExercises === 0) {
+      return "Aguardando exercícios";
+    }
+
+    if (progressPercentage === 100) {
+      return "Concluído";
+    }
+
+    if (progressPercentage === 0) {
+      return "Não iniciado";
+    }
+
+    return "Em andamento";
   }
 
   function hasExerciseDetails(exercise: {
@@ -429,6 +454,52 @@ export function StudentCurrentWorkoutPage() {
             Ativo
           </span>
         </div>
+
+        <Card className="mt-5">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="rounded-2xl bg-[#FAF9F6] p-3">
+              <p className="text-xs font-semibold text-[#8A8378]">Total</p>
+
+              <p className="mt-1 text-lg font-bold text-[#1F1F1F]">
+                {totalExercises}
+              </p>
+
+              <p className="text-xs text-[#6F6A62]">exercícios</p>
+            </div>
+
+            <div className="rounded-2xl bg-[#FAF9F6] p-3">
+              <p className="text-xs font-semibold text-[#8A8378]">Concluídos</p>
+
+              <p className="mt-1 text-lg font-bold text-[#2F4F3E]">
+                {completedExercises}
+              </p>
+
+              <p className="text-xs text-[#6F6A62]">feitos</p>
+            </div>
+
+            <div className="rounded-2xl bg-[#FAF9F6] p-3">
+              <p className="text-xs font-semibold text-[#8A8378]">Pendentes</p>
+
+              <p className="mt-1 text-lg font-bold text-[#1F1F1F]">
+                {pendingExercises}
+              </p>
+
+              <p className="text-xs text-[#6F6A62]">restantes</p>
+            </div>
+
+            <div className="rounded-2xl bg-[#FAF9F6] p-3">
+              <p className="text-xs font-semibold text-[#8A8378]">Status</p>
+
+              <p className="mt-1 text-lg font-bold text-[#1F1F1F]">
+                {workoutStatusLabel}
+              </p>
+
+              <p className="text-xs text-[#6F6A62]">
+                {progressPercentage}% concluído
+              </p>
+            </div>
+          </div>
+        </Card>
 
         <Card className="mt-5">
           <div className="flex items-center justify-between text-sm">
