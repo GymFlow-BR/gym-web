@@ -716,7 +716,7 @@ export function StudentCurrentWorkoutPage() {
                   )}
 
                 {exerciseHasDetails && (
-                  <div className="mt-4 border-t border-[#EDEAE3] pt-4">
+                  <div className="mt-4 border-t border-white/10 pt-4">
                     <button
                       type="button"
                       onClick={() =>
@@ -754,12 +754,12 @@ export function StudentCurrentWorkoutPage() {
                         )}
 
                         {exercise.notes && (
-                          <div className="rounded-2xl bg-[#FAF9F6] p-3">
-                            <p className="text-xs font-semibold text-[#8A8378]">
+                          <div className="rounded-2xl border border-white/10 bg-[#1D2B23] p-3">
+                            <p className="text-xs font-semibold text-[#9CA89F]">
                               Observações
                             </p>
 
-                            <p className="mt-1 text-sm text-[#6F6A62]">
+                            <p className="mt-1 text-sm text-[#C9C3B8]">
                               {exercise.notes}
                             </p>
                           </div>
