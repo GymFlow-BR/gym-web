@@ -53,61 +53,63 @@ export function RestTimer({
   }
 
   return (
-    <div className="mt-4 rounded-2xl border border-[#E4DFD6] bg-[#FAF9F6] p-3">
+    <div className="mt-4">
       {isActive && remainingRestSeconds !== null ? (
-        <div className="space-y-4">
-          <div className="rounded-2xl border border-[#2F4F3E]/15 bg-[#FFFEFB] p-4 text-center">
-            <p className="text-xs font-semibold uppercase tracking-wide text-[#8A8378]">
-              {isPaused ? "Descanso pausado" : "Descanso em andamento"}
-            </p>
+        <div className="rounded-2xl border border-white/10 bg-[#111713] p-3">
+          <div className="space-y-4">
+            <div className="rounded-2xl border border-[#9FC5AE]/20 bg-[#16221B] p-4 text-center">
+              <p className="text-xs font-semibold uppercase tracking-wide text-[#9CA89F]">
+                {isPaused ? "Descanso pausado" : "Descanso em andamento"}
+              </p>
 
-            <p className="mt-2 text-4xl font-bold tracking-tight text-[#2F4F3E]">
-              {formatTimer(remainingRestSeconds)}
-            </p>
+              <p className="mt-2 text-4xl font-bold tracking-tight text-[#F6F4EF]">
+                {formatTimer(remainingRestSeconds)}
+              </p>
 
-            <p className="mt-1 text-xs text-[#6F6A62]">
-              {isPaused
-                ? "Retome quando estiver pronto para continuar a contagem."
-                : "Use esse tempo para se preparar para a próxima série."}
-            </p>
-          </div>
+              <p className="mt-1 text-xs text-[#C9C3B8]">
+                {isPaused
+                  ? "Retome quando estiver pronto para continuar a contagem."
+                  : "Use esse tempo para se preparar para a próxima série."}
+              </p>
+            </div>
 
-          <div className="grid grid-cols-2 gap-2">
-            {isPaused ? (
+            <div className="grid grid-cols-2 gap-2">
+              {isPaused ? (
+                <button
+                  type="button"
+                  onClick={onResume}
+                  className="rounded-full border border-[#9FC5AE]/30 bg-[#9FC5AE]/15 px-3 py-2 text-xs font-semibold text-[#D8F3E0] transition hover:bg-[#9FC5AE]/20"
+                >
+                  Retomar
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={onPause}
+                  className="rounded-full border border-white/10 bg-white/10 px-3 py-2 text-xs font-semibold text-[#F6F4EF] transition hover:bg-white/15"
+                >
+                  Pausar
+                </button>
+              )}
+
               <button
                 type="button"
-                onClick={onResume}
-                className="rounded-full border border-[#2F4F3E]/20 bg-[#2F4F3E]/10 px-3 py-2 text-xs font-semibold text-[#2F4F3E] transition hover:bg-[#2F4F3E]/15"
+                onClick={onCancel}
+                className="rounded-full border border-red-400/20 bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-200 transition hover:bg-red-500/15"
               >
-                Retomar
+                Cancelar
               </button>
-            ) : (
-              <button
-                type="button"
-                onClick={onPause}
-                className="rounded-full border border-[#E4DFD6] bg-[#FFFEFB] px-3 py-2 text-xs font-semibold text-[#2F4F3E] transition hover:bg-[#F3F0E8]"
-              >
-                Pausar
-              </button>
-            )}
-
-            <button
-              type="button"
-              onClick={onCancel}
-              className="rounded-full border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-100"
-            >
-              Cancelar
-            </button>
+            </div>
           </div>
         </div>
       ) : (
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center justify-between gap-3 border-t border-white/10 pt-4">
           <div>
-            <p className="text-xs font-semibold text-[#8A8378]">
+            <p className="text-xs font-semibold text-[#9CA89F]">
               Descanso recomendado
             </p>
 
-            <p className="mt-1 text-sm font-semibold text-[#1F1F1F]">
+            <p className="mt-1 text-sm font-semibold text-[#F6F4EF]">
               {formatRestTime(restTimeSeconds)}
             </p>
           </div>
@@ -115,7 +117,7 @@ export function RestTimer({
           <button
             type="button"
             onClick={onStart}
-            className="rounded-full border border-[#2F4F3E]/20 bg-[#2F4F3E]/10 px-3 py-2 text-xs font-semibold text-[#2F4F3E] transition hover:bg-[#2F4F3E]/15"
+            className="rounded-full border border-[#9FC5AE]/30 bg-[#9FC5AE]/10 px-3 py-2 text-xs font-semibold text-[#D8F3E0] transition hover:bg-[#9FC5AE]/15"
           >
             Iniciar descanso
           </button>

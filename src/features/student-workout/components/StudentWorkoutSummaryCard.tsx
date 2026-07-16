@@ -1,12 +1,10 @@
-import { Card } from '../../../components/ui/Card'
-
 type StudentWorkoutSummaryCardProps = {
-  totalExercises: number
-  completedExercises: number
-  pendingExercises: number
-  progressPercentage: number
-  statusLabel: string
-}
+  totalExercises: number;
+  completedExercises: number;
+  pendingExercises: number;
+  progressPercentage: number;
+  statusLabel: string;
+};
 
 export function StudentWorkoutSummaryCard({
   totalExercises,
@@ -16,50 +14,48 @@ export function StudentWorkoutSummaryCard({
   statusLabel,
 }: StudentWorkoutSummaryCardProps) {
   return (
-    <Card className="mt-5">
+    <div className="mt-5 rounded-2xl border border-white/10 bg-[#16221B] p-5 shadow-lg shadow-black/10">
       <div className="grid grid-cols-2 gap-3">
-        <div className="rounded-2xl bg-[#FAF9F6] p-3">
-          <p className="text-xs font-semibold text-[#8A8378]">Total</p>
+        <div className="rounded-2xl border border-white/10 bg-[#1D2B23] p-4">
+          <p className="text-xs font-semibold text-[#9CA89F]">Total</p>
 
-          <p className="mt-1 text-lg font-bold text-[#1F1F1F]">
+          <p className="mt-2 text-xl font-bold text-[#F6F4EF]">
             {totalExercises}
           </p>
 
-          <p className="text-xs text-[#6F6A62]">exercícios</p>
+          <p className="text-xs text-[#C9C3B8]">exercícios</p>
         </div>
 
-        <div className="rounded-2xl bg-[#FAF9F6] p-3">
-          <p className="text-xs font-semibold text-[#8A8378]">Concluídos</p>
+        <div className="rounded-2xl border border-white/10 bg-[#1D2B23] p-4">
+          <p className="text-xs font-semibold text-[#9CA89F]">Concluídos</p>
 
-          <p className="mt-1 text-lg font-bold text-[#2F4F3E]">
+          <p className="mt-2 text-xl font-bold text-[#9FC5AE]">
             {completedExercises}
           </p>
 
-          <p className="text-xs text-[#6F6A62]">feitos</p>
+          <p className="text-xs text-[#C9C3B8]">feitos</p>
         </div>
 
-        <div className="rounded-2xl bg-[#FAF9F6] p-3">
-          <p className="text-xs font-semibold text-[#8A8378]">Pendentes</p>
+        <div className="rounded-2xl border border-white/10 bg-[#1D2B23] p-4">
+          <p className="text-xs font-semibold text-[#9CA89F]">Pendentes</p>
 
-          <p className="mt-1 text-lg font-bold text-[#1F1F1F]">
+          <p className="mt-2 text-xl font-bold text-[#F6F4EF]">
             {pendingExercises}
           </p>
 
-          <p className="text-xs text-[#6F6A62]">restantes</p>
+          <p className="text-xs text-[#C9C3B8]">restantes</p>
         </div>
 
-        <div className="rounded-2xl bg-[#FAF9F6] p-3">
-          <p className="text-xs font-semibold text-[#8A8378]">Status</p>
+        <div className="rounded-2xl border border-white/10 bg-[#1D2B23] p-4">
+          <p className="text-xs font-semibold text-[#9CA89F]">Status</p>
 
-          <p className="mt-1 text-lg font-bold text-[#1F1F1F]">
-            {statusLabel}
-          </p>
+          <p className="mt-2 text-lg font-bold text-[#F6F4EF]">{statusLabel}</p>
 
-          <p className="text-xs text-[#6F6A62]">
+          <p className="text-xs text-[#C9C3B8]">
             {progressPercentage}% concluído
           </p>
         </div>
       </div>
-    </Card>
-  )
+    </div>
+  );
 }

@@ -366,7 +366,7 @@ export function StudentCurrentWorkoutPage() {
       <Card>
         <div className="space-y-4">
           <div>
-            <p className="text-sm font-semibold text-[#1F1F1F]">
+            <p className="text-sm font-semibold text-[#F6F4EF]">
               Carregando seu treino
             </p>
 
@@ -591,18 +591,18 @@ export function StudentCurrentWorkoutPage() {
               <div
                 key={exercise.workoutExerciseId}
                 className={[
-                  "rounded-2xl border p-4 text-[#1F1F1F] shadow-sm transition",
+                  "rounded-2xl border p-4 shadow-sm transition",
                   isCompleted
-                    ? "border-[#2F4F3E]/30 bg-[#2F4F3E]/10"
+                    ? "border-[#9FC5AE]/20 bg-[#101A14]/85 text-[#F6F4EF]"
                     : isNextPendingExercise
-                      ? "border-[#2F4F3E] bg-[#F3F0E8] shadow-md ring-2 ring-[#2F4F3E]/10"
-                      : "border-[#E4DFD6] bg-[#FFFEFB]",
+                      ? "border-[#9FC5AE]/50 bg-[#16221B] text-[#F6F4EF] shadow-md ring-2 ring-[#9FC5AE]/10"
+                      : "border-white/10 bg-[#16221B] text-[#F6F4EF]",
                 ].join(" ")}
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="text-sm font-semibold text-[#1F1F1F]">
+                      <p className="text-sm font-semibold text-[#F6F4EF]">
                         {exercise.exerciseOrder}. {exercise.exerciseName}
                       </p>
 
@@ -613,13 +613,13 @@ export function StudentCurrentWorkoutPage() {
                       )}
 
                       {isCompleted && (
-                        <span className="rounded-full bg-[#2F4F3E]/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#2F4F3E]">
+                        <span className="rounded-full border border-[#9FC5AE]/30 bg-[#9FC5AE]/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#D8F3E0]">
                           Concluído
                         </span>
                       )}
                     </div>
 
-                    <p className="mt-1 text-xs text-[#6F6A62]">
+                    <p className="mt-1 text-xs text-[#C9C3B8]">
                       {exercise.muscleGroup || "Grupo muscular não informado"} •{" "}
                       {exercise.equipmentName || "Sem equipamento"}
                     </p>
@@ -639,8 +639,8 @@ export function StudentCurrentWorkoutPage() {
                     className={[
                       "flex shrink-0 items-center justify-center rounded-full border px-3 py-1.5 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-60",
                       isCompleted
-                        ? "border-[#2F4F3E] bg-[#2F4F3E] text-white"
-                        : "border-[#B7B2A8] bg-[#FFFEFB] text-[#2F4F3E] hover:bg-[#F3F0E8]",
+                        ? "border-[#9FC5AE]/30 bg-[#2F4F3E] text-[#F6F4EF]"
+                        : "border-[#9FC5AE]/30 bg-[#9FC5AE]/10 text-[#D8F3E0] hover:bg-[#9FC5AE]/15",
                     ].join(" ")}
                     aria-label={
                       isUpdatingThisExercise
@@ -659,38 +659,38 @@ export function StudentCurrentWorkoutPage() {
                 </div>
 
                 <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
-                  <div className="rounded-2xl border border-[#EDEAE3] bg-[#FAF9F6] p-3">
-                    <p className="text-xs font-semibold text-[#8A8378]">
+                  <div className="rounded-2xl border border-white/10 bg-[#1D2B23] p-3">
+                    <p className="text-xs font-semibold text-[#9CA89F]">
                       Séries
                     </p>
-                    <p className="mt-1 text-base font-bold text-[#1F1F1F]">
+                    <p className="mt-1 text-base font-bold text-[#F6F4EF]">
                       {exercise.sets}
                     </p>
                   </div>
 
-                  <div className="rounded-2xl border border-[#EDEAE3] bg-[#FAF9F6] p-3">
-                    <p className="text-xs font-semibold text-[#8A8378]">
+                  <div className="rounded-2xl border border-white/10 bg-[#1D2B23] p-3">
+                    <p className="text-xs font-semibold text-[#9CA89F]">
                       Repetições
                     </p>
-                    <p className="mt-1 text-base font-bold text-[#1F1F1F]">
+                    <p className="mt-1 text-base font-bold text-[#F6F4EF]">
                       {exercise.reps}
                     </p>
                   </div>
 
-                  <div className="rounded-2xl border border-[#EDEAE3] bg-[#FAF9F6] p-3">
-                    <p className="text-xs font-semibold text-[#8A8378]">
+                  <div className="rounded-2xl border border-white/10 bg-[#1D2B23] p-3">
+                    <p className="text-xs font-semibold text-[#9CA89F]">
                       Carga
                     </p>
-                    <p className="mt-1 text-base font-bold text-[#1F1F1F]">
+                    <p className="mt-1 text-base font-bold text-[#F6F4EF]">
                       {formatRecommendedLoad(exercise.recommendedLoad)}
                     </p>
                   </div>
 
-                  <div className="rounded-2xl border border-[#EDEAE3] bg-[#FAF9F6] p-3">
-                    <p className="text-xs font-semibold text-[#8A8378]">
+                  <div className="rounded-2xl border border-white/10 bg-[#1D2B23] p-3">
+                    <p className="text-xs font-semibold text-[#9CA89F]">
                       Descanso
                     </p>
-                    <p className="mt-1 text-base font-bold text-[#1F1F1F]">
+                    <p className="mt-1 text-base font-bold text-[#F6F4EF]">
                       {formatRestTime(exercise.restTimeSeconds)}
                     </p>
                   </div>
@@ -722,20 +722,32 @@ export function StudentCurrentWorkoutPage() {
                       onClick={() =>
                         handleToggleExerciseDetails(exercise.workoutExerciseId)
                       }
-                      className="text-sm font-semibold text-[#2F4F3E]"
+                      className="inline-flex items-center gap-2 text-sm font-semibold text-[#F6F4EF]"
                     >
-                      {isExpanded ? "Ocultar detalhes" : "Ver detalhes"}
+                      <span>
+                        {isExpanded ? "Ocultar detalhes" : "Ver detalhes"}
+                      </span>
+
+                      <span
+                        className={[
+                          "text-xs transition-transform",
+                          isExpanded ? "rotate-180" : "rotate-0",
+                        ].join(" ")}
+                        aria-hidden="true"
+                      >
+                        ▼
+                      </span>
                     </button>
 
                     {isExpanded && (
                       <div className="mt-4 space-y-3">
                         {exercise.description && (
-                          <div className="rounded-2xl bg-[#FAF9F6] p-3">
-                            <p className="text-xs font-semibold text-[#8A8378]">
+                          <div className="rounded-2xl border border-white/10 bg-[#1D2B23] p-3">
+                            <p className="text-xs font-semibold text-[#9CA89F]">
                               Descrição
                             </p>
 
-                            <p className="mt-1 text-sm text-[#6F6A62]">
+                            <p className="mt-1 text-sm text-[#C9C3B8]">
                               {exercise.description}
                             </p>
                           </div>
@@ -760,7 +772,7 @@ export function StudentCurrentWorkoutPage() {
                                 href={exercise.imageUrl}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="rounded-full border border-[#E4DFD6] bg-[#FFFEFB] px-3 py-1 text-xs font-semibold text-[#2F4F3E]"
+                                className="rounded-full border border-[#9FC5AE]/30 bg-[#9FC5AE]/10 px-3 py-1 text-xs font-semibold text-[#D8F3E0] transition hover:bg-[#9FC5AE]/15"
                               >
                                 Ver imagem
                               </a>
@@ -771,7 +783,7 @@ export function StudentCurrentWorkoutPage() {
                                 href={exercise.videoUrl}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="rounded-full border border-[#E4DFD6] bg-[#FFFEFB] px-3 py-1 text-xs font-semibold text-[#2F4F3E]"
+                                className="rounded-full border border-[#9FC5AE]/30 bg-[#9FC5AE]/10 px-3 py-1 text-xs font-semibold text-[#D8F3E0] transition hover:bg-[#9FC5AE]/15"
                               >
                                 Ver vídeo
                               </a>
