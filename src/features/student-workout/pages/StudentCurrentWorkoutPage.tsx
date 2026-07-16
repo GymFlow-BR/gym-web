@@ -515,11 +515,12 @@ export function StudentCurrentWorkoutPage() {
           <Card className="mt-5">
             <div className="rounded-2xl border border-red-200 bg-red-50 p-4">
               <p className="text-sm font-semibold text-red-700">
-                Não foi possível atualizar o exercício.
+                Não foi possível salvar sua alteração.
               </p>
 
               <p className="mt-1 text-sm text-red-600">
-                Tente novamente em alguns instantes.
+                O exercício não foi marcado ou desmarcado. Verifique sua conexão
+                e tente novamente.
               </p>
             </div>
           </Card>
@@ -641,9 +642,11 @@ export function StudentCurrentWorkoutPage() {
                         : "border-[#B7B2A8] bg-[#FFFEFB] text-[#2F4F3E] hover:bg-[#F3F0E8]",
                     ].join(" ")}
                     aria-label={
-                      isCompleted
-                        ? "Desmarcar exercício como concluído"
-                        : "Marcar exercício como concluído"
+                      isUpdatingThisExercise
+                        ? "Salvando alteração do exercício"
+                        : isCompleted
+                          ? "Desmarcar exercício como concluído"
+                          : "Marcar exercício como concluído"
                     }
                   >
                     {isUpdatingThisExercise
