@@ -351,7 +351,7 @@ export function StudentCurrentWorkoutPage() {
 
     const timeoutId = window.setTimeout(() => {
       setRestFinishedExerciseName(null);
-    }, 6000);
+    }, 10000);
 
     return () => {
       window.clearTimeout(timeoutId);
@@ -591,22 +591,28 @@ export function StudentCurrentWorkoutPage() {
                 className={[
                   "rounded-2xl border p-4 text-[#1F1F1F] shadow-sm transition",
                   isCompleted
-                    ? "border-[#2F4F3E]/40 bg-[#2F4F3E]/10"
+                    ? "border-[#2F4F3E]/30 bg-[#2F4F3E]/10"
                     : isNextPendingExercise
-                      ? "border-[#2F4F3E] bg-[#F3F0E8] ring-2 ring-[#2F4F3E]/10"
+                      ? "border-[#2F4F3E] bg-[#F3F0E8] shadow-md ring-2 ring-[#2F4F3E]/10"
                       : "border-[#E4DFD6] bg-[#FFFEFB]",
                 ].join(" ")}
               >
                 <div className="flex items-start justify-between gap-4">
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="text-sm font-semibold">
+                      <p className="text-sm font-semibold text-[#1F1F1F]">
                         {exercise.exerciseOrder}. {exercise.exerciseName}
                       </p>
 
                       {isNextPendingExercise && (
                         <span className="rounded-full bg-[#2F4F3E] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
                           Próximo
+                        </span>
+                      )}
+
+                      {isCompleted && (
+                        <span className="rounded-full bg-[#2F4F3E]/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#2F4F3E]">
+                          Concluído
                         </span>
                       )}
                     </div>
@@ -629,10 +635,10 @@ export function StudentCurrentWorkoutPage() {
                       isUpdatingThisExercise || isCurrentWorkoutProgressError
                     }
                     className={[
-                      "flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-xs font-bold transition disabled:cursor-not-allowed disabled:opacity-60",
+                      "flex shrink-0 items-center justify-center rounded-full border px-3 py-1.5 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-60",
                       isCompleted
                         ? "border-[#2F4F3E] bg-[#2F4F3E] text-white"
-                        : "border-[#B7B2A8] text-[#6F6A62]",
+                        : "border-[#B7B2A8] bg-[#FFFEFB] text-[#2F4F3E] hover:bg-[#F3F0E8]",
                     ].join(" ")}
                     aria-label={
                       isCompleted
@@ -640,35 +646,47 @@ export function StudentCurrentWorkoutPage() {
                         : "Marcar exercício como concluído"
                     }
                   >
-                    {isUpdatingThisExercise ? "..." : isCompleted ? "✓" : ""}
+                    {isUpdatingThisExercise
+                      ? "Salvando..."
+                      : isCompleted
+                        ? "Feito"
+                        : "Marcar"}
                   </button>
                 </div>
 
                 <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
-                  <div className="rounded-2xl bg-[#FAF9F6] p-3">
-                    <p className="text-xs text-[#8A8378]">Séries</p>
-                    <p className="mt-1 font-semibold text-[#1F1F1F]">
+                  <div className="rounded-2xl border border-[#EDEAE3] bg-[#FAF9F6] p-3">
+                    <p className="text-xs font-semibold text-[#8A8378]">
+                      Séries
+                    </p>
+                    <p className="mt-1 text-base font-bold text-[#1F1F1F]">
                       {exercise.sets}
                     </p>
                   </div>
 
-                  <div className="rounded-2xl bg-[#FAF9F6] p-3">
-                    <p className="text-xs text-[#8A8378]">Repetições</p>
-                    <p className="mt-1 font-semibold text-[#1F1F1F]">
+                  <div className="rounded-2xl border border-[#EDEAE3] bg-[#FAF9F6] p-3">
+                    <p className="text-xs font-semibold text-[#8A8378]">
+                      Repetições
+                    </p>
+                    <p className="mt-1 text-base font-bold text-[#1F1F1F]">
                       {exercise.reps}
                     </p>
                   </div>
 
-                  <div className="rounded-2xl bg-[#FAF9F6] p-3">
-                    <p className="text-xs text-[#8A8378]">Carga</p>
-                    <p className="mt-1 font-semibold text-[#1F1F1F]">
+                  <div className="rounded-2xl border border-[#EDEAE3] bg-[#FAF9F6] p-3">
+                    <p className="text-xs font-semibold text-[#8A8378]">
+                      Carga
+                    </p>
+                    <p className="mt-1 text-base font-bold text-[#1F1F1F]">
                       {formatRecommendedLoad(exercise.recommendedLoad)}
                     </p>
                   </div>
 
-                  <div className="rounded-2xl bg-[#FAF9F6] p-3">
-                    <p className="text-xs text-[#8A8378]">Descanso</p>
-                    <p className="mt-1 font-semibold text-[#1F1F1F]">
+                  <div className="rounded-2xl border border-[#EDEAE3] bg-[#FAF9F6] p-3">
+                    <p className="text-xs font-semibold text-[#8A8378]">
+                      Descanso
+                    </p>
+                    <p className="mt-1 text-base font-bold text-[#1F1F1F]">
                       {formatRestTime(exercise.restTimeSeconds)}
                     </p>
                   </div>
