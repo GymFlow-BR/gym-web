@@ -288,6 +288,22 @@ export function StudentCurrentWorkoutPage() {
     );
   }
 
+  function getNextPendingWorkoutExerciseId() {
+    if (isWorkoutCompleted) {
+      return null;
+    }
+
+    const nextPendingExercise = sortedExercises.find((exercise) => {
+      const exerciseProgress = getExerciseProgress(exercise.workoutExerciseId);
+
+      return !exerciseProgress?.completed;
+    });
+
+    return nextPendingExercise?.workoutExerciseId ?? null;
+  }
+
+  const nextPendingWorkoutExerciseId = getNextPendingWorkoutExerciseId();
+
   useEffect(() => {
     if (remainingRestSeconds === null || isRestTimerPaused) {
       return;
@@ -566,6 +582,8 @@ export function StudentCurrentWorkoutPage() {
             const isRestActiveForThisExercise =
               activeRestWorkoutExerciseId === exercise.workoutExerciseId &&
               remainingRestSeconds !== null;
+            const isNextPendingExercise =
+              nextPendingWorkoutExerciseId === exercise.workoutExerciseId;
 
             return (
               <div
@@ -574,14 +592,24 @@ export function StudentCurrentWorkoutPage() {
                   "rounded-2xl border p-4 text-[#1F1F1F] shadow-sm transition",
                   isCompleted
                     ? "border-[#2F4F3E]/40 bg-[#2F4F3E]/10"
-                    : "border-[#E4DFD6] bg-[#FFFEFB]",
+                    : isNextPendingExercise
+                      ? "border-[#2F4F3E] bg-[#F3F0E8] ring-2 ring-[#2F4F3E]/10"
+                      : "border-[#E4DFD6] bg-[#FFFEFB]",
                 ].join(" ")}
               >
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <p className="text-sm font-semibold">
-                      {exercise.exerciseOrder}. {exercise.exerciseName}
-                    </p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="text-sm font-semibold">
+                        {exercise.exerciseOrder}. {exercise.exerciseName}
+                      </p>
+
+                      {isNextPendingExercise && (
+                        <span className="rounded-full bg-[#2F4F3E] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+                          Próximo
+                        </span>
+                      )}
+                    </div>
 
                     <p className="mt-1 text-xs text-[#6F6A62]">
                       {exercise.muscleGroup || "Grupo muscular não informado"} •{" "}
