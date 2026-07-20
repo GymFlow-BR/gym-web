@@ -1,75 +1,79 @@
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useEffect } from 'react'
-import { useForm } from 'react-hook-form'
-import { z } from 'zod'
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
-import { Button } from '../../../components/ui/Button'
-import { Card } from '../../../components/ui/Card'
-import { Input } from '../../../components/ui/Input'
-import { isApiError } from '../../../services/apiError'
-import { updateExercise } from '../services/exerciseService'
-import type { Exercise, UpdateExerciseRequest } from '../types/exercise'
+import { Button } from "../../../components/ui/Button";
+import { Input } from "../../../components/ui/Input";
+import { isApiError } from "../../../services/apiError";
+import { updateExercise } from "../services/exerciseService";
+import type { Exercise, UpdateExerciseRequest } from "../types/exercise";
 
 const optionalUrlSchema = z
   .string()
   .trim()
-  .max(500, 'A URL deve ter no máximo 500 caracteres.')
+  .max(500, "A URL deve ter no máximo 500 caracteres.")
   .optional()
-  .or(z.literal(''))
+  .or(z.literal(""))
   .refine((value) => {
     if (!value) {
-      return true
+      return true;
     }
 
     try {
-      new URL(value)
-      return true
+      new URL(value);
+      return true;
     } catch {
-      return false
+      return false;
     }
-  }, 'Informe uma URL válida.')
+  }, "Informe uma URL válida.");
 
 const editExerciseSchema = z.object({
   exerciseName: z
     .string()
     .trim()
-    .min(2, 'O nome deve ter pelo menos 2 caracteres.')
-    .max(120, 'O nome deve ter no máximo 120 caracteres.'),
+    .min(2, "O nome deve ter pelo menos 2 caracteres.")
+    .max(120, "O nome deve ter no máximo 120 caracteres."),
+
   muscleGroup: z
     .string()
     .trim()
-    .min(2, 'O grupo muscular deve ter pelo menos 2 caracteres.')
-    .max(80, 'O grupo muscular deve ter no máximo 80 caracteres.'),
+    .min(2, "O grupo muscular deve ter pelo menos 2 caracteres.")
+    .max(80, "O grupo muscular deve ter no máximo 80 caracteres."),
+
   equipmentName: z
     .string()
     .trim()
-    .min(2, 'O equipamento deve ter pelo menos 2 caracteres.')
-    .max(120, 'O equipamento deve ter no máximo 120 caracteres.'),
+    .min(2, "O equipamento deve ter pelo menos 2 caracteres.")
+    .max(120, "O equipamento deve ter no máximo 120 caracteres."),
+
   description: z
     .string()
     .trim()
-    .max(1000, 'A descrição deve ter no máximo 1000 caracteres.')
+    .max(1000, "A descrição deve ter no máximo 1000 caracteres.")
     .optional()
-    .or(z.literal('')),
-  imageUrl: optionalUrlSchema,
-  videoUrl: optionalUrlSchema,
-})
+    .or(z.literal("")),
 
-type EditExerciseFormData = z.infer<typeof editExerciseSchema>
+  imageUrl: optionalUrlSchema,
+
+  videoUrl: optionalUrlSchema,
+});
+
+type EditExerciseFormData = z.infer<typeof editExerciseSchema>;
 
 type EditExerciseFormProps = {
-  exercise: Exercise
-  onCancel: () => void
-  onSuccess: () => void
-}
+  exercise: Exercise;
+  onCancel: () => void;
+  onSuccess: () => void;
+};
 
 function normalizeOptionalValue(value?: string) {
-  if (!value || value.trim() === '') {
-    return undefined
+  if (!value || value.trim() === "") {
+    return undefined;
   }
 
-  return value.trim()
+  return value.trim();
 }
 
 function toUpdateExerciseRequest(
@@ -82,7 +86,7 @@ function toUpdateExerciseRequest(
     description: normalizeOptionalValue(data.description),
     imageUrl: normalizeOptionalValue(data.imageUrl),
     videoUrl: normalizeOptionalValue(data.videoUrl),
-  }
+  };
 }
 
 export function EditExerciseForm({
@@ -90,7 +94,7 @@ export function EditExerciseForm({
   onCancel,
   onSuccess,
 }: EditExerciseFormProps) {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   const {
     register,
@@ -103,138 +107,158 @@ export function EditExerciseForm({
       exerciseName: exercise.exerciseName,
       muscleGroup: exercise.muscleGroup,
       equipmentName: exercise.equipmentName,
-      description: exercise.description ?? '',
-      imageUrl: exercise.imageUrl ?? '',
-      videoUrl: exercise.videoUrl ?? '',
+      description: exercise.description ?? "",
+      imageUrl: exercise.imageUrl ?? "",
+      videoUrl: exercise.videoUrl ?? "",
     },
-  })
+  });
 
   useEffect(() => {
     reset({
       exerciseName: exercise.exerciseName,
       muscleGroup: exercise.muscleGroup,
       equipmentName: exercise.equipmentName,
-      description: exercise.description ?? '',
-      imageUrl: exercise.imageUrl ?? '',
-      videoUrl: exercise.videoUrl ?? '',
-    })
-  }, [exercise, reset])
+      description: exercise.description ?? "",
+      imageUrl: exercise.imageUrl ?? "",
+      videoUrl: exercise.videoUrl ?? "",
+    });
+  }, [exercise, reset]);
 
   const updateExerciseMutation = useMutation({
     mutationFn: (data: UpdateExerciseRequest) =>
       updateExercise(exercise.id, data),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['exercises'] })
-      onSuccess()
+      await queryClient.invalidateQueries({ queryKey: ["exercises"] });
+      onSuccess();
     },
-  })
+  });
 
   const errorMessage =
     isApiError(updateExerciseMutation.error) &&
     updateExerciseMutation.error.status === 403
-      ? 'Você não possui permissão para editar exercícios.'
-      : 'Não foi possível atualizar o exercício. Tente novamente.'
+      ? "Você não possui permissão para editar exercícios."
+      : "Não foi possível atualizar o exercício. Tente novamente.";
 
   function handleUpdateExercise(data: EditExerciseFormData) {
-    updateExerciseMutation.mutate(toUpdateExerciseRequest(data))
+    updateExerciseMutation.mutate(toUpdateExerciseRequest(data));
   }
 
   return (
-    <Card className="p-6">
-      <div>
-        <h2 className="text-lg font-semibold text-[#1F1F1F]">
+    <div className="overflow-hidden rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] shadow-sm">
+      <div className="border-b border-[#E4DFD6] p-5">
+        <p className="text-xs font-semibold uppercase tracking-wide text-[#8A8378]">
+          Biblioteca de exercícios
+        </p>
+
+        <h2 className="mt-2 text-lg font-semibold text-[#1F1F1F]">
           Editar exercício
         </h2>
 
-        <p className="mt-1 text-sm text-[#6F6A62]">
-          Atualize as informações do exercício selecionado.
+        <p className="mt-1 max-w-2xl text-sm text-[#6F6A62]">
+          Atualize os dados do exercício selecionado.
         </p>
       </div>
 
-      {updateExerciseMutation.isError && (
-        <div className="mt-5 rounded-2xl border border-red-200 bg-red-50 p-4">
-          <p className="text-sm font-semibold text-red-700">
-            Erro ao atualizar exercício.
-          </p>
-
-          <p className="mt-1 text-sm text-red-600">{errorMessage}</p>
-        </div>
-      )}
-
-      <form
-        className="mt-6 grid gap-4 lg:grid-cols-2"
-        onSubmit={handleSubmit(handleUpdateExercise)}
-      >
-        <Input
-          label="Nome do exercício"
-          placeholder="Ex: Supino reto"
-          error={errors.exerciseName?.message}
-          {...register('exerciseName')}
-        />
-
-        <Input
-          label="Grupo muscular"
-          placeholder="Ex: Peito"
-          error={errors.muscleGroup?.message}
-          {...register('muscleGroup')}
-        />
-
-        <Input
-          label="Equipamento"
-          placeholder="Ex: Barra"
-          error={errors.equipmentName?.message}
-          {...register('equipmentName')}
-        />
-
-        <Input
-          label="URL da imagem"
-          placeholder="https://exemplo.com/imagem.jpg"
-          error={errors.imageUrl?.message}
-          {...register('imageUrl')}
-        />
-
-        <Input
-          label="URL do vídeo"
-          placeholder="https://exemplo.com/video.mp4"
-          error={errors.videoUrl?.message}
-          {...register('videoUrl')}
-        />
-
-        <div className="lg:col-span-2">
-          <label className="mb-2 block text-sm font-medium text-[#1F1F1F]">
-            Descrição
-          </label>
-
-          <textarea
-            className="min-h-28 w-full rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] px-4 py-3 text-sm text-[#1F1F1F] outline-none transition placeholder:text-[#B7B2A8] focus:border-[#2F4F3E] focus:ring-2 focus:ring-[#2F4F3E]/10"
-            placeholder="Descreva brevemente a execução do exercício"
-            {...register('description')}
-          />
-
-          {errors.description?.message && (
-            <p className="mt-2 text-sm text-red-600">
-              {errors.description.message}
+      <div className="p-5">
+        {updateExerciseMutation.isError && (
+          <div className="mb-5 rounded-2xl border border-red-200 bg-red-50 p-4">
+            <p className="text-sm font-semibold text-red-700">
+              Erro ao atualizar exercício.
             </p>
-          )}
-        </div>
 
-        <div className="flex flex-col gap-3 sm:flex-row lg:col-span-2">
-          <Button type="submit" disabled={updateExerciseMutation.isPending}>
-            {updateExerciseMutation.isPending
-              ? 'Salvando...'
-              : 'Salvar alterações'}
-          </Button>
+            <p className="mt-1 text-sm text-red-600">{errorMessage}</p>
+          </div>
+        )}
 
-          <button
-            type="button"
-            onClick={onCancel}
-            disabled={updateExerciseMutation.isPending}
-            className="rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] px-5 py-3 text-sm font-semibold text-[#6F6A62] transition hover:border-[#2F4F3E] hover:text-[#2F4F3E] disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            Cancelar
-          </button>
-        </div>
-      </form>
-    </Card>
-  )
+        <form
+          className="grid gap-4 lg:grid-cols-12"
+          onSubmit={handleSubmit(handleUpdateExercise)}
+        >
+          <div className="lg:col-span-6">
+            <Input
+              label="Nome do exercício"
+              placeholder="Ex: Supino reto"
+              error={errors.exerciseName?.message}
+              {...register("exerciseName")}
+            />
+          </div>
+
+          <div className="lg:col-span-3">
+            <Input
+              label="Grupo muscular"
+              placeholder="Ex: Peito"
+              error={errors.muscleGroup?.message}
+              {...register("muscleGroup")}
+            />
+          </div>
+
+          <div className="lg:col-span-3">
+            <Input
+              label="Equipamento"
+              placeholder="Ex: Barra"
+              error={errors.equipmentName?.message}
+              {...register("equipmentName")}
+            />
+          </div>
+
+          <div className="lg:col-span-6">
+            <Input
+              label="URL da imagem"
+              placeholder="https://exemplo.com/imagem.jpg"
+              error={errors.imageUrl?.message}
+              {...register("imageUrl")}
+            />
+          </div>
+
+          <div className="lg:col-span-6">
+            <Input
+              label="URL do vídeo"
+              placeholder="https://exemplo.com/video.mp4"
+              error={errors.videoUrl?.message}
+              {...register("videoUrl")}
+            />
+          </div>
+
+          <div className="lg:col-span-8">
+            <label className="mb-2 block text-sm font-medium text-[#1F1F1F]">
+              Descrição
+            </label>
+
+            <textarea
+              className="min-h-28 w-full rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] px-4 py-3 text-sm text-[#1F1F1F] outline-none transition placeholder:text-[#B7B2A8] focus:border-[#2F4F3E] focus:ring-2 focus:ring-[#2F4F3E]/10"
+              placeholder="Descreva brevemente a execução do exercício"
+              {...register("description")}
+            />
+
+            {errors.description?.message && (
+              <p className="mt-2 text-sm text-red-600">
+                {errors.description.message}
+              </p>
+            )}
+          </div>
+
+          <div className="flex flex-col gap-3 sm:flex-row lg:col-span-4 lg:items-end lg:justify-end">
+            <Button
+              type="submit"
+              className="w-full sm:w-auto"
+              disabled={updateExerciseMutation.isPending}
+            >
+              {updateExerciseMutation.isPending
+                ? "Salvando..."
+                : "Salvar alterações"}
+            </Button>
+
+            <button
+              type="button"
+              onClick={onCancel}
+              disabled={updateExerciseMutation.isPending}
+              className="w-full rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] px-5 py-3 text-sm font-semibold text-[#6F6A62] transition hover:border-[#2F4F3E] hover:text-[#2F4F3E] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+            >
+              Cancelar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
 }
