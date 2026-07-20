@@ -121,14 +121,18 @@ export function WorkoutDetailsPage() {
           description="Não foi possível identificar o treino solicitado."
         />
 
-        <Card>
+        <div className="rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] p-5 shadow-sm">
+          <p className="text-sm text-[#6F6A62]">
+            O identificador informado na URL não corresponde a um treino válido.
+          </p>
+
           <Link
             to="/admin/workouts"
-            className="text-sm font-semibold text-[#2F4F3E]"
+            className="mt-4 inline-flex w-fit items-center gap-2 rounded-xl border border-[#D8D3CA] bg-[#FFFEFB] px-3 py-2 text-sm font-semibold text-[#2F4F3E] shadow-sm transition hover:border-[#2F4F3E] hover:bg-[#F6F4EF]"
           >
-            Voltar para treinos
+            ← Voltar para treinos
           </Link>
-        </Card>
+        </div>
       </div>
     );
   }
@@ -138,7 +142,7 @@ export function WorkoutDetailsPage() {
       <div>
         <Link
           to="/admin/workouts"
-          className="text-sm font-semibold text-[#2F4F3E]"
+          className="inline-flex w-fit items-center gap-2 rounded-xl border border-[#D8D3CA] bg-[#FFFEFB] px-3 py-2 text-sm font-semibold text-[#2F4F3E] shadow-sm transition hover:border-[#2F4F3E] hover:bg-[#F6F4EF]"
         >
           ← Voltar para treinos
         </Link>
@@ -150,11 +154,16 @@ export function WorkoutDetailsPage() {
       />
 
       {isLoading && (
-        <Card>
-          <p className="text-sm text-[#6F6A62]">
+        <div className="rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] p-5 shadow-sm">
+          <p className="text-sm font-semibold text-[#1F1F1F]">
             Carregando detalhes do treino...
           </p>
-        </Card>
+
+          <p className="mt-1 text-sm text-[#6F6A62]">
+            Estamos buscando as informações do treino e os exercícios
+            vinculados.
+          </p>
+        </div>
       )}
 
       {isError && (
@@ -179,37 +188,48 @@ export function WorkoutDetailsPage() {
       )}
 
       {!isLoading && !isError && workout && (
-        <Card>
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] p-5 shadow-sm">
+          <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-[#1F1F1F]">
+              <p className="text-xs font-semibold uppercase tracking-wide text-[#8A8378]">
+                Treino modelo
+              </p>
+
+              <h2 className="mt-2 text-xl font-bold text-[#1F1F1F]">
                 {workout.workoutName}
               </h2>
 
               <p className="mt-1 text-sm text-[#6F6A62]">
-                Treino modelo criado para reutilização com alunos.
+                Configure os exercícios que farão parte deste treino antes de
+                atribuí-lo aos alunos.
               </p>
             </div>
 
-            <div className="flex flex-wrap gap-3">
-              <div>
-                <p className="text-xs text-[#8A8378]">Professor ID</p>
-                <p className="mt-1 font-semibold text-[#1F1F1F]">
+            <div className="grid gap-3 sm:grid-cols-2 md:flex md:items-center">
+              <div className="rounded-2xl border border-[#EDEAE3] bg-[#FAF9F6] px-4 py-3">
+                <p className="text-xs font-semibold text-[#8A8378]">
+                  Professor ID
+                </p>
+                <p className="mt-1 text-sm font-bold text-[#1F1F1F]">
                   {workout.teacherId}
                 </p>
               </div>
 
-              <span
-                className={[
-                  "h-fit w-fit rounded-full px-3 py-1 text-xs font-semibold",
-                  getWorkoutStatusClassName(workout.status),
-                ].join(" ")}
-              >
-                {formatWorkoutStatus(workout.status)}
-              </span>
+              <div className="rounded-2xl border border-[#EDEAE3] bg-[#FAF9F6] px-4 py-3">
+                <p className="text-xs font-semibold text-[#8A8378]">Status</p>
+
+                <span
+                  className={[
+                    "mt-1 inline-flex w-fit rounded-full px-3 py-1 text-xs font-semibold",
+                    getWorkoutStatusClassName(workout.status),
+                  ].join(" ")}
+                >
+                  {formatWorkoutStatus(workout.status)}
+                </span>
+              </div>
             </div>
           </div>
-        </Card>
+        </div>
       )}
 
       {!isLoading && !isError && workout && (
@@ -234,35 +254,46 @@ export function WorkoutDetailsPage() {
         !isError &&
         workoutExercises &&
         workoutExercises.length === 0 && (
-          <Card>
-            <div className="text-center">
-              <h2 className="text-lg font-semibold text-[#1F1F1F]">
-                Nenhum exercício vinculado
-              </h2>
+          <div className="rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] p-6 text-center shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[#8A8378]">
+              Exercícios do treino
+            </p>
 
-              <p className="mt-2 text-sm text-[#6F6A62]">
-                Quando exercícios forem adicionados a este treino, eles
-                aparecerão nesta lista.
-              </p>
-            </div>
-          </Card>
+            <h2 className="mt-2 text-lg font-semibold text-[#1F1F1F]">
+              Nenhum exercício vinculado
+            </h2>
+
+            <p className="mx-auto mt-2 max-w-xl text-sm text-[#6F6A62]">
+              Use o formulário acima para adicionar exercícios a este treino
+              modelo. Depois disso, eles aparecerão organizados por ordem de
+              execução.
+            </p>
+          </div>
         )}
 
       {!isLoading &&
         !isError &&
         workoutExercises &&
         workoutExercises.length > 0 && (
-          <Card className="p-0">
+          <div className="overflow-hidden rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] shadow-sm">
             <div className="border-b border-[#E4DFD6] p-5">
-              <h2 className="text-lg font-semibold text-[#1F1F1F]">
-                Exercícios do treino
-              </h2>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h2 className="text-lg font-semibold text-[#1F1F1F]">
+                    Exercícios do treino
+                  </h2>
 
-              <p className="mt-1 text-sm text-[#6F6A62]">
-                Mostrando {workoutExercises.length} exercício
-                {workoutExercises.length === 1 ? "" : "s"} vinculado
-                {workoutExercises.length === 1 ? "" : "s"}.
-              </p>
+                  <p className="mt-1 text-sm text-[#6F6A62]">
+                    Mostrando {workoutExercises.length} exercício
+                    {workoutExercises.length === 1 ? "" : "s"} vinculado
+                    {workoutExercises.length === 1 ? "" : "s"}.
+                  </p>
+                </div>
+
+                <span className="w-fit rounded-full bg-[#2F4F3E]/10 px-3 py-1 text-xs font-semibold text-[#2F4F3E]">
+                  Ordenado por execução
+                </span>
+              </div>
             </div>
 
             <div className="divide-y divide-[#EDEAE3]">
@@ -273,7 +304,7 @@ export function WorkoutDetailsPage() {
                 .map((workoutExercise) => (
                   <div
                     key={workoutExercise.id}
-                    className="grid gap-4 p-5 transition hover:bg-[#FAF9F6] lg:grid-cols-[auto_1fr_auto_auto_auto_auto] lg:items-center"
+                    className="grid gap-4 p-5 transition hover:bg-[#FAF9F6] lg:grid-cols-[auto_1fr_76px_96px_88px_96px_auto] lg:items-center lg:gap-4"
                   >
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#2F4F3E]/10 text-sm font-bold text-[#2F4F3E]">
                       {workoutExercise.exerciseOrder}
@@ -296,34 +327,34 @@ export function WorkoutDetailsPage() {
                       )}
                     </div>
 
-                    <div>
+                    <div className="text-left">
                       <p className="text-xs text-[#8A8378]">Séries</p>
-
                       <p className="mt-1 font-semibold text-[#1F1F1F]">
                         {workoutExercise.sets}
                       </p>
                     </div>
 
-                    <div>
+                    <div className="text-left">
                       <p className="text-xs text-[#8A8378]">Repetições</p>
-
                       <p className="mt-1 font-semibold text-[#1F1F1F]">
                         {workoutExercise.reps}
                       </p>
                     </div>
 
-                    <div>
-                      <p className="text-xs text-[#8A8378]">Descanso</p>
-
+                    <div className="text-left">
+                      <p className="text-xs text-[#8A8378]">Carga</p>
                       <p className="mt-1 font-semibold text-[#1F1F1F]">
-                        {formatRestTime(workoutExercise.restTimeSeconds)}
-                      </p>
-
-                      <p className="mt-1 text-xs text-[#8A8378]">
-                        Carga:{" "}
                         {formatRecommendedLoad(workoutExercise.recommendedLoad)}
                       </p>
                     </div>
+
+                    <div className="text-left">
+                      <p className="text-xs text-[#8A8378]">Descanso</p>
+                      <p className="mt-1 font-semibold text-[#1F1F1F]">
+                        {formatRestTime(workoutExercise.restTimeSeconds)}
+                      </p>
+                    </div>
+
                     <div className="lg:text-right">
                       <button
                         type="button"
@@ -341,7 +372,7 @@ export function WorkoutDetailsPage() {
                   </div>
                 ))}
             </div>
-          </Card>
+          </div>
         )}
     </div>
   );
