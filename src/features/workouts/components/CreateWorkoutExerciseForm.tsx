@@ -4,7 +4,6 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { Button } from "../../../components/ui/Button";
-import { Card } from "../../../components/ui/Card";
 import { Input } from "../../../components/ui/Input";
 import { isApiError } from "../../../services/apiError";
 import { getExercises } from "../../exercises/services/exerciseService";
@@ -183,157 +182,177 @@ export function CreateWorkoutExerciseForm({
   }
 
   return (
-    <Card className="p-6">
-      <div>
-        <h2 className="text-lg font-semibold text-[#1F1F1F]">
+    <div className="overflow-hidden rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] shadow-sm">
+      <div className="border-b border-[#E4DFD6] p-5">
+        <p className="text-xs font-semibold uppercase tracking-wide text-[#8A8378]">
+          Montagem do treino
+        </p>
+
+        <h2 className="mt-2 text-lg font-semibold text-[#1F1F1F]">
           Adicionar exercício
         </h2>
 
-        <p className="mt-1 text-sm text-[#6F6A62]">
-          Escolha um exercício cadastrado e defina como ele será executado neste
-          treino.
+        <p className="mt-1 max-w-2xl text-sm text-[#6F6A62]">
+          Escolha um exercício cadastrado e defina ordem, séries, repetições,
+          carga, descanso e observações para este treino modelo.
         </p>
       </div>
 
-      {createWorkoutExerciseMutation.isSuccess && (
-        <div className="mt-5 rounded-2xl border border-green-200 bg-green-50 p-4">
-          <p className="text-sm font-medium text-green-700">
-            Exercício adicionado ao treino com sucesso.
-          </p>
-        </div>
-      )}
-
-      {createWorkoutExerciseMutation.isError && (
-        <div className="mt-5 rounded-2xl border border-red-200 bg-red-50 p-4">
-          <p className="text-sm font-semibold text-red-700">
-            Erro ao adicionar exercício.
-          </p>
-
-          <p className="mt-1 text-sm text-red-600">{errorMessage}</p>
-        </div>
-      )}
-
-      {isExercisesError && (
-        <div className="mt-5 rounded-2xl border border-red-200 bg-red-50 p-4">
-          <p className="text-sm font-semibold text-red-700">
-            Não foi possível carregar os exercícios.
-          </p>
-
-          <p className="mt-1 text-sm text-red-600">
-            Verifique se a API está rodando e se existem exercícios cadastrados.
-          </p>
-        </div>
-      )}
-
-      <form
-        className="mt-6 grid gap-4 lg:grid-cols-2"
-        onSubmit={handleSubmit(handleCreateWorkoutExercise)}
-      >
-        <div>
-          <label className="mb-2 block text-sm font-medium text-[#1F1F1F]">
-            Exercício
-          </label>
-
-          <select
-            className="h-12 w-full rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] px-4 text-sm text-[#1F1F1F] outline-none transition focus:border-[#2F4F3E] focus:ring-2 focus:ring-[#2F4F3E]/10"
-            disabled={isLoadingExercises || isExercisesError}
-            {...register("exerciseId")}
-          >
-            <option value="">
-              {isLoadingExercises
-                ? "Carregando exercícios..."
-                : "Selecione um exercício"}
-            </option>
-
-            {exercises?.map((exercise) => (
-              <option key={exercise.id} value={exercise.id}>
-                {exercise.exerciseName} — {exercise.muscleGroup}
-              </option>
-            ))}
-          </select>
-
-          {errors.exerciseId?.message && (
-            <p className="mt-2 text-sm text-red-600">
-              {errors.exerciseId.message}
+      <div className="p-5">
+        {createWorkoutExerciseMutation.isSuccess && (
+          <div className="mb-5 rounded-2xl border border-green-200 bg-green-50 p-4">
+            <p className="text-sm font-medium text-green-700">
+              Exercício adicionado ao treino com sucesso.
             </p>
-          )}
-        </div>
+          </div>
+        )}
 
-        <Input
-          label="Ordem"
-          type="number"
-          min={1}
-          placeholder="Ex: 1"
-          error={errors.exerciseOrder?.message}
-          {...register("exerciseOrder")}
-        />
+        {createWorkoutExerciseMutation.isError && (
+          <div className="mb-5 rounded-2xl border border-red-200 bg-red-50 p-4">
+            <p className="text-sm font-semibold text-red-700">
+              Erro ao adicionar exercício.
+            </p>
 
-        <Input
-          label="Séries"
-          type="number"
-          min={1}
-          placeholder="Ex: 3"
-          error={errors.sets?.message}
-          {...register("sets")}
-        />
+            <p className="mt-1 text-sm text-red-600">{errorMessage}</p>
+          </div>
+        )}
 
-        <Input
-          label="Repetições"
-          placeholder="Ex: 8-12"
-          error={errors.reps?.message}
-          {...register("reps")}
-        />
+        {isExercisesError && (
+          <div className="mb-5 rounded-2xl border border-red-200 bg-red-50 p-4">
+            <p className="text-sm font-semibold text-red-700">
+              Não foi possível carregar os exercícios.
+            </p>
 
-        <Input
-          label="Carga recomendada"
-          type="number"
-          min={0}
-          step="0.01"
-          placeholder="Ex: 40"
-          error={errors.recommendedLoad?.message}
-          {...register("recommendedLoad")}
-        />
+            <p className="mt-1 text-sm text-red-600">
+              Verifique se a API está rodando e se existem exercícios
+              cadastrados.
+            </p>
+          </div>
+        )}
 
-        <Input
-          label="Descanso em segundos"
-          type="number"
-          min={0}
-          placeholder="Ex: 90"
-          error={errors.restTimeSeconds?.message}
-          {...register("restTimeSeconds")}
-        />
+        <form
+          className="grid gap-4 lg:grid-cols-12"
+          onSubmit={handleSubmit(handleCreateWorkoutExercise)}
+        >
+          <div className="lg:col-span-6">
+            <label className="mb-2 block text-sm font-medium text-[#1F1F1F]">
+              Exercício
+            </label>
 
-        <div className="lg:col-span-2">
-          <label className="mb-2 block text-sm font-medium text-[#1F1F1F]">
-            Observações
-          </label>
+            <select
+              className="h-12 w-full rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] px-4 text-sm text-[#1F1F1F] outline-none transition focus:border-[#2F4F3E] focus:ring-2 focus:ring-[#2F4F3E]/10"
+              disabled={isLoadingExercises || isExercisesError}
+              {...register("exerciseId")}
+            >
+              <option value="">
+                {isLoadingExercises
+                  ? "Carregando exercícios..."
+                  : "Selecione um exercício"}
+              </option>
 
-          <textarea
-            className="min-h-24 w-full rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] px-4 py-3 text-sm text-[#1F1F1F] outline-none transition placeholder:text-[#B7B2A8] focus:border-[#2F4F3E] focus:ring-2 focus:ring-[#2F4F3E]/10"
-            placeholder="Ex: Controlar a descida e manter amplitude completa"
-            {...register("notes")}
-          />
+              {exercises?.map((exercise) => (
+                <option key={exercise.id} value={exercise.id}>
+                  {exercise.exerciseName} — {exercise.muscleGroup}
+                </option>
+              ))}
+            </select>
 
-          {errors.notes?.message && (
-            <p className="mt-2 text-sm text-red-600">{errors.notes.message}</p>
-          )}
-        </div>
+            {errors.exerciseId?.message && (
+              <p className="mt-2 text-sm text-red-600">
+                {errors.exerciseId.message}
+              </p>
+            )}
+          </div>
 
-        <div className="lg:col-span-2">
-          <Button
-            type="submit"
-            disabled={
-              createWorkoutExerciseMutation.isPending ||
-              isLoadingExercises ||
-              isExercisesError
-            }
-          >
-            {createWorkoutExerciseMutation.isPending
-              ? "Adicionando..."
-              : "Adicionar exercício ao treino"}
-          </Button>
-        </div>
-      </form>
-    </Card>
+          <div className="lg:col-span-2">
+            <Input
+              label="Ordem"
+              type="number"
+              min={1}
+              placeholder="Ex: 1"
+              error={errors.exerciseOrder?.message}
+              {...register("exerciseOrder")}
+            />
+          </div>
+
+          <div className="lg:col-span-2">
+            <Input
+              label="Séries"
+              type="number"
+              min={1}
+              placeholder="Ex: 3"
+              error={errors.sets?.message}
+              {...register("sets")}
+            />
+          </div>
+
+          <div className="lg:col-span-2">
+            <Input
+              label="Repetições"
+              placeholder="Ex: 8-12"
+              error={errors.reps?.message}
+              {...register("reps")}
+            />
+          </div>
+
+          <div className="lg:col-span-3">
+            <Input
+              label="Carga recomendada"
+              type="number"
+              min={0}
+              step="0.01"
+              placeholder="Ex: 40"
+              error={errors.recommendedLoad?.message}
+              {...register("recommendedLoad")}
+            />
+          </div>
+
+          <div className="lg:col-span-3">
+            <Input
+              label="Descanso em segundos"
+              type="number"
+              min={0}
+              placeholder="Ex: 90"
+              error={errors.restTimeSeconds?.message}
+              {...register("restTimeSeconds")}
+            />
+          </div>
+
+          <div className="lg:col-span-6">
+            <label className="mb-2 block text-sm font-medium text-[#1F1F1F]">
+              Observações
+            </label>
+
+            <textarea
+              className="min-h-24 w-full rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] px-4 py-3 text-sm text-[#1F1F1F] outline-none transition placeholder:text-[#B7B2A8] focus:border-[#2F4F3E] focus:ring-2 focus:ring-[#2F4F3E]/10"
+              placeholder="Ex: Controlar a descida e manter amplitude completa"
+              {...register("notes")}
+            />
+
+            {errors.notes?.message && (
+              <p className="mt-2 text-sm text-red-600">
+                {errors.notes.message}
+              </p>
+            )}
+          </div>
+
+          <div className="flex items-end lg:col-span-6 lg:justify-end">
+            <Button
+              type="submit"
+              className="w-full lg:w-auto"
+              disabled={
+                createWorkoutExerciseMutation.isPending ||
+                isLoadingExercises ||
+                isExercisesError
+              }
+            >
+              {createWorkoutExerciseMutation.isPending
+                ? "Adicionando..."
+                : "Adicionar exercício ao treino"}
+            </Button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 }
