@@ -1,18 +1,19 @@
-import { Route, Routes } from 'react-router'
+import { Route, Routes } from "react-router";
 
-import { AdminLayout } from '../components/layout/AdminLayout'
-import { StudentLayout } from '../components/layout/StudentLayout'
-import { AdminDashboardPage } from '../features/admin/pages/AdminDashboardPage'
-import { ProtectedRoute } from '../features/auth/components/ProtectedRoute'
-import { PublicOnlyRoute } from '../features/auth/components/PublicOnlyRoute'
-import { LoginPage } from '../features/auth/pages/LoginPage'
-import { AdminExercisesPage } from '../features/exercises/pages/AdminExercisesPage'
-import { NotFoundPage } from '../features/not-found/pages/NotFoundPage'
-import { AdminStudentsPage } from '../features/students/pages/AdminStudentsPage'
-import { StudentCurrentWorkoutPage } from '../features/student-workout/pages/StudentCurrentWorkoutPage'
-import { AdminWorkoutsPage } from '../features/workouts/pages/AdminWorkoutsPage'
-import { WorkoutDetailsPage } from '../features/workouts/pages/WorkoutDetailsPage'
-import { AppEntryRoute } from '../features/auth/components/AppEntryRoute'
+import { AdminLayout } from "../components/layout/AdminLayout";
+import { StudentLayout } from "../components/layout/StudentLayout";
+import { AdminDashboardPage } from "../features/admin/pages/AdminDashboardPage";
+import { ProtectedRoute } from "../features/auth/components/ProtectedRoute";
+import { PublicOnlyRoute } from "../features/auth/components/PublicOnlyRoute";
+import { LoginPage } from "../features/auth/pages/LoginPage";
+import { AdminExercisesPage } from "../features/exercises/pages/AdminExercisesPage";
+import { NotFoundPage } from "../features/not-found/pages/NotFoundPage";
+import { AdminStudentsPage } from "../features/students/pages/AdminStudentsPage";
+import { StudentCurrentWorkoutPage } from "../features/student-workout/pages/StudentCurrentWorkoutPage";
+import { AdminWorkoutsPage } from "../features/workouts/pages/AdminWorkoutsPage";
+import { WorkoutDetailsPage } from "../features/workouts/pages/WorkoutDetailsPage";
+import { AppEntryRoute } from "../features/auth/components/AppEntryRoute";
+import { StudentDetailsPage } from "../features/students/pages/StudentDetailsPage";
 
 export function AppRouter() {
   return (
@@ -31,7 +32,7 @@ export function AppRouter() {
       <Route
         path="/admin"
         element={
-          <ProtectedRoute allowedRoles={['ADMIN', 'TEACHER']}>
+          <ProtectedRoute allowedRoles={["ADMIN", "TEACHER"]}>
             <AdminLayout>
               <AdminDashboardPage />
             </AdminLayout>
@@ -42,7 +43,7 @@ export function AppRouter() {
       <Route
         path="/admin/workouts"
         element={
-          <ProtectedRoute allowedRoles={['ADMIN', 'TEACHER']}>
+          <ProtectedRoute allowedRoles={["ADMIN", "TEACHER"]}>
             <AdminLayout>
               <AdminWorkoutsPage />
             </AdminLayout>
@@ -53,7 +54,7 @@ export function AppRouter() {
       <Route
         path="/admin/workouts/:workoutId"
         element={
-          <ProtectedRoute allowedRoles={['ADMIN', 'TEACHER']}>
+          <ProtectedRoute allowedRoles={["ADMIN", "TEACHER"]}>
             <AdminLayout>
               <WorkoutDetailsPage />
             </AdminLayout>
@@ -64,7 +65,7 @@ export function AppRouter() {
       <Route
         path="/admin/exercises"
         element={
-          <ProtectedRoute allowedRoles={['ADMIN', 'TEACHER']}>
+          <ProtectedRoute allowedRoles={["ADMIN", "TEACHER"]}>
             <AdminLayout>
               <AdminExercisesPage />
             </AdminLayout>
@@ -75,7 +76,7 @@ export function AppRouter() {
       <Route
         path="/admin/students"
         element={
-          <ProtectedRoute allowedRoles={['ADMIN', 'TEACHER']}>
+          <ProtectedRoute allowedRoles={["ADMIN", "TEACHER"]}>
             <AdminLayout>
               <AdminStudentsPage />
             </AdminLayout>
@@ -84,9 +85,20 @@ export function AppRouter() {
       />
 
       <Route
+        path="/admin/students/:studentId"
+        element={
+          <ProtectedRoute allowedRoles={["ADMIN", "TEACHER"]}>
+            <AdminLayout>
+              <StudentDetailsPage />
+            </AdminLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
         path="/student/current-workout"
         element={
-          <ProtectedRoute allowedRoles={['STUDENT']}>
+          <ProtectedRoute allowedRoles={["STUDENT"]}>
             <StudentLayout>
               <StudentCurrentWorkoutPage />
             </StudentLayout>
@@ -96,5 +108,5 @@ export function AppRouter() {
 
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
-  )
+  );
 }
