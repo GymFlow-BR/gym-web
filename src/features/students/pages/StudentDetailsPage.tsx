@@ -16,12 +16,8 @@ function formatDate(value: string) {
   }).format(new Date(value));
 }
 
-function getWorkoutEmptyMessage(error: unknown) {
-  if (isApiError(error) && error.status === 404) {
-    return "Este aluno ainda não possui um treino atual atribuído.";
-  }
-
-  return "Não foi possível carregar o treino atual do aluno.";
+function isCurrentWorkoutNotFound(error: unknown) {
+  return isApiError(error) && error.status === 404;
 }
 
 export function StudentDetailsPage() {
@@ -200,16 +196,32 @@ export function StudentDetailsPage() {
             </div>
           )}
 
-          {!isLoading && currentWorkoutQuery.isError && (
-            <div className="rounded-2xl border border-dashed border-[#D8D2C8] bg-[#FAF9F6] p-6 text-center">
-              <p className="text-sm font-semibold text-[#1F1F1F]">
-                Nenhum treino atual
-              </p>
-              <p className="mt-1 text-sm text-[#6F6A62]">
-                {getWorkoutEmptyMessage(currentWorkoutQuery.error)}
-              </p>
-            </div>
-          )}
+          {!isLoading &&
+            currentWorkoutQuery.isError &&
+            isCurrentWorkoutNotFound(currentWorkoutQuery.error) && (
+              <div className="rounded-2xl border border-dashed border-[#D8D2C8] bg-[#FAF9F6] p-6 text-center">
+                <p className="text-sm font-semibold text-[#1F1F1F]">
+                  Nenhum treino atual
+                </p>
+                <p className="mt-1 text-sm text-[#6F6A62]">
+                  Este aluno ainda não possui um treino atual atribuído.
+                </p>
+              </div>
+            )}
+
+          {!isLoading &&
+            currentWorkoutQuery.isError &&
+            !isCurrentWorkoutNotFound(currentWorkoutQuery.error) && (
+              <div className="rounded-2xl border border-red-200 bg-red-50 p-4">
+                <p className="text-sm font-semibold text-red-700">
+                  Erro ao carregar treino.
+                </p>
+                <p className="mt-1 text-sm text-red-600">
+                  Não foi possível carregar o treino atual do aluno. Tente
+                  novamente.
+                </p>
+              </div>
+            )}
 
           {!isLoading && currentWorkoutQuery.data && (
             <div className="space-y-5">
