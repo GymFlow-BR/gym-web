@@ -356,7 +356,7 @@ export function AdminStudentsPage() {
 
               <div className="flex flex-col gap-3 border-t border-[#E4DFD6] pt-5 sm:flex-row sm:items-center sm:justify-between lg:col-span-2">
                 <p className="text-sm text-[#6F6A62]">
-                  Esse usuario será criado como <strong>ALUNO</strong> na sua
+                  O acesso será criado para um <strong>aluno</strong> da sua
                   organização.
                 </p>
 
