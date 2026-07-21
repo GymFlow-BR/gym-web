@@ -419,16 +419,19 @@ export function AdminStudentsPage() {
 
             {!isLoading && !hasLoadError && hasStudents && (
               <div className="overflow-hidden rounded-2xl border border-[#E4DFD6]">
-                <div className="grid bg-[#FAF9F6] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-[#8A8378] sm:grid-cols-[1fr_180px]">
+                <div className="grid bg-[#FAF9F6] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-[#8A8378] md:grid-cols-[minmax(0,1fr)_160px_160px] md:items-center">
                   <span>Aluno</span>
-                  <span className="hidden sm:block">Status</span>
+                  <span className="hidden md:block text-center">Status</span>
+                  <span className="hidden md:block text-right">
+                    Treino atual
+                  </span>
                 </div>
 
                 <div className="divide-y divide-[#E4DFD6]">
                   {students.map((student) => (
                     <div
                       key={student.id}
-                      className="grid gap-2 px-4 py-4 sm:grid-cols-[1fr_180px] sm:items-center"
+                      className="grid gap-3 px-4 py-4 md:grid-cols-[minmax(0,1fr)_160px_160px] md:items-center"
                     >
                       <div>
                         <Link
@@ -441,9 +444,13 @@ export function AdminStudentsPage() {
                         <p className="mt-1 text-sm text-[#6F6A62]">
                           {student.email}
                         </p>
+
+                        <p className="mt-2 text-xs text-[#8A8378] md:hidden">
+                          Acesse os detalhes para visualizar o treino atual.
+                        </p>
                       </div>
 
-                      <div>
+                      <div className="md:flex md:justify-center">
                         <span
                           className={
                             student.active
@@ -453,6 +460,15 @@ export function AdminStudentsPage() {
                         >
                           {student.active ? "Ativo" : "Inativo"}
                         </span>
+                      </div>
+
+                      <div className="flex md:justify-end">
+                        <Link
+                          to={`/admin/students/${student.id}`}
+                          className="inline-flex h-10 items-center justify-center rounded-2xl bg-[#2F4F3E] px-4 text-sm font-semibold text-white transition hover:bg-[#243D30]"
+                        >
+                          Ver detalhes
+                        </Link>
                       </div>
                     </div>
                   ))}
