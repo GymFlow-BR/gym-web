@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -46,6 +46,8 @@ type AssignWorkoutFormData = z.infer<typeof assignWorkoutSchema>;
 export function AdminStudentsPage() {
   const queryClient = useQueryClient();
   const authenticatedUserQuery = useAuthenticatedUser();
+  const [isTemporaryPasswordVisible, setIsTemporaryPasswordVisible] =
+    useState(false);
 
   const organizationId = authenticatedUserQuery.data?.organizationId;
 
@@ -110,6 +112,8 @@ export function AdminStudentsPage() {
         email: "",
         password: "",
       });
+
+      setIsTemporaryPasswordVisible(false);
     },
   });
 
@@ -196,7 +200,7 @@ export function AdminStudentsPage() {
       }
 
       if (assignWorkoutMutation.error.status === 409) {
-        return "Este treino já está atribuído para o aluno selecionado.";
+        return "Este aluno já possui esse treino atribuído. Escolha outro treino ou outro aluno.";
       }
 
       if (assignWorkoutMutation.error.status === 400) {
@@ -214,7 +218,7 @@ export function AdminStudentsPage() {
         description="Gerencie os alunos vinculados à sua academia ou assessoria."
       />
 
-      <div className="grid gap-6 xl:grid-cols-[1fr_380px]">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px] xl:items-start">
         <div className="space-y-6">
           <Card>
             <div className="mb-5 flex flex-col gap-1">
@@ -226,8 +230,9 @@ export function AdminStudentsPage() {
                 Cadastrar aluno
               </h2>
 
-              <p className="text-sm text-[#6F6A62]">
-                Crie um acesso inicial para o aluno da sua organização.
+              <p className="max-w-2xl text-sm text-[#6F6A62]">
+                Crie um acesso provisório para o aluno. Depois do cadastro, ele
+                aparecerá na lista e poderá receber um treino modelo.
               </p>
             </div>
 
@@ -254,7 +259,7 @@ export function AdminStudentsPage() {
             )}
 
             <form
-              className="grid gap-4 lg:grid-cols-[1fr_1fr_180px] lg:items-start"
+              className="grid gap-4 lg:grid-cols-2"
               onSubmit={handleSubmitCreateStudent(handleCreateStudent)}
             >
               <div>
@@ -306,32 +311,55 @@ export function AdminStudentsPage() {
                 )}
               </div>
 
-              <div>
+              <div className="lg:col-span-2">
                 <label
                   htmlFor="studentPassword"
                   className="mb-2 block text-sm font-medium text-[#1F1F1F]"
                 >
-                  Senha inicial
+                  Senha provisória
                 </label>
 
-                <input
-                  id="studentPassword"
-                  type="password"
-                  autoComplete="new-password"
-                  placeholder="Mín. 6 caracteres"
-                  className="h-12 w-full rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] px-4 text-sm text-[#1F1F1F] outline-none transition placeholder:text-[#B7B2A8] focus:border-[#2F4F3E] focus:ring-2 focus:ring-[#2F4F3E]/10 disabled:cursor-not-allowed disabled:bg-[#F3F0E8] disabled:text-[#8A8378]"
-                  disabled={createStudentMutation.isPending}
-                  {...registerCreateStudent("password")}
-                />
+                <div className="flex h-12 overflow-hidden rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] transition focus-within:border-[#2F4F3E] focus-within:ring-2 focus-within:ring-[#2F4F3E]/10">
+                  <input
+                    id="studentPassword"
+                    type={isTemporaryPasswordVisible ? "text" : "password"}
+                    autoComplete="new-password"
+                    placeholder="Mín. 6 caracteres"
+                    className="h-full min-w-0 flex-1 bg-transparent px-4 text-sm text-[#1F1F1F] outline-none placeholder:text-[#B7B2A8] disabled:cursor-not-allowed disabled:bg-[#F3F0E8] disabled:text-[#8A8378]"
+                    disabled={createStudentMutation.isPending}
+                    {...registerCreateStudent("password")}
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setIsTemporaryPasswordVisible((current) => !current)
+                    }
+                    disabled={createStudentMutation.isPending}
+                    className="h-full border-l border-[#E4DFD6] px-4 text-sm font-semibold text-[#2F4F3E] transition hover:bg-[#F3F0E8] disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {isTemporaryPasswordVisible ? "Ocultar" : "Mostrar"}
+                  </button>
+                </div>
 
                 {createStudentErrors.password && (
                   <p className="mt-2 text-sm text-red-600">
                     {createStudentErrors.password.message}
                   </p>
                 )}
+
+                <p className="mt-2 text-xs text-[#8A8378]">
+                  Use uma senha provisória simples de comunicar ao aluno. Ele
+                  poderá alterá-la em uma etapa futura do produto.
+                </p>
               </div>
 
-              <div className="lg:col-span-3">
+              <div className="flex flex-col gap-3 border-t border-[#E4DFD6] pt-5 sm:flex-row sm:items-center sm:justify-between lg:col-span-2">
+                <p className="text-sm text-[#6F6A62]">
+                  Esse usuario será criado como <strong>ALUNO</strong> na sua
+                  organização.
+                </p>
+
                 <button
                   type="submit"
                   disabled={!organizationId || createStudentMutation.isPending}
