@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { NavLink, useNavigate } from "react-router";
 
 import { logout } from "../../features/auth/services/authService";
+import { SkipLink } from "./SkipLink";
 
 type StudentLayoutProps = {
   children: ReactNode;
@@ -32,6 +33,8 @@ export function StudentLayout({ children }: StudentLayoutProps) {
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,_#1F3A2D_0%,_#111713_42%,_#0D100E_100%)] pb-24 text-[#F6F4EF]">
+      <SkipLink />
+
       <header className="border-b border-white/10 bg-[#111713]/85 px-5 py-5 backdrop-blur">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-4">
           <div>
@@ -46,6 +49,7 @@ export function StudentLayout({ children }: StudentLayoutProps) {
             type="button"
             onClick={handleLogout}
             disabled={logoutMutation.isPending}
+            aria-busy={logoutMutation.isPending}
             className="rounded-xl border border-white/10 bg-white/10 px-3 py-2 text-xs font-semibold text-[#E8E4D8] transition hover:border-[#9FC5AE] hover:text-[#9FC5AE] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {logoutMutation.isPending ? "Saindo..." : "Sair"}
@@ -53,9 +57,18 @@ export function StudentLayout({ children }: StudentLayoutProps) {
         </div>
       </header>
 
-      <main className="mx-auto max-w-3xl px-5 py-6">{children}</main>
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className="mx-auto max-w-3xl px-5 py-6 focus:outline-none"
+      >
+        {children}
+      </main>
 
-      <nav className="fixed bottom-0 left-0 right-0 border-t border-white/10 bg-[#111713]/95 px-4 py-3 backdrop-blur">
+      <nav
+        aria-label="Navegação principal"
+        className="fixed bottom-0 left-0 right-0 border-t border-white/10 bg-[#111713]/95 px-4 py-3 backdrop-blur"
+      >
         <div className="mx-auto grid max-w-3xl grid-cols-3 gap-2">
           {navItems.map((item) => (
             <NavLink

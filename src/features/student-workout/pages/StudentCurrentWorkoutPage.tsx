@@ -338,7 +338,10 @@ export function StudentCurrentWorkoutPage() {
 
   if (isLoading) {
     return (
-      <div className="rounded-2xl border border-white/10 bg-[#16221B] p-5 shadow-lg shadow-black/10">
+      <div
+        role="status"
+        className="rounded-2xl border border-white/10 bg-[#16221B] p-5 shadow-lg shadow-black/10"
+      >
         <div className="space-y-4">
           <div>
             <p className="text-sm font-semibold text-[#F6F4EF]">
@@ -363,7 +366,7 @@ export function StudentCurrentWorkoutPage() {
   if (isAuthenticatedUserError) {
     return (
       <Card>
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-4">
+        <div role="alert" className="rounded-2xl border border-red-200 bg-red-50 p-4">
           <p className="text-sm font-semibold text-red-700">
             Não foi possível identificar o aluno autenticado.
           </p>
@@ -479,7 +482,10 @@ export function StudentCurrentWorkoutPage() {
         )}
 
         {hasToggleExerciseError && (
-          <div className="mt-5 rounded-2xl border border-red-400/20 bg-red-500/10 p-4 shadow-lg shadow-black/10">
+          <div
+            role="alert"
+            className="mt-5 rounded-2xl border border-red-400/20 bg-red-500/10 p-4 shadow-lg shadow-black/10"
+          >
             <p className="text-sm font-semibold text-red-200">
               Não foi possível salvar sua alteração.
             </p>

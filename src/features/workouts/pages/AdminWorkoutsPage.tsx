@@ -246,7 +246,10 @@ export function AdminWorkoutsPage() {
       )}
 
       {deactivateWorkoutMutation.isError && (
-        <div className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4">
+        <div
+          role="alert"
+          className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4"
+        >
           <p className="text-sm font-semibold text-red-700">
             Erro ao inativar treino.
           </p>
@@ -298,13 +301,16 @@ export function AdminWorkoutsPage() {
         )}
 
         {isLoading && (
-          <p className="p-6 text-sm text-gray-500">
+          <p role="status" className="p-6 text-sm text-gray-500">
             Carregando treinos cadastrados...
           </p>
         )}
 
         {isError && (
-          <div className="m-4 rounded-xl border border-red-200 bg-red-50 p-4">
+          <div
+            role="alert"
+            className="m-4 rounded-xl border border-red-200 bg-red-50 p-4"
+          >
             <p className="text-sm font-semibold text-red-700">
               Não foi possível carregar os treinos.
             </p>

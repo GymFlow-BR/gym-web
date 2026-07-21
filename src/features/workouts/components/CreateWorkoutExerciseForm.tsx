@@ -208,7 +208,10 @@ export function CreateWorkoutExerciseForm({
         )}
 
         {createWorkoutExerciseMutation.isError && (
-          <div className="mb-5 rounded-2xl border border-red-200 bg-red-50 p-4">
+          <div
+            role="alert"
+            className="mb-5 rounded-2xl border border-red-200 bg-red-50 p-4"
+          >
             <p className="text-sm font-semibold text-red-700">
               Erro ao adicionar exercício.
             </p>
@@ -218,7 +221,10 @@ export function CreateWorkoutExerciseForm({
         )}
 
         {isExercisesError && (
-          <div className="mb-5 rounded-2xl border border-red-200 bg-red-50 p-4">
+          <div
+            role="alert"
+            className="mb-5 rounded-2xl border border-red-200 bg-red-50 p-4"
+          >
             <p className="text-sm font-semibold text-red-700">
               Não foi possível carregar os exercícios.
             </p>
@@ -235,11 +241,19 @@ export function CreateWorkoutExerciseForm({
           onSubmit={handleSubmit(handleCreateWorkoutExercise)}
         >
           <div className="lg:col-span-6">
-            <label className="mb-2 block text-sm font-medium text-[#1F1F1F]">
+            <label
+              htmlFor="workout-exercise-select"
+              className="mb-2 block text-sm font-medium text-[#1F1F1F]"
+            >
               Exercício
             </label>
 
             <select
+              id="workout-exercise-select"
+              aria-invalid={errors.exerciseId ? true : undefined}
+              aria-describedby={
+                errors.exerciseId ? "workout-exercise-error" : undefined
+              }
               className="h-12 w-full rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] px-4 text-sm text-[#1F1F1F] outline-none transition focus:border-[#2F4F3E] focus:ring-2 focus:ring-[#2F4F3E]/10"
               disabled={isLoadingExercises || isExercisesError}
               {...register("exerciseId")}
@@ -258,7 +272,10 @@ export function CreateWorkoutExerciseForm({
             </select>
 
             {errors.exerciseId?.message && (
-              <p className="mt-2 text-sm text-red-600">
+              <p
+                id="workout-exercise-error"
+                className="mt-2 text-sm text-red-600"
+              >
                 {errors.exerciseId.message}
               </p>
             )}
@@ -319,18 +336,29 @@ export function CreateWorkoutExerciseForm({
           </div>
 
           <div className="lg:col-span-6">
-            <label className="mb-2 block text-sm font-medium text-[#1F1F1F]">
+            <label
+              htmlFor="workout-exercise-notes"
+              className="mb-2 block text-sm font-medium text-[#1F1F1F]"
+            >
               Observações
             </label>
 
             <textarea
+              id="workout-exercise-notes"
+              aria-invalid={errors.notes ? true : undefined}
+              aria-describedby={
+                errors.notes ? "workout-exercise-notes-error" : undefined
+              }
               className="min-h-24 w-full rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] px-4 py-3 text-sm text-[#1F1F1F] outline-none transition placeholder:text-[#B7B2A8] focus:border-[#2F4F3E] focus:ring-2 focus:ring-[#2F4F3E]/10"
               placeholder="Ex: Controlar a descida e manter amplitude completa"
               {...register("notes")}
             />
 
             {errors.notes?.message && (
-              <p className="mt-2 text-sm text-red-600">
+              <p
+                id="workout-exercise-notes-error"
+                className="mt-2 text-sm text-red-600"
+              >
                 {errors.notes.message}
               </p>
             )}

@@ -98,7 +98,10 @@ export function StudentDetailsPage() {
           </div>
 
           {studentsQuery.isLoading && (
-            <div className="rounded-2xl border border-[#E4DFD6] bg-[#FAF9F6] p-4">
+            <div
+              role="status"
+              className="rounded-2xl border border-[#E4DFD6] bg-[#FAF9F6] p-4"
+            >
               <p className="text-sm text-[#6F6A62]">
                 Carregando dados do aluno...
               </p>
@@ -106,7 +109,10 @@ export function StudentDetailsPage() {
           )}
 
           {studentsQuery.isError && (
-            <div className="rounded-2xl border border-red-200 bg-red-50 p-4">
+            <div
+              role="alert"
+              className="rounded-2xl border border-red-200 bg-red-50 p-4"
+            >
               <p className="text-sm font-semibold text-red-700">
                 Erro ao carregar aluno.
               </p>
@@ -189,7 +195,10 @@ export function StudentDetailsPage() {
           </div>
 
           {isLoading && (
-            <div className="rounded-2xl border border-[#E4DFD6] bg-[#FAF9F6] p-4">
+            <div
+              role="status"
+              className="rounded-2xl border border-[#E4DFD6] bg-[#FAF9F6] p-4"
+            >
               <p className="text-sm text-[#6F6A62]">
                 Carregando treino atual...
               </p>
@@ -212,7 +221,10 @@ export function StudentDetailsPage() {
           {!isLoading &&
             currentWorkoutQuery.isError &&
             !isCurrentWorkoutNotFound(currentWorkoutQuery.error) && (
-              <div className="rounded-2xl border border-red-200 bg-red-50 p-4">
+              <div
+                role="alert"
+                className="rounded-2xl border border-red-200 bg-red-50 p-4"
+              >
                 <p className="text-sm font-semibold text-red-700">
                   Erro ao carregar treino.
                 </p>

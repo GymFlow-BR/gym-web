@@ -154,7 +154,10 @@ export function WorkoutDetailsPage() {
       />
 
       {isLoading && (
-        <div className="rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] p-5 shadow-sm">
+        <div
+          role="status"
+          className="rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] p-5 shadow-sm"
+        >
           <p className="text-sm font-semibold text-[#1F1F1F]">
             Carregando detalhes do treino...
           </p>
@@ -168,7 +171,7 @@ export function WorkoutDetailsPage() {
 
       {isError && (
         <Card>
-          <div className="rounded-2xl border border-red-200 bg-red-50 p-4">
+          <div role="alert" className="rounded-2xl border border-red-200 bg-red-50 p-4">
             <p className="font-semibold text-red-700">
               Não foi possível carregar os detalhes do treino.
             </p>
@@ -238,7 +241,7 @@ export function WorkoutDetailsPage() {
 
       {removeWorkoutExerciseMutation.isError && (
         <Card>
-          <div className="rounded-2xl border border-red-200 bg-red-50 p-4">
+          <div role="alert" className="rounded-2xl border border-red-200 bg-red-50 p-4">
             <p className="text-sm font-semibold text-red-700">
               Erro ao remover exercício.
             </p>

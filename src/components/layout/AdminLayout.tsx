@@ -5,6 +5,7 @@ import { NavLink, useNavigate } from 'react-router'
 import { useAuthenticatedUser } from '../../features/auth/hooks/useAuthenticatedUser'
 import { logout } from '../../features/auth/services/authService'
 import type { UserRole } from '../../features/auth/types/auth'
+import { SkipLink } from './SkipLink'
 
 type AdminLayoutProps = {
   children: ReactNode
@@ -13,6 +14,7 @@ type AdminLayoutProps = {
 function LogoMark({ className = '' }: { className?: string }) {
   return (
     <span
+      aria-hidden="true"
       className={`flex items-center justify-center rounded-xl bg-gradient-to-br from-[#22C55E] to-[#0F3D31] ${className}`}
     >
       <svg viewBox="0 0 24 24" fill="none" className="h-[64%] w-[64%]">
@@ -183,12 +185,14 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900">
+      <SkipLink />
+
       <aside className="fixed hidden h-screen w-64 flex-col bg-gradient-to-b from-[#0B2A24] to-[#123D32] px-4 py-6 lg:flex">
         <div className="px-2">
           <span className="text-xl font-bold text-white">GymFlow</span>
         </div>
 
-        <nav className="mt-8 flex-1 space-y-1">
+        <nav aria-label="Navegação principal" className="mt-8 flex-1 space-y-1">
           {navItems.map((item) => (
             <NavLink
               key={item.to}
@@ -203,7 +207,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                 ].join(' ')
               }
             >
-              <item.icon className="h-5 w-5 shrink-0" />
+              <item.icon aria-hidden="true" className="h-5 w-5 shrink-0" />
               {item.label}
             </NavLink>
           ))}
@@ -211,7 +215,10 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
         <div className="border-t border-white/10 pt-4">
           <div className="flex items-center gap-3 px-2">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-sm font-semibold text-white">
+            <span
+              aria-hidden="true"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-sm font-semibold text-white"
+            >
               {user ? getInitials(user.name) : '...'}
             </span>
 
@@ -229,6 +236,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             type="button"
             onClick={handleLogout}
             disabled={logoutMutation.isPending}
+            aria-busy={logoutMutation.isPending}
             className="mt-4 w-full rounded-xl border border-white/15 px-4 py-2.5 text-sm font-semibold text-white/80 transition hover:border-white/30 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
           >
             {logoutMutation.isPending ? 'Saindo...' : 'Sair'}
@@ -248,13 +256,17 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               type="button"
               onClick={handleLogout}
               disabled={logoutMutation.isPending}
+              aria-busy={logoutMutation.isPending}
               className="rounded-xl border border-white/15 px-3 py-2 text-xs font-semibold text-white/80 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {logoutMutation.isPending ? 'Saindo...' : 'Sair'}
             </button>
           </div>
 
-          <nav className="mt-4 flex gap-2 overflow-x-auto">
+          <nav
+            aria-label="Navegação principal"
+            className="mt-4 flex gap-2 overflow-x-auto"
+          >
             {navItems.map((item) => (
               <NavLink
                 key={item.to}
@@ -269,14 +281,20 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                   ].join(' ')
                 }
               >
-                <item.icon className="h-4 w-4" />
+                <item.icon aria-hidden="true" className="h-4 w-4" />
                 {item.label}
               </NavLink>
             ))}
           </nav>
         </header>
 
-        <main className="px-5 py-6 lg:px-8 lg:py-8">{children}</main>
+        <main
+          id="main-content"
+          tabIndex={-1}
+          className="px-5 py-6 focus:outline-none lg:px-8 lg:py-8"
+        >
+          {children}
+        </main>
       </div>
     </div>
   )

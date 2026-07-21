@@ -1,1 +1,20 @@
 @import "tailwindcss";
+
+/*
+ * Link "pular para o conteúdo" (acessibilidade).
+ * Fica fora da tela e desliza para dentro ao receber foco por teclado.
+ * Posicionamento em CSS próprio para não depender da geração de
+ * utilitários do Tailwind (translate baseado em variável não sobrescreve
+ * de forma confiável no estado :focus).
+ */
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -4rem;
+  z-index: 50;
+  transition: top 150ms ease;
+}
+
+.skip-link:focus {
+  top: 1rem;
+}

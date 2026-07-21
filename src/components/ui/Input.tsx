@@ -12,9 +12,17 @@ export function Input({
   helperText,
   id,
   className = '',
+  'aria-describedby': ariaDescribedBy,
   ...props
 }: InputProps) {
   const inputId = id ?? props.name
+  const errorId = inputId ? `${inputId}-error` : undefined
+  const helperId = inputId ? `${inputId}-helper` : undefined
+
+  const describedBy =
+    [ariaDescribedBy, error ? errorId : undefined, !error && helperText ? helperId : undefined]
+      .filter(Boolean)
+      .join(' ') || undefined
 
   return (
     <div className="w-full">
@@ -29,6 +37,8 @@ export function Input({
 
       <input
         id={inputId}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={describedBy}
         className={[
           'w-full rounded-xl border bg-[#FFFEFB] px-4 py-3 text-sm text-[#1F1F1F] outline-none transition placeholder:text-[#9A948A]',
           error
@@ -39,10 +49,16 @@ export function Input({
         {...props}
       />
 
-      {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
+      {error && (
+        <p id={errorId} role="alert" className="mt-2 text-sm text-red-500">
+          {error}
+        </p>
+      )}
 
       {!error && helperText && (
-        <p className="mt-2 text-sm text-[#7A746B]">{helperText}</p>
+        <p id={helperId} className="mt-2 text-sm text-[#7A746B]">
+          {helperText}
+        </p>
       )}
     </div>
   )

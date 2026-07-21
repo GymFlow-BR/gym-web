@@ -72,7 +72,10 @@ export function AdminExercisesPage() {
       )}
 
       {deactivateExerciseMutation.isError && (
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-4 shadow-sm">
+        <div
+          role="alert"
+          className="rounded-2xl border border-red-200 bg-red-50 p-4 shadow-sm"
+        >
           <p className="text-sm font-semibold text-red-700">
             Erro ao inativar exercício.
           </p>
@@ -82,7 +85,10 @@ export function AdminExercisesPage() {
       )}
 
       {isLoading && (
-        <div className="rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] p-5 shadow-sm">
+        <div
+          role="status"
+          className="rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] p-5 shadow-sm"
+        >
           <p className="text-sm font-semibold text-[#1F1F1F]">
             Carregando exercícios cadastrados...
           </p>
@@ -95,7 +101,10 @@ export function AdminExercisesPage() {
       )}
 
       {isError && (
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-5 shadow-sm">
+        <div
+          role="alert"
+          className="rounded-2xl border border-red-200 bg-red-50 p-5 shadow-sm"
+        >
           <p className="font-semibold text-red-700">
             Não foi possível carregar os exercícios.
           </p>

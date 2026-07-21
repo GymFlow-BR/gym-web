@@ -101,7 +101,10 @@ export function EditWorkoutForm({
 
       <div className="p-5">
         {updateWorkoutMutation.isError && (
-          <div className="mb-5 rounded-2xl border border-red-200 bg-red-50 p-4">
+          <div
+            role="alert"
+            className="mb-5 rounded-2xl border border-red-200 bg-red-50 p-4"
+          >
             <p className="text-sm font-semibold text-red-700">
               Erro ao atualizar treino.
             </p>

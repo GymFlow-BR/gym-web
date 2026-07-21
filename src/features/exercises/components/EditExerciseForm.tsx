@@ -161,7 +161,10 @@ export function EditExerciseForm({
 
       <div className="p-5">
         {updateExerciseMutation.isError && (
-          <div className="mb-5 rounded-2xl border border-red-200 bg-red-50 p-4">
+          <div
+            role="alert"
+            className="mb-5 rounded-2xl border border-red-200 bg-red-50 p-4"
+          >
             <p className="text-sm font-semibold text-red-700">
               Erro ao atualizar exercício.
             </p>
@@ -220,18 +223,29 @@ export function EditExerciseForm({
           </div>
 
           <div className="lg:col-span-8">
-            <label className="mb-2 block text-sm font-medium text-[#1F1F1F]">
+            <label
+              htmlFor="edit-description"
+              className="mb-2 block text-sm font-medium text-[#1F1F1F]"
+            >
               Descrição
             </label>
 
             <textarea
+              id="edit-description"
+              aria-invalid={errors.description ? true : undefined}
+              aria-describedby={
+                errors.description ? "edit-description-error" : undefined
+              }
               className="min-h-28 w-full rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] px-4 py-3 text-sm text-[#1F1F1F] outline-none transition placeholder:text-[#B7B2A8] focus:border-[#2F4F3E] focus:ring-2 focus:ring-[#2F4F3E]/10"
               placeholder="Descreva brevemente a execução do exercício"
               {...register("description")}
             />
 
             {errors.description?.message && (
-              <p className="mt-2 text-sm text-red-600">
+              <p
+                id="edit-description-error"
+                className="mt-2 text-sm text-red-600"
+              >
                 {errors.description.message}
               </p>
             )}

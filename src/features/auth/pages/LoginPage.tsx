@@ -229,7 +229,10 @@ export function LoginPage() {
           </p>
 
           {loginMutation.isError && (
-            <div className="mt-5 rounded-xl border border-red-200 bg-red-50 p-3">
+            <div
+              role="alert"
+              className="mt-5 rounded-xl border border-red-200 bg-red-50 p-3"
+            >
               <p className="text-sm text-red-600">{loginErrorMessage}</p>
             </div>
           )}

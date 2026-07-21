@@ -249,7 +249,10 @@ export function AdminStudentsPage() {
             )}
 
             {createStudentMutation.isError && (
-              <div className="mb-5 rounded-2xl border border-red-200 bg-red-50 p-4">
+              <div
+                role="alert"
+                className="mb-5 rounded-2xl border border-red-200 bg-red-50 p-4"
+              >
                 <p className="text-sm font-semibold text-red-700">
                   Erro ao cadastrar aluno.
                 </p>
@@ -390,13 +393,19 @@ export function AdminStudentsPage() {
             </div>
 
             {isLoading && (
-              <div className="rounded-2xl border border-[#E4DFD6] bg-[#FAF9F6] p-4">
+              <div
+                role="status"
+                className="rounded-2xl border border-[#E4DFD6] bg-[#FAF9F6] p-4"
+              >
                 <p className="text-sm text-[#6F6A62]">Carregando alunos...</p>
               </div>
             )}
 
             {hasLoadError && (
-              <div className="rounded-2xl border border-red-200 bg-red-50 p-4">
+              <div
+                role="alert"
+                className="rounded-2xl border border-red-200 bg-red-50 p-4"
+              >
                 <p className="text-sm font-semibold text-red-700">
                   Erro ao carregar alunos.
                 </p>
@@ -503,7 +512,10 @@ export function AdminStudentsPage() {
           )}
 
           {assignWorkoutMutation.isError && (
-            <div className="mb-5 rounded-2xl border border-red-200 bg-red-50 p-4">
+            <div
+              role="alert"
+              className="mb-5 rounded-2xl border border-red-200 bg-red-50 p-4"
+            >
               <p className="text-sm font-semibold text-red-700">
                 Erro ao atribuir treino.
               </p>
