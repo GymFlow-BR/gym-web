@@ -422,9 +422,7 @@ export function AdminStudentsPage() {
                 <div className="grid bg-[#FAF9F6] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-[#8A8378] md:grid-cols-[minmax(0,1fr)_160px_160px] md:items-center">
                   <span>Aluno</span>
                   <span className="hidden md:block text-center">Status</span>
-                  <span className="hidden md:block text-right">
-                    Treino atual
-                  </span>
+                  <span className="hidden text-right md:block">Detalhes</span>
                 </div>
 
                 <div className="divide-y divide-[#E4DFD6]">
