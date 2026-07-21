@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { Link } from "react-router";
 
 import { PageHeader } from "../../../components/layout/PageHeader";
 import { Card } from "../../../components/ui/Card";
@@ -430,9 +431,13 @@ export function AdminStudentsPage() {
                       className="grid gap-2 px-4 py-4 sm:grid-cols-[1fr_180px] sm:items-center"
                     >
                       <div>
-                        <p className="font-medium text-[#1F1F1F]">
+                        <Link
+                          to={`/admin/students/${student.id}`}
+                          className="font-medium text-[#1F1F1F] transition hover:text-[#2F4F3E] hover:underline"
+                        >
                           {student.name}
-                        </p>
+                        </Link>
+
                         <p className="mt-1 text-sm text-[#6F6A62]">
                           {student.email}
                         </p>
