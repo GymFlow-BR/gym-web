@@ -1,12 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { Link, useParams } from "react-router";
 
 import { PageHeader } from "../../../components/layout/PageHeader";
 import { Card } from "../../../components/ui/Card";
 import { isApiError } from "../../../services/apiError";
-import { getStudentCurrentWorkout } from "../../student-workout/services/studentWorkoutService";
-import { getStudentsByOrganization } from "../services/studentService";
 import { useAuthenticatedUser } from "../../auth/hooks/useAuthenticatedUser";
+import { getStudentCurrentWorkout } from "../../student-workout/services/studentWorkoutService";
+import { EditStudentForm } from "../components/EditStudentForm";
+import { getStudentsByOrganization } from "../services/studentService";
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("pt-BR", {
@@ -23,6 +25,11 @@ function isCurrentWorkoutNotFound(error: unknown) {
 export function StudentDetailsPage() {
   const params = useParams();
   const authenticatedUserQuery = useAuthenticatedUser();
+
+  const [isEditingStudent, setIsEditingStudent] = useState(false);
+  const [studentSuccessMessage, setStudentSuccessMessage] = useState<
+    string | null
+  >(null);
 
   const studentId = Number(params.studentId);
   const organizationId = authenticatedUserQuery.data?.organizationId;
@@ -83,19 +90,42 @@ export function StudentDetailsPage() {
 
       <div className="grid gap-6 xl:grid-cols-[360px_minmax(0,1fr)] xl:items-start">
         <Card>
-          <div className="mb-5 flex flex-col gap-1">
-            <p className="text-xs font-semibold uppercase tracking-wide text-[#8A8378]">
-              Dados básicos
-            </p>
+          <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex flex-col gap-1">
+              <p className="text-xs font-semibold uppercase tracking-wide text-[#8A8378]">
+                Dados básicos
+              </p>
 
-            <h2 className="text-lg font-semibold text-[#1F1F1F]">
-              Informações do aluno
-            </h2>
+              <h2 className="text-lg font-semibold text-[#1F1F1F]">
+                Informações do aluno
+              </h2>
 
-            <p className="text-sm text-[#6F6A62]">
-              Dados vinculados à organização atual.
-            </p>
+              <p className="text-sm text-[#6F6A62]">
+                Dados vinculados à organização atual.
+              </p>
+            </div>
+
+            {student && !isEditingStudent && (
+              <button
+                type="button"
+                onClick={() => {
+                  setStudentSuccessMessage(null);
+                  setIsEditingStudent(true);
+                }}
+                className="inline-flex h-10 items-center justify-center rounded-2xl bg-[#2F4F3E] px-4 text-sm font-semibold text-white transition hover:bg-[#243D30]"
+              >
+                Editar
+              </button>
+            )}
           </div>
+
+          {studentSuccessMessage && !isEditingStudent && (
+            <div className="mb-4 rounded-2xl border border-green-200 bg-green-50 p-4">
+              <p className="text-sm font-semibold text-green-700">
+                {studentSuccessMessage}
+              </p>
+            </div>
+          )}
 
           {studentsQuery.isLoading && (
             <div
@@ -133,7 +163,18 @@ export function StudentDetailsPage() {
             </div>
           )}
 
-          {student && (
+          {student && isEditingStudent && (
+            <EditStudentForm
+              student={student}
+              onCancel={() => setIsEditingStudent(false)}
+              onSuccess={() => {
+                setIsEditingStudent(false);
+                setStudentSuccessMessage("Aluno atualizado com sucesso.");
+              }}
+            />
+          )}
+
+          {student && !isEditingStudent && (
             <div className="space-y-4">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-[#8A8378]">
