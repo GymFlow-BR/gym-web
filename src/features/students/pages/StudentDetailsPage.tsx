@@ -37,6 +37,22 @@ function getInitials(name: string) {
     .toUpperCase();
 }
 
+function formatStatus(status: string) {
+  if (status === "ACTIVE") {
+    return "Ativo";
+  }
+
+  if (status === "INACTIVE") {
+    return "Inativo";
+  }
+
+  if (status === "ARCHIVED") {
+    return "Arquivado";
+  }
+
+  return status;
+}
+
 export function StudentDetailsPage() {
   const params = useParams();
   const authenticatedUserQuery = useAuthenticatedUser();
@@ -498,9 +514,7 @@ export function StudentDetailsPage() {
                     </div>
 
                     <span className="inline-flex w-fit rounded-full bg-green-50 px-3 py-1 text-xs font-semibold text-green-700">
-                      {currentWorkout.status === "ACTIVE"
-                        ? "ATIVO"
-                        : currentWorkout.status}
+                      {formatStatus(currentWorkout.status)}
                     </span>
                   </div>
 
@@ -519,9 +533,7 @@ export function StudentDetailsPage() {
                         Status
                       </p>
                       <p className="mt-1 text-lg font-semibold text-[#1F1F1F]">
-                        {currentWorkout.status === "ACTIVE"
-                          ? "Ativo"
-                          : currentWorkout.status}
+                        {formatStatus(currentWorkout.status)}
                       </p>
                     </div>
 
@@ -655,7 +667,7 @@ export function StudentDetailsPage() {
                 className="rounded-2xl border border-[#E4DFD6] bg-[#FAF9F6] p-4"
               >
                 <p className="text-sm text-[#6F6A62]">
-                  Carregando histórico de treinos...
+                  Carregando treinos atribuídos...
                 </p>
               </div>
             )}
@@ -666,10 +678,10 @@ export function StudentDetailsPage() {
                 className="rounded-2xl border border-red-200 bg-red-50 p-4"
               >
                 <p className="text-sm font-semibold text-red-700">
-                  Erro ao carregar histórico.
+                  Erro ao carregar treinos atribuídos.
                 </p>
                 <p className="mt-1 text-sm text-red-600">
-                  Não foi possível buscar o histórico de treinos do aluno.
+                  Não foi possível buscar os treinos vinculados a este aluno.
                 </p>
               </div>
             )}
@@ -679,10 +691,10 @@ export function StudentDetailsPage() {
               studentWorkoutHistory.length === 0 && (
                 <div className="rounded-2xl border border-dashed border-[#D8D2C8] bg-[#FAF9F6] p-6 text-center">
                   <p className="text-sm font-semibold text-[#1F1F1F]">
-                    Nenhum treino atribuído
+                    Nenhum treino vinculado
                   </p>
                   <p className="mt-1 text-sm text-[#6F6A62]">
-                    Este aluno ainda não possui treinos vinculados.
+                    Este aluno ainda não recebeu nenhum treino.
                   </p>
                 </div>
               )}
@@ -734,7 +746,7 @@ export function StudentDetailsPage() {
                                 : "inline-flex w-fit rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-500"
                             }
                           >
-                            {isActive ? "Ativo" : "Inativo"}
+                            {formatStatus(studentWorkout.status)}
                           </span>
                         </div>
                       </div>
