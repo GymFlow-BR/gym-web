@@ -67,6 +67,7 @@ export function StudentDetailsPage() {
   const workoutsQuery = useQuery({
     queryKey: ["workouts"],
     queryFn: getWorkouts,
+    enabled: isAssigningWorkout,
   });
 
   const student = studentsQuery.data?.find((item) => item.id === studentId);
@@ -378,7 +379,9 @@ export function StudentDetailsPage() {
                 currentWorkoutId={currentWorkout?.workoutId}
                 isLoading={workoutsQuery.isLoading}
                 onCancel={() => setIsAssigningWorkout(false)}
-                onSuccess={() => {
+                onSuccess={async () => {
+                  await currentWorkoutQuery.refetch();
+
                   setIsAssigningWorkout(false);
                   setWorkoutSuccessMessage(
                     currentWorkout

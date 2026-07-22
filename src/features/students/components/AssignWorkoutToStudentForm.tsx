@@ -21,7 +21,7 @@ type AssignWorkoutToStudentFormProps = {
   currentWorkoutId?: number;
   isLoading: boolean;
   onCancel: () => void;
-  onSuccess: () => void;
+  onSuccess: () => void | Promise<void>;
 };
 
 export function AssignWorkoutToStudentForm({
@@ -54,9 +54,12 @@ export function AssignWorkoutToStudentForm({
       await queryClient.invalidateQueries({
         queryKey: ["student-current-workout", studentId],
       });
-      await queryClient.invalidateQueries({ queryKey: ["student-workouts"] });
 
-      onSuccess();
+      await queryClient.invalidateQueries({
+        queryKey: ["student-workouts"],
+      });
+
+      await onSuccess();
     },
   });
 
