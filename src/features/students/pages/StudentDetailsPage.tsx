@@ -22,6 +22,16 @@ function isCurrentWorkoutNotFound(error: unknown) {
   return isApiError(error) && error.status === 404;
 }
 
+function getInitials(name: string) {
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
+}
+
 export function StudentDetailsPage() {
   const params = useParams();
   const authenticatedUserQuery = useAuthenticatedUser();
@@ -48,6 +58,7 @@ export function StudentDetailsPage() {
   });
 
   const student = studentsQuery.data?.find((item) => item.id === studentId);
+  const currentWorkout = currentWorkoutQuery.data;
 
   const isLoading = studentsQuery.isLoading || currentWorkoutQuery.isLoading;
   const hasInvalidStudentId = !Number.isFinite(studentId) || studentId <= 0;
@@ -76,7 +87,7 @@ export function StudentDetailsPage() {
     <>
       <PageHeader
         title={student?.name ?? "Detalhes do aluno"}
-        description="Visualize os dados do aluno e o treino atual atribuído."
+        description="Centralize os dados do aluno, acompanhe o treino atual e gerencie informações básicas."
       />
 
       <div className="mb-6">
@@ -88,137 +99,194 @@ export function StudentDetailsPage() {
         </Link>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[360px_minmax(0,1fr)] xl:items-start">
-        <Card>
-          <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div className="flex flex-col gap-1">
-              <p className="text-xs font-semibold uppercase tracking-wide text-[#8A8378]">
-                Dados básicos
-              </p>
+      <div className="grid gap-6 xl:grid-cols-[380px_minmax(0,1fr)] xl:items-start">
+        <div className="space-y-6">
+          <Card>
+            <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="flex flex-col gap-1">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[#8A8378]">
+                  Perfil do aluno
+                </p>
 
-              <h2 className="text-lg font-semibold text-[#1F1F1F]">
-                Informações do aluno
-              </h2>
+                <h2 className="text-lg font-semibold text-[#1F1F1F]">
+                  Informações principais
+                </h2>
 
-              <p className="text-sm text-[#6F6A62]">
-                Dados vinculados à organização atual.
-              </p>
+                <p className="text-sm text-[#6F6A62]">
+                  Dados básicos vinculados à organização atual.
+                </p>
+              </div>
+
+              {student && !isEditingStudent && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStudentSuccessMessage(null);
+                    setIsEditingStudent(true);
+                  }}
+                  className="inline-flex h-10 items-center justify-center rounded-2xl bg-[#2F4F3E] px-4 text-sm font-semibold text-white transition hover:bg-[#243D30]"
+                >
+                  Editar
+                </button>
+              )}
             </div>
 
+            {studentSuccessMessage && !isEditingStudent && (
+              <div className="mb-4 rounded-2xl border border-green-200 bg-green-50 p-4">
+                <p className="text-sm font-semibold text-green-700">
+                  {studentSuccessMessage}
+                </p>
+              </div>
+            )}
+
+            {studentsQuery.isLoading && (
+              <div
+                role="status"
+                className="rounded-2xl border border-[#E4DFD6] bg-[#FAF9F6] p-4"
+              >
+                <p className="text-sm text-[#6F6A62]">
+                  Carregando dados do aluno...
+                </p>
+              </div>
+            )}
+
+            {studentsQuery.isError && (
+              <div
+                role="alert"
+                className="rounded-2xl border border-red-200 bg-red-50 p-4"
+              >
+                <p className="text-sm font-semibold text-red-700">
+                  Erro ao carregar aluno.
+                </p>
+                <p className="mt-1 text-sm text-red-600">
+                  Não foi possível buscar os dados do aluno.
+                </p>
+              </div>
+            )}
+
+            {!studentsQuery.isLoading && !studentsQuery.isError && !student && (
+              <div className="rounded-2xl border border-dashed border-[#D8D2C8] bg-[#FAF9F6] p-6 text-center">
+                <p className="text-sm font-semibold text-[#1F1F1F]">
+                  Aluno não encontrado
+                </p>
+                <p className="mt-1 text-sm text-[#6F6A62]">
+                  Verifique se o aluno pertence à sua organização.
+                </p>
+              </div>
+            )}
+
+            {student && isEditingStudent && (
+              <EditStudentForm
+                student={student}
+                onCancel={() => setIsEditingStudent(false)}
+                onSuccess={() => {
+                  setIsEditingStudent(false);
+                  setStudentSuccessMessage("Aluno atualizado com sucesso.");
+                }}
+              />
+            )}
+
             {student && !isEditingStudent && (
+              <div className="space-y-5">
+                <div className="rounded-3xl border border-[#E4DFD6] bg-[#FAF9F6] p-4">
+                  <div className="flex items-center gap-4">
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#2F4F3E] text-base font-bold text-white">
+                      {getInitials(student.name)}
+                    </div>
+
+                    <div className="min-w-0">
+                      <p className="truncate text-base font-semibold text-[#1F1F1F]">
+                        {student.name}
+                      </p>
+                      <p className="truncate text-sm text-[#6F6A62]">
+                        {student.email}
+                      </p>
+
+                      <span
+                        className={
+                          student.active
+                            ? "mt-2 inline-flex rounded-full bg-green-50 px-3 py-1 text-xs font-semibold text-green-700"
+                            : "mt-2 inline-flex rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-500"
+                        }
+                      >
+                        {student.active ? "Ativo" : "Inativo"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-[#8A8378]">
+                      Nome completo
+                    </p>
+                    <p className="mt-1 text-sm font-semibold text-[#1F1F1F]">
+                      {student.name}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-[#8A8378]">
+                      Email
+                    </p>
+                    <p className="mt-1 break-words text-sm text-[#6F6A62]">
+                      {student.email}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-[#8A8378]">
+                      Organização
+                    </p>
+                    <p className="mt-1 text-sm text-[#6F6A62]">
+                      {student.organizationName}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </Card>
+
+          {student && !isEditingStudent && (
+            <Card>
+              <div className="mb-4 flex flex-col gap-1">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[#8A8378]">
+                  Ações do aluno
+                </p>
+
+                <h2 className="text-lg font-semibold text-[#1F1F1F]">
+                  Gerenciamento
+                </h2>
+
+                <p className="text-sm text-[#6F6A62]">
+                  Ações disponíveis para este aluno.
+                </p>
+              </div>
+
               <button
                 type="button"
                 onClick={() => {
                   setStudentSuccessMessage(null);
                   setIsEditingStudent(true);
                 }}
-                className="inline-flex h-10 items-center justify-center rounded-2xl bg-[#2F4F3E] px-4 text-sm font-semibold text-white transition hover:bg-[#243D30]"
+                className="flex w-full items-center justify-between rounded-2xl border border-[#E4DFD6] bg-[#FAF9F6] px-4 py-3 text-left transition hover:border-[#2F4F3E] hover:bg-[#F3F0E8]"
               >
-                Editar
-              </button>
-            )}
-          </div>
-
-          {studentSuccessMessage && !isEditingStudent && (
-            <div className="mb-4 rounded-2xl border border-green-200 bg-green-50 p-4">
-              <p className="text-sm font-semibold text-green-700">
-                {studentSuccessMessage}
-              </p>
-            </div>
-          )}
-
-          {studentsQuery.isLoading && (
-            <div
-              role="status"
-              className="rounded-2xl border border-[#E4DFD6] bg-[#FAF9F6] p-4"
-            >
-              <p className="text-sm text-[#6F6A62]">
-                Carregando dados do aluno...
-              </p>
-            </div>
-          )}
-
-          {studentsQuery.isError && (
-            <div
-              role="alert"
-              className="rounded-2xl border border-red-200 bg-red-50 p-4"
-            >
-              <p className="text-sm font-semibold text-red-700">
-                Erro ao carregar aluno.
-              </p>
-              <p className="mt-1 text-sm text-red-600">
-                Não foi possível buscar os dados do aluno.
-              </p>
-            </div>
-          )}
-
-          {!studentsQuery.isLoading && !studentsQuery.isError && !student && (
-            <div className="rounded-2xl border border-dashed border-[#D8D2C8] bg-[#FAF9F6] p-6 text-center">
-              <p className="text-sm font-semibold text-[#1F1F1F]">
-                Aluno não encontrado
-              </p>
-              <p className="mt-1 text-sm text-[#6F6A62]">
-                Verifique se o aluno pertence à sua organização.
-              </p>
-            </div>
-          )}
-
-          {student && isEditingStudent && (
-            <EditStudentForm
-              student={student}
-              onCancel={() => setIsEditingStudent(false)}
-              onSuccess={() => {
-                setIsEditingStudent(false);
-                setStudentSuccessMessage("Aluno atualizado com sucesso.");
-              }}
-            />
-          )}
-
-          {student && !isEditingStudent && (
-            <div className="space-y-4">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-[#8A8378]">
-                  Nome
-                </p>
-                <p className="mt-1 text-sm font-semibold text-[#1F1F1F]">
-                  {student.name}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-[#8A8378]">
-                  Email
-                </p>
-                <p className="mt-1 text-sm text-[#6F6A62]">{student.email}</p>
-              </div>
-
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-[#8A8378]">
-                  Status
-                </p>
-
-                <span
-                  className={
-                    student.active
-                      ? "mt-2 inline-flex rounded-full bg-green-50 px-3 py-1 text-xs font-semibold text-green-700"
-                      : "mt-2 inline-flex rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-500"
-                  }
-                >
-                  {student.active ? "Ativo" : "Inativo"}
+                <span>
+                  <span className="block text-sm font-semibold text-[#1F1F1F]">
+                    Editar dados básicos
+                  </span>
+                  <span className="mt-1 block text-sm text-[#6F6A62]">
+                    Atualize nome e email do aluno.
+                  </span>
                 </span>
-              </div>
 
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-[#8A8378]">
-                  Organização
-                </p>
-                <p className="mt-1 text-sm text-[#6F6A62]">
-                  {student.organizationName}
-                </p>
-              </div>
-            </div>
+                <span className="text-sm font-semibold text-[#2F4F3E]">
+                  Editar
+                </span>
+              </button>
+            </Card>
           )}
-        </Card>
+        </div>
 
         <Card>
           <div className="mb-5 flex flex-col gap-1">
@@ -231,7 +299,7 @@ export function StudentDetailsPage() {
             </h2>
 
             <p className="text-sm text-[#6F6A62]">
-              Acompanhe o treino atual que o aluno visualiza na área mobile.
+              Acompanhe o treino atual deste aluno.
             </p>
           </div>
 
@@ -249,13 +317,25 @@ export function StudentDetailsPage() {
           {!isLoading &&
             currentWorkoutQuery.isError &&
             isCurrentWorkoutNotFound(currentWorkoutQuery.error) && (
-              <div className="rounded-2xl border border-dashed border-[#D8D2C8] bg-[#FAF9F6] p-6 text-center">
+              <div className="rounded-3xl border border-dashed border-[#D8D2C8] bg-[#FAF9F6] p-8 text-center">
+                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#F3F0E8] text-lg font-bold text-[#2F4F3E]">
+                  —
+                </div>
+
                 <p className="text-sm font-semibold text-[#1F1F1F]">
                   Nenhum treino atual
                 </p>
-                <p className="mt-1 text-sm text-[#6F6A62]">
-                  Este aluno ainda não possui um treino atual atribuído.
+                <p className="mx-auto mt-2 max-w-md text-sm text-[#6F6A62]">
+                  Este aluno ainda não possui um treino ativo atribuído. A
+                  atribuição pode ser feita pela tela de alunos.
                 </p>
+
+                <Link
+                  to="/admin/students"
+                  className="mt-5 inline-flex h-10 items-center justify-center rounded-2xl border border-[#D8D2C8] bg-[#FFFEFB] px-4 text-sm font-semibold text-[#2F4F3E] transition hover:border-[#2F4F3E] hover:bg-[#F3F0E8]"
+                >
+                  Ir para alunos
+                </Link>
               </div>
             )}
 
@@ -276,32 +356,64 @@ export function StudentDetailsPage() {
               </div>
             )}
 
-          {!isLoading && currentWorkoutQuery.data && (
+          {!isLoading && currentWorkout && (
             <div className="space-y-5">
-              <div className="rounded-2xl border border-[#E4DFD6] bg-[#FAF9F6] p-4">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div className="rounded-3xl border border-[#E4DFD6] bg-[#FAF9F6] p-5">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-wide text-[#8A8378]">
                       Nome do treino
                     </p>
-                    <p className="mt-1 text-lg font-semibold text-[#1F1F1F]">
-                      {currentWorkoutQuery.data.workoutName}
+
+                    <p className="mt-1 text-xl font-semibold text-[#1F1F1F]">
+                      {currentWorkout.workoutName}
                     </p>
-                    <p className="mt-1 text-sm text-[#6F6A62]">
-                      Atribuído em{" "}
-                      {formatDate(currentWorkoutQuery.data.assignedAt)}
+
+                    <p className="mt-2 text-sm text-[#6F6A62]">
+                      Atribuído em {formatDate(currentWorkout.assignedAt)}
                     </p>
                   </div>
 
                   <span className="inline-flex w-fit rounded-full bg-green-50 px-3 py-1 text-xs font-semibold text-green-700">
-                    {currentWorkoutQuery.data.status === "ACTIVE"
+                    {currentWorkout.status === "ACTIVE"
                       ? "ATIVO"
-                      : currentWorkoutQuery.data.status}
+                      : currentWorkout.status}
                   </span>
+                </div>
+
+                <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                  <div className="rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] p-4 text-center">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-[#8A8378]">
+                      Exercícios
+                    </p>
+                    <p className="mt-1 text-lg font-semibold text-[#1F1F1F]">
+                      {currentWorkout.exercises.length}
+                    </p>
+                  </div>
+
+                  <div className="rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] p-4 text-center">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-[#8A8378]">
+                      Status
+                    </p>
+                    <p className="mt-1 text-lg font-semibold text-[#1F1F1F]">
+                      {currentWorkout.status === "ACTIVE"
+                        ? "Ativo"
+                        : currentWorkout.status}
+                    </p>
+                  </div>
+
+                  <div className="rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] p-4 text-center">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-[#8A8378]">
+                      Atribuição
+                    </p>
+                    <p className="mt-1 text-lg font-semibold text-[#1F1F1F]">
+                      {formatDate(currentWorkout.assignedAt)}
+                    </p>
+                  </div>
                 </div>
               </div>
 
-              {currentWorkoutQuery.data.exercises.length === 0 ? (
+              {currentWorkout.exercises.length === 0 ? (
                 <div className="rounded-2xl border border-dashed border-[#D8D2C8] bg-[#FAF9F6] p-6 text-center">
                   <p className="text-sm font-semibold text-[#1F1F1F]">
                     Treino sem exercícios
@@ -323,7 +435,7 @@ export function StudentDetailsPage() {
                   </div>
 
                   <div className="divide-y divide-[#E4DFD6]">
-                    {currentWorkoutQuery.data.exercises
+                    {currentWorkout.exercises
                       .slice()
                       .sort(
                         (firstExercise, secondExercise) =>
