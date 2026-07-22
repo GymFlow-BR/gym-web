@@ -97,6 +97,30 @@ export function StudentDetailsPage() {
   const isLoading = studentsQuery.isLoading || currentWorkoutQuery.isLoading;
   const hasInvalidStudentId = !Number.isFinite(studentId) || studentId <= 0;
 
+  function handleStartEditingStudent() {
+    setStudentSuccessMessage(null);
+    setWorkoutSuccessMessage(null);
+    setIsAssigningWorkout(false);
+    setIsEditingStudent(true);
+  }
+
+  function handleCancelEditingStudent() {
+    setStudentSuccessMessage(null);
+    setIsEditingStudent(false);
+  }
+
+  function handleStartAssigningWorkout() {
+    setStudentSuccessMessage(null);
+    setWorkoutSuccessMessage(null);
+    setIsEditingStudent(false);
+    setIsAssigningWorkout(true);
+  }
+
+  function handleCancelAssigningWorkout() {
+    setWorkoutSuccessMessage(null);
+    setIsAssigningWorkout(false);
+  }
+
   if (hasInvalidStudentId) {
     return (
       <>
@@ -154,12 +178,7 @@ export function StudentDetailsPage() {
               {student && !isEditingStudent && (
                 <button
                   type="button"
-                  onClick={() => {
-                    setStudentSuccessMessage(null);
-                    setWorkoutSuccessMessage(null);
-                    setIsAssigningWorkout(false);
-                    setIsEditingStudent(true);
-                  }}
+                  onClick={handleStartEditingStudent}
                   className="inline-flex h-10 items-center justify-center rounded-2xl bg-[#2F4F3E] px-4 text-sm font-semibold text-white transition hover:bg-[#243D30]"
                 >
                   Editar
@@ -214,7 +233,7 @@ export function StudentDetailsPage() {
             {student && isEditingStudent && (
               <EditStudentForm
                 student={student}
-                onCancel={() => setIsEditingStudent(false)}
+                onCancel={handleCancelEditingStudent}
                 onSuccess={() => {
                   setIsEditingStudent(false);
                   setStudentSuccessMessage("Aluno atualizado com sucesso.");
@@ -256,7 +275,7 @@ export function StudentDetailsPage() {
                     <p className="text-xs font-semibold uppercase tracking-wide text-[#8A8378]">
                       Nome completo
                     </p>
-                    <p className="mt-1 text-sm font-semibold text-[#1F1F1F]">
+                    <p className="mt-1 text-sm text-[#1F1F1F]">
                       {student.name}
                     </p>
                   </div>
@@ -265,7 +284,7 @@ export function StudentDetailsPage() {
                     <p className="text-xs font-semibold uppercase tracking-wide text-[#8A8378]">
                       Email
                     </p>
-                    <p className="mt-1 break-words text-sm text-[#6F6A62]">
+                    <p className="mt-1 break-words text-sm text-[#1F1F1F]">
                       {student.email}
                     </p>
                   </div>
@@ -274,7 +293,7 @@ export function StudentDetailsPage() {
                     <p className="text-xs font-semibold uppercase tracking-wide text-[#8A8378]">
                       Organização
                     </p>
-                    <p className="mt-1 text-sm text-[#6F6A62]">
+                    <p className="mt-1 text-sm text-[#1F1F1F]">
                       {student.organizationName}
                     </p>
                   </div>
@@ -295,18 +314,13 @@ export function StudentDetailsPage() {
                 </h2>
 
                 <p className="text-sm text-[#6F6A62]">
-                  Ações disponíveis para este aluno.
+                  Gerencie dados básicos e vínculo de treino deste aluno.
                 </p>
               </div>
 
               <button
                 type="button"
-                onClick={() => {
-                  setStudentSuccessMessage(null);
-                  setWorkoutSuccessMessage(null);
-                  setIsAssigningWorkout(false);
-                  setIsEditingStudent(true);
-                }}
+                onClick={handleStartEditingStudent}
                 className="flex w-full items-center justify-between rounded-2xl border border-[#E4DFD6] bg-[#FAF9F6] px-4 py-3 text-left transition hover:border-[#2F4F3E] hover:bg-[#F3F0E8]"
               >
                 <span>
@@ -325,12 +339,7 @@ export function StudentDetailsPage() {
 
               <button
                 type="button"
-                onClick={() => {
-                  setStudentSuccessMessage(null);
-                  setWorkoutSuccessMessage(null);
-                  setIsEditingStudent(false);
-                  setIsAssigningWorkout(true);
-                }}
+                onClick={handleStartAssigningWorkout}
                 className="mt-3 flex w-full items-center justify-between rounded-2xl border border-[#E4DFD6] bg-[#FAF9F6] px-4 py-3 text-left transition hover:border-[#2F4F3E] hover:bg-[#F3F0E8]"
               >
                 <span>
@@ -339,8 +348,8 @@ export function StudentDetailsPage() {
                   </span>
                   <span className="mt-1 block text-sm text-[#6F6A62]">
                     {currentWorkout
-                      ? "Escolha um novo treino ativo para este aluno."
-                      : "Escolha um treino ativo para este aluno."}
+                      ? "Substitua o treino ativo por outro treino disponível."
+                      : "Vincule um treino ativo a este aluno."}
                   </span>
                 </span>
 
@@ -399,7 +408,7 @@ export function StudentDetailsPage() {
                   activeWorkouts={activeWorkouts}
                   currentWorkoutId={currentWorkout?.workoutId}
                   isLoading={workoutsQuery.isLoading}
-                  onCancel={() => setIsAssigningWorkout(false)}
+                  onCancel={handleCancelAssigningWorkout}
                   onSuccess={async () => {
                     await currentWorkoutQuery.refetch();
                     await studentWorkoutsQuery.refetch();
@@ -444,10 +453,7 @@ export function StudentDetailsPage() {
 
                   <button
                     type="button"
-                    onClick={() => {
-                      setWorkoutSuccessMessage(null);
-                      setIsAssigningWorkout(true);
-                    }}
+                    onClick={handleStartAssigningWorkout}
                     className="mt-5 inline-flex h-10 items-center justify-center rounded-2xl border border-[#D8D2C8] bg-[#FFFEFB] px-4 text-sm font-semibold text-[#2F4F3E] transition hover:border-[#2F4F3E] hover:bg-[#F3F0E8]"
                   >
                     Atribuir treino
@@ -676,7 +682,7 @@ export function StudentDetailsPage() {
                     Nenhum treino atribuído
                   </p>
                   <p className="mt-1 text-sm text-[#6F6A62]">
-                    Este aluno ainda não possui histórico de treinos.
+                    Este aluno ainda não possui treinos vinculados.
                   </p>
                 </div>
               )}
