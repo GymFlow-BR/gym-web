@@ -18,3 +18,8 @@ export type CreateStudentRequest = {
   password: string;
   role: "STUDENT";
 };
+
+export type UpdateStudentRequest = {
+  name: string;
+  email: string;
+};
