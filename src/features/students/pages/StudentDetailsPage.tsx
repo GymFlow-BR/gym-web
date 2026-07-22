@@ -7,6 +7,8 @@ import { Card } from "../../../components/ui/Card";
 import { isApiError } from "../../../services/apiError";
 import { useAuthenticatedUser } from "../../auth/hooks/useAuthenticatedUser";
 import { getStudentCurrentWorkout } from "../../student-workout/services/studentWorkoutService";
+import { getWorkouts } from "../../workouts/services/workoutService";
+import { AssignWorkoutToStudentForm } from "../components/AssignWorkoutToStudentForm";
 import { EditStudentForm } from "../components/EditStudentForm";
 import { getStudentsByOrganization } from "../services/studentService";
 
@@ -41,6 +43,11 @@ export function StudentDetailsPage() {
     string | null
   >(null);
 
+  const [isAssigningWorkout, setIsAssigningWorkout] = useState(false);
+  const [workoutSuccessMessage, setWorkoutSuccessMessage] = useState<
+    string | null
+  >(null);
+
   const studentId = Number(params.studentId);
   const organizationId = authenticatedUserQuery.data?.organizationId;
 
@@ -57,8 +64,16 @@ export function StudentDetailsPage() {
     retry: false,
   });
 
+  const workoutsQuery = useQuery({
+    queryKey: ["workouts"],
+    queryFn: getWorkouts,
+  });
+
   const student = studentsQuery.data?.find((item) => item.id === studentId);
   const currentWorkout = currentWorkoutQuery.data;
+
+  const activeWorkouts =
+    workoutsQuery.data?.filter((workout) => workout.status === "ACTIVE") ?? [];
 
   const isLoading = studentsQuery.isLoading || currentWorkoutQuery.isLoading;
   const hasInvalidStudentId = !Number.isFinite(studentId) || studentId <= 0;
@@ -122,6 +137,8 @@ export function StudentDetailsPage() {
                   type="button"
                   onClick={() => {
                     setStudentSuccessMessage(null);
+                    setWorkoutSuccessMessage(null);
+                    setIsAssigningWorkout(false);
                     setIsEditingStudent(true);
                   }}
                   className="inline-flex h-10 items-center justify-center rounded-2xl bg-[#2F4F3E] px-4 text-sm font-semibold text-white transition hover:bg-[#243D30]"
@@ -267,6 +284,8 @@ export function StudentDetailsPage() {
                 type="button"
                 onClick={() => {
                   setStudentSuccessMessage(null);
+                  setWorkoutSuccessMessage(null);
+                  setIsAssigningWorkout(false);
                   setIsEditingStudent(true);
                 }}
                 className="flex w-full items-center justify-between rounded-2xl border border-[#E4DFD6] bg-[#FAF9F6] px-4 py-3 text-left transition hover:border-[#2F4F3E] hover:bg-[#F3F0E8]"
@@ -282,6 +301,32 @@ export function StudentDetailsPage() {
 
                 <span className="text-sm font-semibold text-[#2F4F3E]">
                   Editar
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setStudentSuccessMessage(null);
+                  setWorkoutSuccessMessage(null);
+                  setIsEditingStudent(false);
+                  setIsAssigningWorkout(true);
+                }}
+                className="mt-3 flex w-full items-center justify-between rounded-2xl border border-[#E4DFD6] bg-[#FAF9F6] px-4 py-3 text-left transition hover:border-[#2F4F3E] hover:bg-[#F3F0E8]"
+              >
+                <span>
+                  <span className="block text-sm font-semibold text-[#1F1F1F]">
+                    {currentWorkout ? "Trocar treino" : "Atribuir treino"}
+                  </span>
+                  <span className="mt-1 block text-sm text-[#6F6A62]">
+                    {currentWorkout
+                      ? "Escolha um novo treino ativo para este aluno."
+                      : "Escolha um treino ativo para este aluno."}
+                  </span>
+                </span>
+
+                <span className="text-sm font-semibold text-[#2F4F3E]">
+                  {currentWorkout ? "Trocar" : "Atribuir"}
                 </span>
               </button>
             </Card>
@@ -303,7 +348,49 @@ export function StudentDetailsPage() {
             </p>
           </div>
 
-          {isLoading && (
+          {workoutSuccessMessage && !isAssigningWorkout && (
+            <div className="mb-5 rounded-2xl border border-green-200 bg-green-50 p-4">
+              <p className="text-sm font-semibold text-green-700">
+                {workoutSuccessMessage}
+              </p>
+            </div>
+          )}
+
+          {isAssigningWorkout && (
+            <div className="mb-5 rounded-3xl border border-[#E4DFD6] bg-[#FAF9F6] p-5">
+              <div className="mb-5 flex flex-col gap-1">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[#8A8378]">
+                  {currentWorkout ? "Troca de treino" : "Atribuição de treino"}
+                </p>
+
+                <h3 className="text-base font-semibold text-[#1F1F1F]">
+                  {currentWorkout ? "Trocar treino atual" : "Atribuir treino"}
+                </h3>
+
+                <p className="text-sm text-[#6F6A62]">
+                  Selecione um treino ativo para este aluno.
+                </p>
+              </div>
+
+              <AssignWorkoutToStudentForm
+                studentId={studentId}
+                activeWorkouts={activeWorkouts}
+                currentWorkoutId={currentWorkout?.workoutId}
+                isLoading={workoutsQuery.isLoading}
+                onCancel={() => setIsAssigningWorkout(false)}
+                onSuccess={() => {
+                  setIsAssigningWorkout(false);
+                  setWorkoutSuccessMessage(
+                    currentWorkout
+                      ? "Treino atualizado com sucesso."
+                      : "Treino atribuído com sucesso.",
+                  );
+                }}
+              />
+            </div>
+          )}
+
+          {isLoading && !isAssigningWorkout && (
             <div
               role="status"
               className="rounded-2xl border border-[#E4DFD6] bg-[#FAF9F6] p-4"
@@ -315,6 +402,7 @@ export function StudentDetailsPage() {
           )}
 
           {!isLoading &&
+            !isAssigningWorkout &&
             currentWorkoutQuery.isError &&
             isCurrentWorkoutNotFound(currentWorkoutQuery.error) && (
               <div className="rounded-3xl border border-dashed border-[#D8D2C8] bg-[#FAF9F6] p-8 text-center">
@@ -326,20 +414,24 @@ export function StudentDetailsPage() {
                   Nenhum treino atual
                 </p>
                 <p className="mx-auto mt-2 max-w-md text-sm text-[#6F6A62]">
-                  Este aluno ainda não possui um treino ativo atribuído. A
-                  atribuição pode ser feita pela tela de alunos.
+                  Este aluno ainda não possui um treino ativo atribuído.
                 </p>
 
-                <Link
-                  to="/admin/students"
+                <button
+                  type="button"
+                  onClick={() => {
+                    setWorkoutSuccessMessage(null);
+                    setIsAssigningWorkout(true);
+                  }}
                   className="mt-5 inline-flex h-10 items-center justify-center rounded-2xl border border-[#D8D2C8] bg-[#FFFEFB] px-4 text-sm font-semibold text-[#2F4F3E] transition hover:border-[#2F4F3E] hover:bg-[#F3F0E8]"
                 >
-                  Ir para alunos
-                </Link>
+                  Atribuir treino
+                </button>
               </div>
             )}
 
           {!isLoading &&
+            !isAssigningWorkout &&
             currentWorkoutQuery.isError &&
             !isCurrentWorkoutNotFound(currentWorkoutQuery.error) && (
               <div
@@ -356,7 +448,7 @@ export function StudentDetailsPage() {
               </div>
             )}
 
-          {!isLoading && currentWorkout && (
+          {!isLoading && !isAssigningWorkout && currentWorkout && (
             <div className="space-y-5">
               <div className="rounded-3xl border border-[#E4DFD6] bg-[#FAF9F6] p-5">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
