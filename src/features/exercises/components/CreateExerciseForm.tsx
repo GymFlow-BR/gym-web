@@ -127,7 +127,7 @@ export function CreateExerciseForm() {
       uploadExerciseImage(exerciseId, file),
     onSuccess: async (exercise) => {
       setCreatedExercise(exercise);
-      handleRemoveSelectedImage();
+      clearSelectedImageFile();
       setMediaSuccessMessage("Imagem enviada com sucesso.");
       await queryClient.invalidateQueries({ queryKey: ["exercises"] });
     },
@@ -138,7 +138,7 @@ export function CreateExerciseForm() {
       uploadExerciseVideo(exerciseId, file),
     onSuccess: async (exercise) => {
       setCreatedExercise(exercise);
-      handleRemoveSelectedVideo();
+      clearSelectedVideoFile();
       setMediaSuccessMessage("Vídeo enviado com sucesso.");
       await queryClient.invalidateQueries({ queryKey: ["exercises"] });
     },
@@ -150,7 +150,7 @@ export function CreateExerciseForm() {
       ? "Você não possui permissão para cadastrar exercícios."
       : "Não foi possível cadastrar o exercício. Tente novamente.";
 
-  function handleRemoveSelectedImage() {
+  function clearSelectedImageFile() {
     setImageFile(null);
 
     if (imageInputRef.current) {
@@ -158,12 +158,24 @@ export function CreateExerciseForm() {
     }
   }
 
-  function handleRemoveSelectedVideo() {
+  function clearSelectedVideoFile() {
     setVideoFile(null);
 
     if (videoInputRef.current) {
       videoInputRef.current.value = "";
     }
+  }
+
+  function handleRemoveSelectedImage() {
+    uploadImageMutation.reset();
+    setMediaSuccessMessage(null);
+    clearSelectedImageFile();
+  }
+
+  function handleRemoveSelectedVideo() {
+    uploadVideoMutation.reset();
+    setMediaSuccessMessage(null);
+    clearSelectedVideoFile();
   }
 
   function handleCreateExercise(data: CreateExerciseFormData) {
@@ -182,6 +194,8 @@ export function CreateExerciseForm() {
     }
 
     setMediaSuccessMessage(null);
+    uploadImageMutation.reset();
+    uploadVideoMutation.reset();
 
     uploadImageMutation.mutate({
       exerciseId: createdExercise.id,
@@ -195,6 +209,8 @@ export function CreateExerciseForm() {
     }
 
     setMediaSuccessMessage(null);
+    uploadImageMutation.reset();
+    uploadVideoMutation.reset();
 
     uploadVideoMutation.mutate({
       exerciseId: createdExercise.id,
@@ -205,8 +221,8 @@ export function CreateExerciseForm() {
   function handleFinishCreateFlow() {
     setCreatedExercise(null);
     setMediaSuccessMessage(null);
-    handleRemoveSelectedImage();
-    handleRemoveSelectedVideo();
+    clearSelectedImageFile();
+    clearSelectedVideoFile();
     createExerciseMutation.reset();
     uploadImageMutation.reset();
     uploadVideoMutation.reset();
@@ -288,9 +304,11 @@ export function CreateExerciseForm() {
                 ref={imageInputRef}
                 type="file"
                 accept="image/*"
-                onChange={(event) =>
-                  setImageFile(event.target.files?.[0] ?? null)
-                }
+                onChange={(event) => {
+                  uploadImageMutation.reset();
+                  setMediaSuccessMessage(null);
+                  setImageFile(event.target.files?.[0] ?? null);
+                }}
                 className="mt-4 block w-full text-sm text-[#6F6A62] file:mr-4 file:rounded-full file:border-0 file:bg-[#2F4F3E] file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white"
               />
 
@@ -350,9 +368,11 @@ export function CreateExerciseForm() {
                 ref={videoInputRef}
                 type="file"
                 accept="video/*"
-                onChange={(event) =>
-                  setVideoFile(event.target.files?.[0] ?? null)
-                }
+                onChange={(event) => {
+                  uploadVideoMutation.reset();
+                  setMediaSuccessMessage(null);
+                  setVideoFile(event.target.files?.[0] ?? null);
+                }}
                 className="mt-4 block w-full text-sm text-[#6F6A62] file:mr-4 file:rounded-full file:border-0 file:bg-[#2F4F3E] file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white"
               />
 
