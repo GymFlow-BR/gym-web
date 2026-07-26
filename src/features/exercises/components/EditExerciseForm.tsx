@@ -1,11 +1,16 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
+import { Image as ImageIcon, Upload, Video, X } from "lucide-react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+  type RefObject,
+} from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-import { Button } from "../../../components/ui/Button";
-import { Input } from "../../../components/ui/Input";
 import { isApiError } from "../../../services/apiError";
 import {
   updateExercise,
@@ -14,99 +19,63 @@ import {
 } from "../services/exerciseService";
 import type { Exercise, UpdateExerciseRequest } from "../types/exercise";
 
-const editExerciseSchema = z.object({
+const schema = z.object({
   exerciseName: z
     .string()
     .trim()
     .min(2, "O nome deve ter pelo menos 2 caracteres.")
-    .max(120, "O nome deve ter no máximo 120 caracteres."),
-
+    .max(120),
   muscleGroup: z
     .string()
     .trim()
     .min(2, "O grupo muscular deve ter pelo menos 2 caracteres.")
-    .max(80, "O grupo muscular deve ter no máximo 80 caracteres."),
-
+    .max(80),
   equipmentName: z
     .string()
     .trim()
     .min(2, "O equipamento deve ter pelo menos 2 caracteres.")
-    .max(120, "O equipamento deve ter no máximo 120 caracteres."),
-
+    .max(120),
   description: z
     .string()
     .trim()
-    .max(1000, "A descrição deve ter no máximo 1000 caracteres.")
+    .max(1000, "A orientação deve ter no máximo 1000 caracteres.")
     .optional()
     .or(z.literal("")),
 });
 
-type EditExerciseFormData = z.infer<typeof editExerciseSchema>;
-
-type EditExerciseFormProps = {
+type FormData = z.infer<typeof schema>;
+type Props = {
   exercise: Exercise;
   onCancel: () => void;
   onSuccess: () => void;
 };
 
-function normalizeOptionalValue(value?: string) {
-  if (!value || value.trim() === "") {
-    return undefined;
-  }
+const fieldClass =
+  "min-h-13 w-full rounded-xl border border-[#343b37] bg-[#1d211f] px-4 text-sm text-[#f5f7f5] outline-none transition placeholder:text-[#747d77] focus:border-[#70e39b] focus:ring-2 focus:ring-[#70e39b]/15";
 
-  return value.trim();
+function uploadError(error: unknown) {
+  if (isApiError(error) && error.status === 400)
+    return "Arquivo inválido. Verifique o tipo e o tamanho.";
+  if (isApiError(error) && error.status === 403)
+    return "Você não possui permissão para enviar esta mídia.";
+  return "Os dados foram salvos, mas não foi possível substituir uma das mídias. Tente novamente.";
 }
 
-function toUpdateExerciseRequest(
-  data: EditExerciseFormData,
-  exercise: Exercise,
-): UpdateExerciseRequest {
-  return {
-    exerciseName: data.exerciseName.trim(),
-    muscleGroup: data.muscleGroup.trim(),
-    equipmentName: data.equipmentName.trim(),
-    description: normalizeOptionalValue(data.description),
-    imageUrl: exercise.imageUrl ?? undefined,
-    videoUrl: exercise.videoUrl ?? undefined,
-  };
-}
-
-function getUploadErrorMessage(error: unknown) {
-  if (isApiError(error) && error.status === 400) {
-    return "Arquivo inválido. Verifique o tipo e o tamanho do arquivo.";
-  }
-
-  if (isApiError(error) && error.status === 403) {
-    return "Você não possui permissão para enviar mídia para este exercício.";
-  }
-
-  return "Não foi possível enviar a mídia. Tente novamente.";
-}
-
-export function EditExerciseForm({
-  exercise,
-  onCancel,
-  onSuccess,
-}: EditExerciseFormProps) {
+export function EditExerciseForm({ exercise, onCancel, onSuccess }: Props) {
   const queryClient = useQueryClient();
-
-  const [currentExercise, setCurrentExercise] = useState<Exercise>(exercise);
+  const [currentExercise, setCurrentExercise] = useState(exercise);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [videoFile, setVideoFile] = useState<File | null>(null);
-  const [mediaSuccessMessage, setMediaSuccessMessage] = useState<string | null>(
-    null,
-  );
-
-  const imageInputRef = useRef<HTMLInputElement | null>(null);
-  const videoInputRef = useRef<HTMLInputElement | null>(null);
+  const imageRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLInputElement>(null);
 
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<EditExerciseFormData>({
-    resolver: zodResolver(editExerciseSchema),
+  } = useForm<FormData>({
+    resolver: zodResolver(schema),
     defaultValues: {
       exerciseName: exercise.exerciseName,
       muscleGroup: exercise.muscleGroup,
@@ -119,16 +88,6 @@ export function EditExerciseForm({
     setCurrentExercise(exercise);
     setImageFile(null);
     setVideoFile(null);
-    setMediaSuccessMessage(null);
-
-    if (imageInputRef.current) {
-      imageInputRef.current.value = "";
-    }
-
-    if (videoInputRef.current) {
-      videoInputRef.current.value = "";
-    }
-
     reset({
       exerciseName: exercise.exerciseName,
       muscleGroup: exercise.muscleGroup,
@@ -137,384 +96,294 @@ export function EditExerciseForm({
     });
   }, [exercise, reset]);
 
-  const updateExerciseMutation = useMutation({
+  const updateMutation = useMutation({
     mutationFn: (data: UpdateExerciseRequest) =>
-      updateExercise(currentExercise.id, data),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["exercises"] });
-      onSuccess();
-    },
+      updateExercise(exercise.id, data),
+  });
+  const imageMutation = useMutation({
+    mutationFn: ({ id, file }: { id: number; file: File }) =>
+      uploadExerciseImage(id, file),
+  });
+  const videoMutation = useMutation({
+    mutationFn: ({ id, file }: { id: number; file: File }) =>
+      uploadExerciseVideo(id, file),
   });
 
-  const uploadImageMutation = useMutation({
-    mutationFn: ({ exerciseId, file }: { exerciseId: number; file: File }) =>
-      uploadExerciseImage(exerciseId, file),
-    onSuccess: async (updatedExercise) => {
-      setCurrentExercise(updatedExercise);
-      clearSelectedImageFile();
-      setMediaSuccessMessage("Imagem atualizada com sucesso.");
-      await queryClient.invalidateQueries({ queryKey: ["exercises"] });
-    },
-  });
-
-  const uploadVideoMutation = useMutation({
-    mutationFn: ({ exerciseId, file }: { exerciseId: number; file: File }) =>
-      uploadExerciseVideo(exerciseId, file),
-    onSuccess: async (updatedExercise) => {
-      setCurrentExercise(updatedExercise);
-      clearSelectedVideoFile();
-      setMediaSuccessMessage("Vídeo atualizado com sucesso.");
-      await queryClient.invalidateQueries({ queryKey: ["exercises"] });
-    },
-  });
-
-  const updateErrorMessage =
-    isApiError(updateExerciseMutation.error) &&
-    updateExerciseMutation.error.status === 403
+  const isPending =
+    updateMutation.isPending ||
+    imageMutation.isPending ||
+    videoMutation.isPending;
+  const mediaError = imageMutation.error ?? videoMutation.error;
+  const updateError =
+    isApiError(updateMutation.error) && updateMutation.error.status === 403
       ? "Você não possui permissão para editar exercícios."
       : "Não foi possível atualizar o exercício. Tente novamente.";
 
-  function clearSelectedImageFile() {
-    setImageFile(null);
+  async function submit(data: FormData) {
+    try {
+      let updated = await updateMutation.mutateAsync({
+        exerciseName: data.exerciseName.trim(),
+        muscleGroup: data.muscleGroup.trim(),
+        equipmentName: data.equipmentName.trim(),
+        description: data.description?.trim() || undefined,
+        imageUrl: currentExercise.imageUrl ?? undefined,
+        videoUrl: currentExercise.videoUrl ?? undefined,
+      });
+      setCurrentExercise(updated);
 
-    if (imageInputRef.current) {
-      imageInputRef.current.value = "";
+      if (imageFile) {
+        updated = await imageMutation.mutateAsync({
+          id: exercise.id,
+          file: imageFile,
+        });
+        setCurrentExercise(updated);
+        setImageFile(null);
+      }
+      if (videoFile) {
+        updated = await videoMutation.mutateAsync({
+          id: exercise.id,
+          file: videoFile,
+        });
+        setCurrentExercise(updated);
+        setVideoFile(null);
+      }
+
+      await queryClient.invalidateQueries({ queryKey: ["exercises"] });
+      onSuccess();
+    } catch {
+      await queryClient.invalidateQueries({ queryKey: ["exercises"] });
     }
-  }
-
-  function clearSelectedVideoFile() {
-    setVideoFile(null);
-
-    if (videoInputRef.current) {
-      videoInputRef.current.value = "";
-    }
-  }
-
-  function handleRemoveSelectedImage() {
-    uploadImageMutation.reset();
-    setMediaSuccessMessage(null);
-    clearSelectedImageFile();
-  }
-
-  function handleRemoveSelectedVideo() {
-    uploadVideoMutation.reset();
-    setMediaSuccessMessage(null);
-    clearSelectedVideoFile();
-  }
-
-  function handleUpdateExercise(data: EditExerciseFormData) {
-    updateExerciseMutation.mutate(
-      toUpdateExerciseRequest(data, currentExercise),
-    );
-  }
-
-  function handleUploadImage() {
-    if (!imageFile) {
-      return;
-    }
-
-    setMediaSuccessMessage(null);
-    uploadImageMutation.reset();
-    uploadVideoMutation.reset();
-
-    uploadImageMutation.mutate({
-      exerciseId: currentExercise.id,
-      file: imageFile,
-    });
-  }
-
-  function handleUploadVideo() {
-    if (!videoFile) {
-      return;
-    }
-
-    setMediaSuccessMessage(null);
-    uploadImageMutation.reset();
-    uploadVideoMutation.reset();
-
-    uploadVideoMutation.mutate({
-      exerciseId: currentExercise.id,
-      file: videoFile,
-    });
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] shadow-sm">
-      <div className="border-b border-[#E4DFD6] p-5">
-        <p className="text-xs font-semibold uppercase tracking-wide text-[#8A8378]">
-          Biblioteca de exercícios
-        </p>
-
-        <h2 className="mt-2 text-lg font-semibold text-[#1F1F1F]">
-          Editar exercício
-        </h2>
-
-        <p className="mt-1 max-w-2xl text-sm text-[#6F6A62]">
-          Atualize os dados do exercício selecionado e substitua a mídia
-          demonstrativa quando necessário.
-        </p>
-      </div>
-
-      <div className="space-y-5 p-5">
-        {updateExerciseMutation.isError && (
-          <div
-            role="alert"
-            className="rounded-2xl border border-red-200 bg-red-50 p-4"
-          >
-            <p className="text-sm font-semibold text-red-700">
-              Erro ao atualizar exercício.
+    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/70 p-4 backdrop-blur-sm">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="edit-exercise-title"
+        className="my-auto w-full max-w-4xl rounded-[22px] border border-[#343b37] bg-[#171a18] p-6 text-[#f5f7f5] shadow-2xl shadow-black/60 sm:p-8"
+      >
+        <header className="flex items-start justify-between gap-5">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#929d96]">
+              Biblioteca de exercícios
             </p>
-
-            <p className="mt-1 text-sm text-red-600">{updateErrorMessage}</p>
-          </div>
-        )}
-
-        {(uploadImageMutation.isError || uploadVideoMutation.isError) && (
-          <div
-            role="alert"
-            className="rounded-2xl border border-red-200 bg-red-50 p-4"
-          >
-            <p className="text-sm font-semibold text-red-700">
-              Erro ao enviar mídia.
-            </p>
-
-            <p className="mt-1 text-sm text-red-600">
-              {getUploadErrorMessage(
-                uploadImageMutation.error ?? uploadVideoMutation.error,
-              )}
-            </p>
-          </div>
-        )}
-
-        {mediaSuccessMessage && (
-          <div className="rounded-2xl border border-green-200 bg-green-50 p-4">
-            <p className="text-sm font-medium text-green-700">
-              {mediaSuccessMessage}
-            </p>
-          </div>
-        )}
-
-        <form
-          className="grid gap-4 lg:grid-cols-12"
-          onSubmit={handleSubmit(handleUpdateExercise)}
-        >
-          <div className="lg:col-span-6">
-            <Input
-              label="Nome do exercício"
-              placeholder="Ex: Supino reto"
-              error={errors.exerciseName?.message}
-              {...register("exerciseName")}
-            />
-          </div>
-
-          <div className="lg:col-span-3">
-            <Input
-              label="Grupo muscular"
-              placeholder="Ex: Peito"
-              error={errors.muscleGroup?.message}
-              {...register("muscleGroup")}
-            />
-          </div>
-
-          <div className="lg:col-span-3">
-            <Input
-              label="Equipamento"
-              placeholder="Ex: Barra"
-              error={errors.equipmentName?.message}
-              {...register("equipmentName")}
-            />
-          </div>
-
-          <div className="lg:col-span-8">
-            <label
-              htmlFor="edit-description"
-              className="mb-2 block text-sm font-medium text-[#1F1F1F]"
+            <h2
+              id="edit-exercise-title"
+              className="mt-3 text-2xl font-semibold tracking-[-0.03em]"
             >
-              Descrição
-            </label>
+              Editar exercício
+            </h2>
+            <p className="mt-3 text-sm text-[#939e97]">
+              Atualize os dados e substitua as mídias quando necessário.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={isPending}
+            aria-label="Fechar"
+            className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-[#343b37] text-[#909a93] transition hover:bg-[#232825] hover:text-white disabled:opacity-50"
+          >
+            <X size={21} />
+          </button>
+        </header>
 
+        {(updateMutation.isError || mediaError) && (
+          <div
+            role="alert"
+            className="mt-5 rounded-xl border border-[#6d3838] bg-[#281818] p-4 text-sm text-[#ff9292]"
+          >
+            {mediaError ? uploadError(mediaError) : updateError}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit(submit)} className="mt-8 space-y-5">
+          <div className="grid gap-4 lg:grid-cols-12">
+            <Field
+              label="Nome do exercício"
+              error={errors.exerciseName?.message}
+              className="lg:col-span-5"
+            >
+              <input className={fieldClass} {...register("exerciseName")} />
+            </Field>
+            <Field
+              label="Grupo muscular"
+              error={errors.muscleGroup?.message}
+              className="lg:col-span-3"
+            >
+              <input className={fieldClass} {...register("muscleGroup")} />
+            </Field>
+            <Field
+              label="Equipamento"
+              error={errors.equipmentName?.message}
+              className="lg:col-span-4"
+            >
+              <input className={fieldClass} {...register("equipmentName")} />
+            </Field>
+          </div>
+
+          <Field label="Orientação" error={errors.description?.message}>
             <textarea
-              id="edit-description"
-              aria-invalid={errors.description ? true : undefined}
-              aria-describedby={
-                errors.description ? "edit-description-error" : undefined
-              }
-              className="min-h-28 w-full rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] px-4 py-3 text-sm text-[#1F1F1F] outline-none transition placeholder:text-[#B7B2A8] focus:border-[#2F4F3E] focus:ring-2 focus:ring-[#2F4F3E]/10"
-              placeholder="Descreva brevemente a execução do exercício"
+              className={`${fieldClass} min-h-24 py-4`}
               {...register("description")}
             />
+          </Field>
 
-            {errors.description?.message && (
-              <p
-                id="edit-description-error"
-                className="mt-2 text-sm text-red-600"
-              >
-                {errors.description.message}
-              </p>
-            )}
+          <div className="grid gap-4 md:grid-cols-2">
+            <MediaField
+              title="Imagem do exercício"
+              helper={
+                currentExercise.imageUrl
+                  ? "Uma imagem já está cadastrada."
+                  : "Nenhuma imagem cadastrada."
+              }
+              action={
+                currentExercise.imageUrl
+                  ? "Substituir imagem"
+                  : "Adicionar imagem"
+              }
+              detail="JPG ou PNG"
+              file={imageFile}
+              accept="image/*"
+              icon={<ImageIcon size={20} />}
+              inputRef={imageRef}
+              onChange={setImageFile}
+              onRemove={() => {
+                setImageFile(null);
+                if (imageRef.current) imageRef.current.value = "";
+              }}
+            />
+            <MediaField
+              title="Vídeo do exercício"
+              helper={
+                currentExercise.videoUrl
+                  ? "Um vídeo já está cadastrado."
+                  : "Nenhum vídeo cadastrado."
+              }
+              action={
+                currentExercise.videoUrl
+                  ? "Substituir vídeo"
+                  : "Adicionar vídeo"
+              }
+              detail="MP4 ou MOV"
+              file={videoFile}
+              accept="video/*"
+              icon={<Video size={20} />}
+              inputRef={videoRef}
+              onChange={setVideoFile}
+              onRemove={() => {
+                setVideoFile(null);
+                if (videoRef.current) videoRef.current.value = "";
+              }}
+            />
           </div>
 
-          <div className="flex flex-col gap-3 sm:flex-row lg:col-span-4 lg:items-end lg:justify-end">
-            <Button
-              type="submit"
-              className="w-full sm:w-auto"
-              disabled={updateExerciseMutation.isPending}
-            >
-              {updateExerciseMutation.isPending
-                ? "Salvando..."
-                : "Salvar alterações"}
-            </Button>
-
+          <footer className="flex flex-col-reverse gap-3 pt-1 sm:flex-row sm:justify-end">
             <button
               type="button"
               onClick={onCancel}
-              disabled={
-                updateExerciseMutation.isPending ||
-                uploadImageMutation.isPending ||
-                uploadVideoMutation.isPending
-              }
-              className="w-full rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] px-5 py-3 text-sm font-semibold text-[#6F6A62] transition hover:border-[#2F4F3E] hover:text-[#2F4F3E] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+              disabled={isPending}
+              className="min-h-12 rounded-xl border border-[#3a423d] px-5 text-sm font-semibold transition hover:bg-[#222724] disabled:opacity-50"
             >
               Cancelar
             </button>
-          </div>
+            <button
+              type="submit"
+              disabled={isPending}
+              className="min-h-12 rounded-xl bg-[#70e39b] px-6 text-sm font-semibold text-[#07110b] transition hover:bg-[#83e9a8] disabled:opacity-50"
+            >
+              {isPending ? "Salvando..." : "Salvar alterações"}
+            </button>
+          </footer>
         </form>
-
-        <div className="grid gap-5 border-t border-[#E4DFD6] pt-5 lg:grid-cols-2">
-          <div className="rounded-2xl border border-[#E4DFD6] bg-[#FAF9F6] p-4">
-            <p className="text-sm font-semibold text-[#1F1F1F]">
-              Imagem do exercício
-            </p>
-
-            <p className="mt-1 text-sm text-[#6F6A62]">
-              Envie uma nova imagem para substituir a atual.
-            </p>
-
-            {currentExercise.imageUrl ? (
-              <img
-                src={currentExercise.imageUrl}
-                alt={`Imagem do exercício ${currentExercise.exerciseName}`}
-                className="mt-4 max-h-56 w-full rounded-2xl object-cover"
-              />
-            ) : (
-              <p className="mt-4 rounded-2xl border border-dashed border-[#D8D2C8] bg-[#FFFEFB] p-4 text-sm text-[#6F6A62]">
-                Nenhuma imagem enviada até o momento.
-              </p>
-            )}
-
-            <input
-              ref={imageInputRef}
-              type="file"
-              accept="image/*"
-              onChange={(event) => {
-                uploadImageMutation.reset();
-                setMediaSuccessMessage(null);
-                setImageFile(event.target.files?.[0] ?? null);
-              }}
-              className="mt-4 block w-full text-sm text-[#6F6A62] file:mr-4 file:rounded-full file:border-0 file:bg-[#2F4F3E] file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white"
-            />
-
-            {imageFile && (
-              <div className="mt-3 flex flex-col gap-2 rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] p-3 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-sm text-[#6F6A62]">
-                  Arquivo selecionado:{" "}
-                  <span className="font-semibold text-[#1F1F1F]">
-                    {imageFile.name}
-                  </span>
-                </p>
-
-                <button
-                  type="button"
-                  onClick={handleRemoveSelectedImage}
-                  disabled={uploadImageMutation.isPending}
-                  className="text-left text-sm font-semibold text-red-600 transition hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-60 sm:text-right"
-                >
-                  Remover arquivo
-                </button>
-              </div>
-            )}
-
-            <Button
-              type="button"
-              className="mt-4 w-full"
-              disabled={!imageFile || uploadImageMutation.isPending}
-              onClick={handleUploadImage}
-            >
-              {uploadImageMutation.isPending
-                ? "Enviando imagem..."
-                : "Substituir imagem"}
-            </Button>
-          </div>
-
-          <div className="rounded-2xl border border-[#E4DFD6] bg-[#FAF9F6] p-4">
-            <p className="text-sm font-semibold text-[#1F1F1F]">
-              Vídeo do exercício
-            </p>
-
-            <p className="mt-1 text-sm text-[#6F6A62]">
-              Envie um novo vídeo para substituir o atual.
-            </p>
-
-            {currentExercise.videoUrl ? (
-              <a
-                href={currentExercise.videoUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="mt-4 inline-flex rounded-full bg-[#2F4F3E]/10 px-3 py-1 text-sm font-semibold text-[#2F4F3E] hover:underline"
-              >
-                Ver vídeo enviado
-              </a>
-            ) : (
-              <p className="mt-4 rounded-2xl border border-dashed border-[#D8D2C8] bg-[#FFFEFB] p-4 text-sm text-[#6F6A62]">
-                Nenhum vídeo enviado até o momento.
-              </p>
-            )}
-
-            <input
-              ref={videoInputRef}
-              type="file"
-              accept="video/*"
-              onChange={(event) => {
-                uploadVideoMutation.reset();
-                setMediaSuccessMessage(null);
-                setVideoFile(event.target.files?.[0] ?? null);
-              }}
-              className="mt-4 block w-full text-sm text-[#6F6A62] file:mr-4 file:rounded-full file:border-0 file:bg-[#2F4F3E] file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white"
-            />
-
-            {videoFile && (
-              <div className="mt-3 flex flex-col gap-2 rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] p-3 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-sm text-[#6F6A62]">
-                  Arquivo selecionado:{" "}
-                  <span className="font-semibold text-[#1F1F1F]">
-                    {videoFile.name}
-                  </span>
-                </p>
-
-                <button
-                  type="button"
-                  onClick={handleRemoveSelectedVideo}
-                  disabled={uploadVideoMutation.isPending}
-                  className="text-left text-sm font-semibold text-red-600 transition hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-60 sm:text-right"
-                >
-                  Remover arquivo
-                </button>
-              </div>
-            )}
-
-            <Button
-              type="button"
-              className="mt-4 w-full"
-              disabled={!videoFile || uploadVideoMutation.isPending}
-              onClick={handleUploadVideo}
-            >
-              {uploadVideoMutation.isPending
-                ? "Enviando vídeo..."
-                : "Substituir vídeo"}
-            </Button>
-          </div>
-        </div>
       </div>
+    </div>
+  );
+}
+
+function Field({
+  label,
+  error,
+  className = "",
+  children,
+}: {
+  label: string;
+  error?: string;
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <label className={`block ${className}`}>
+      <span className="mb-2 block text-xs font-medium text-[#d5dad6]">
+        {label}
+      </span>
+      {children}
+      {error && (
+        <span className="mt-2 block text-sm text-[#ff8585]">{error}</span>
+      )}
+    </label>
+  );
+}
+
+function MediaField({
+  title,
+  helper,
+  action,
+  detail,
+  file,
+  accept,
+  icon,
+  inputRef,
+  onChange,
+  onRemove,
+}: {
+  title: string;
+  helper: string;
+  action: string;
+  detail: string;
+  file: File | null;
+  accept: string;
+  icon: ReactNode;
+  inputRef: RefObject<HTMLInputElement | null>;
+  onChange: (file: File | null) => void;
+  onRemove: () => void;
+}) {
+  return (
+    <div className="rounded-2xl border border-[#303733] bg-[#191d1b] p-4">
+      <p className="text-sm font-semibold">{title}</p>
+      <p className="mt-1 text-xs text-[#89938d]">{helper}</p>
+      <input
+        ref={inputRef}
+        type="file"
+        accept={accept}
+        className="sr-only"
+        onChange={(event) => onChange(event.target.files?.[0] ?? null)}
+      />
+      <button
+        type="button"
+        onClick={() => inputRef.current?.click()}
+        className="mt-5 flex min-h-32 w-full flex-col items-center justify-center rounded-xl border border-dashed border-[#376146] bg-[#1b251f] p-4 transition hover:border-[#70e39b] hover:bg-[#1e2c24]"
+      >
+        <span className="grid h-11 w-11 place-items-center rounded-xl bg-[#244333] text-[#70e39b]">
+          {file ? icon : <Upload size={21} />}
+        </span>
+        <span className="mt-3 max-w-full truncate text-sm font-semibold">
+          {file?.name ?? action}
+        </span>
+        <span className="mt-1 text-xs text-[#859088]">
+          {file ? "Clique para substituir" : detail}
+        </span>
+      </button>
+      {file && (
+        <button
+          type="button"
+          onClick={onRemove}
+          className="mt-3 text-xs font-semibold text-[#ff8585] hover:text-[#ffaaaa]"
+        >
+          Remover arquivo
+        </button>
+      )}
     </div>
   );
 }
