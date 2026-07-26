@@ -293,7 +293,9 @@ export function LoginPage() {
               role="alert"
               className="mb-5 rounded-xl border border-[#ff8d88]/25 bg-[#ff8d88]/[0.055] px-3.5 py-3"
             >
-              <p className="text-[11px] text-[#ff9b96]">{loginErrorMessage}</p>
+              <p className="text-[12px] font-medium leading-5 text-[#ff9b96]">
+                {loginErrorMessage}
+              </p>
             </div>
           )}
 
@@ -325,7 +327,7 @@ export function LoginPage() {
                 />
               </div>
               {errors.email && (
-                <p className="mt-2 text-[9px] text-[#ff8d88]">
+                <p className="mt-2 text-[11px] font-medium leading-4 text-[#ff8d88]">
                   {errors.email.message}
                 </p>
               )}
@@ -369,7 +371,7 @@ export function LoginPage() {
                 </button>
               </div>
               {errors.password && (
-                <p className="mt-2 text-[9px] text-[#ff8d88]">
+                <p className="mt-2 text-[11px] font-medium leading-4 text-[#ff8d88]">
                   {errors.password.message}
                 </p>
               )}
