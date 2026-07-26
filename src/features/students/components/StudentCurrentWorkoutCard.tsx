@@ -1,10 +1,11 @@
-import { Card } from "../../../components/ui/Card";
+import { ArrowRight } from "lucide-react";
+
 import { isApiError } from "../../../services/apiError";
-import { AssignWorkoutToStudentForm } from "./AssignWorkoutToStudentForm";
 import type { StudentCurrentWorkout } from "../../student-workout/types/studentWorkout";
 import type { Workout } from "../../workouts/types/workout";
+import { AssignWorkoutToStudentForm } from "./AssignWorkoutToStudentForm";
 
-type StudentCurrentWorkoutCardProps = {
+type Props = {
   studentId: number;
   currentWorkout?: StudentCurrentWorkout;
   isLoading: boolean;
@@ -28,22 +29,13 @@ function formatDate(value: string) {
 }
 
 function formatStatus(status: string) {
-  if (status === "ACTIVE") {
-    return "Ativo";
-  }
-
-  if (status === "INACTIVE") {
-    return "Inativo";
-  }
-
-  if (status === "ARCHIVED") {
-    return "Arquivado";
-  }
-
+  if (status === "ACTIVE") return "Ativo";
+  if (status === "INACTIVE") return "Inativo";
+  if (status === "ARCHIVED") return "Arquivado";
   return status;
 }
 
-function isCurrentWorkoutNotFound(error: unknown) {
+function isNotFound(error: unknown) {
   return isApiError(error) && error.status === 404;
 }
 
@@ -60,256 +52,201 @@ export function StudentCurrentWorkoutCard({
   onStartAssigningWorkout,
   onCancelAssigningWorkout,
   onAssignWorkoutSuccess,
-}: StudentCurrentWorkoutCardProps) {
+}: Props) {
+  const sortedExercises =
+    currentWorkout?.exercises
+      .slice()
+      .sort((a, b) => a.exerciseOrder - b.exerciseOrder) ?? [];
+
   return (
-    <Card>
-      <div className="mb-5 flex flex-col gap-1">
-        <p className="text-xs font-semibold uppercase tracking-wide text-[#8A8378]">
-          Treino atual
-        </p>
-
-        <h2 className="text-lg font-semibold text-[#1F1F1F]">
-          Treino atribuído
-        </h2>
-
-        <p className="text-sm text-[#6F6A62]">
-          Acompanhe o treino atual deste aluno.
-        </p>
+    <section className="rounded-2xl border border-[#29302c] bg-[#171a18] p-6">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#89968f]">
+            Treino atual
+          </p>
+          <h2 className="mt-3 text-xl font-semibold tracking-[-0.025em] text-[#f5f7f5]">
+            Treino atribuído
+          </h2>
+        </div>
+        {currentWorkout && !isAssigningWorkout && (
+          <span className="inline-flex min-h-7 items-center rounded-full bg-[#183725] px-3 text-[10px] font-semibold uppercase text-[#70e39b]">
+            {formatStatus(currentWorkout.status)}
+          </span>
+        )}
       </div>
 
       {workoutSuccessMessage && !isAssigningWorkout && (
-        <div className="mb-5 rounded-2xl border border-green-200 bg-green-50 p-4">
-          <p className="text-sm font-semibold text-green-700">
-            {workoutSuccessMessage}
-          </p>
-        </div>
+        <p className="mt-5 rounded-xl border border-[#2f5b40] bg-[#20382a] px-4 py-3 text-sm text-[#70e39b]">
+          {workoutSuccessMessage}
+        </p>
       )}
 
       {isAssigningWorkout && (
-        <div className="mb-5 rounded-3xl border border-[#E4DFD6] bg-[#FAF9F6] p-5">
-          <div className="mb-5 flex flex-col gap-1">
-            <p className="text-xs font-semibold uppercase tracking-wide text-[#8A8378]">
-              {currentWorkout ? "Troca de treino" : "Atribuição de treino"}
-            </p>
-
-            <h3 className="text-base font-semibold text-[#1F1F1F]">
-              {currentWorkout ? "Trocar treino atual" : "Atribuir treino"}
-            </h3>
-
-            <p className="text-sm text-[#6F6A62]">
-              Selecione um treino ativo para este aluno.
-            </p>
+        <div className="mt-6 rounded-2xl border border-[#303733] bg-[#1a1e1b] p-5">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#89968f]">
+            {currentWorkout ? "Troca de treino" : "Atribuição de treino"}
+          </p>
+          <h3 className="mt-3 text-lg font-semibold text-[#f5f7f5]">
+            {currentWorkout ? "Trocar treino atual" : "Atribuir treino"}
+          </h3>
+          <p className="mt-2 text-sm text-[#89948e]">
+            Selecione um treino ativo para este aluno.
+          </p>
+          <div className="mt-6">
+            <AssignWorkoutToStudentForm
+              studentId={studentId}
+              activeWorkouts={activeWorkouts}
+              currentWorkoutId={currentWorkout?.workoutId}
+              isLoading={isWorkoutsLoading}
+              onCancel={onCancelAssigningWorkout}
+              onSuccess={onAssignWorkoutSuccess}
+            />
           </div>
-
-          <AssignWorkoutToStudentForm
-            studentId={studentId}
-            activeWorkouts={activeWorkouts}
-            currentWorkoutId={currentWorkout?.workoutId}
-            isLoading={isWorkoutsLoading}
-            onCancel={onCancelAssigningWorkout}
-            onSuccess={onAssignWorkoutSuccess}
-          />
         </div>
       )}
 
       {isLoading && !isAssigningWorkout && (
-        <div
-          role="status"
-          className="rounded-2xl border border-[#E4DFD6] bg-[#FAF9F6] p-4"
-        >
-          <p className="text-sm text-[#6F6A62]">Carregando treino atual...</p>
+        <p role="status" className="mt-6 text-sm text-[#89948e]">
+          Carregando treino atual...
+        </p>
+      )}
+
+      {!isLoading && !isAssigningWorkout && isError && isNotFound(error) && (
+        <div className="mt-6 rounded-xl border border-dashed border-[#343b37] px-5 py-8 text-center">
+          <p className="text-sm font-semibold text-[#f5f7f5]">
+            Nenhum treino atual
+          </p>
+          <p className="mt-2 text-xs text-[#89948e]">
+            Este aluno ainda não possui um treino ativo.
+          </p>
+          <button
+            type="button"
+            onClick={onStartAssigningWorkout}
+            className="mt-5 h-11 rounded-xl bg-[#70e39b] px-5 text-sm font-semibold text-[#0d1b13]"
+          >
+            Atribuir treino
+          </button>
         </div>
       )}
 
-      {!isLoading &&
-        !isAssigningWorkout &&
-        isError &&
-        isCurrentWorkoutNotFound(error) && (
-          <div className="rounded-3xl border border-dashed border-[#D8D2C8] bg-[#FAF9F6] p-8 text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#F3F0E8] text-lg font-bold text-[#2F4F3E]">
-              —
+      {!isLoading && !isAssigningWorkout && isError && !isNotFound(error) && (
+        <p role="alert" className="mt-6 text-sm text-[#ff8c87]">
+          Não foi possível carregar o treino atual.
+        </p>
+      )}
+
+      {!isLoading && !isAssigningWorkout && currentWorkout && (
+        <div className="mt-6">
+          <div className="flex flex-col gap-5 rounded-2xl border border-[#2f5b40] bg-[#20382a] p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.13em] text-[#70e39b]">
+                Nome do treino
+              </p>
+              <p className="mt-3 text-xl font-semibold text-[#f5f7f5]">
+                {currentWorkout.workoutName}
+              </p>
+              <p className="mt-2 text-xs text-[#8fa098]">
+                Atribuído em {formatDate(currentWorkout.assignedAt)}
+              </p>
             </div>
-
-            <p className="text-sm font-semibold text-[#1F1F1F]">
-              Nenhum treino atual
-            </p>
-            <p className="mx-auto mt-2 max-w-md text-sm text-[#6F6A62]">
-              Este aluno ainda não possui um treino ativo atribuído.
-            </p>
-
             <button
               type="button"
               onClick={onStartAssigningWorkout}
-              className="mt-5 inline-flex h-10 items-center justify-center rounded-2xl border border-[#D8D2C8] bg-[#FFFEFB] px-4 text-sm font-semibold text-[#2F4F3E] transition hover:border-[#2F4F3E] hover:bg-[#F3F0E8]"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-[#a8b5ae] hover:text-[#70e39b]"
             >
-              Atribuir treino
+              Trocar
+              <ArrowRight aria-hidden="true" className="h-4 w-4" />
             </button>
           </div>
-        )}
 
-      {!isLoading &&
-        !isAssigningWorkout &&
-        isError &&
-        !isCurrentWorkoutNotFound(error) && (
-          <div
-            role="alert"
-            className="rounded-2xl border border-red-200 bg-red-50 p-4"
-          >
-            <p className="text-sm font-semibold text-red-700">
-              Erro ao carregar treino.
-            </p>
-            <p className="mt-1 text-sm text-red-600">
-              Não foi possível carregar o treino atual do aluno. Tente
-              novamente.
-            </p>
-          </div>
-        )}
-
-      {!isLoading && !isAssigningWorkout && currentWorkout && (
-        <div className="space-y-5">
-          <div className="rounded-3xl border border-[#E4DFD6] bg-[#FAF9F6] p-5">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-[#8A8378]">
-                  Nome do treino
-                </p>
-
-                <p className="mt-1 text-xl font-semibold text-[#1F1F1F]">
-                  {currentWorkout.workoutName}
-                </p>
-
-                <p className="mt-2 text-sm text-[#6F6A62]">
-                  Atribuído em {formatDate(currentWorkout.assignedAt)}
+          <div className="mt-3 grid gap-2 sm:grid-cols-3">
+            {[
+              ["Exercícios", String(currentWorkout.exercises.length)],
+              ["Status", formatStatus(currentWorkout.status)],
+              ["Atribuição", formatDate(currentWorkout.assignedAt)],
+            ].map(([label, value]) => (
+              <div
+                key={label}
+                className="rounded-xl border border-[#303733] px-4 py-4 text-center"
+              >
+                <p className="text-[10px] uppercase text-[#748078]">{label}</p>
+                <p className="mt-2 text-lg font-semibold text-[#f5f7f5]">
+                  {value}
                 </p>
               </div>
-
-              <span className="inline-flex w-fit rounded-full bg-green-50 px-3 py-1 text-xs font-semibold text-green-700">
-                {formatStatus(currentWorkout.status)}
-              </span>
-            </div>
-
-            <div className="mt-5 grid gap-3 sm:grid-cols-3">
-              <div className="rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] p-4 text-center">
-                <p className="text-xs font-semibold uppercase tracking-wide text-[#8A8378]">
-                  Exercícios
-                </p>
-                <p className="mt-1 text-lg font-semibold text-[#1F1F1F]">
-                  {currentWorkout.exercises.length}
-                </p>
-              </div>
-
-              <div className="rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] p-4 text-center">
-                <p className="text-xs font-semibold uppercase tracking-wide text-[#8A8378]">
-                  Status
-                </p>
-                <p className="mt-1 text-lg font-semibold text-[#1F1F1F]">
-                  {formatStatus(currentWorkout.status)}
-                </p>
-              </div>
-
-              <div className="rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] p-4 text-center">
-                <p className="text-xs font-semibold uppercase tracking-wide text-[#8A8378]">
-                  Atribuição
-                </p>
-                <p className="mt-1 text-lg font-semibold text-[#1F1F1F]">
-                  {formatDate(currentWorkout.assignedAt)}
-                </p>
-              </div>
-            </div>
+            ))}
           </div>
 
-          {currentWorkout.exercises.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-[#D8D2C8] bg-[#FAF9F6] p-6 text-center">
-              <p className="text-sm font-semibold text-[#1F1F1F]">
-                Treino sem exercícios
-              </p>
-              <p className="mt-1 text-sm text-[#6F6A62]">
-                Este treino ainda não possui exercícios vinculados.
-              </p>
-            </div>
+          {sortedExercises.length === 0 ? (
+            <p className="mt-5 rounded-xl border border-dashed border-[#343b37] p-6 text-center text-sm text-[#89948e]">
+              Este treino ainda não possui exercícios.
+            </p>
           ) : (
-            <div className="overflow-hidden rounded-2xl border border-[#E4DFD6]">
-              <div className="grid bg-[#FAF9F6] px-4 py-3 text-xs font-semibold uppercase tracking-wide text-[#8A8378] md:grid-cols-[64px_minmax(220px,1fr)_120px_120px_120px] md:gap-x-6">
-                <span className="text-center">Ordem</span>
+            <div className="mt-5 overflow-hidden rounded-xl border border-[#303733]">
+              <div className="hidden grid-cols-[70px_minmax(200px,1fr)_100px_110px_110px] gap-4 border-b border-[#303733] px-4 py-4 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#748078] md:grid">
+                <span>Ordem</span>
                 <span>Exercício</span>
-                <span className="hidden text-center md:block">Séries</span>
-                <span className="hidden text-center md:block">Reps</span>
-                <span className="hidden text-center md:block">Descanso</span>
+                <span className="text-center">Séries</span>
+                <span className="text-center">Repetições</span>
+                <span className="text-center">Descanso</span>
               </div>
 
-              <div className="divide-y divide-[#E4DFD6]">
-                {currentWorkout.exercises
-                  .slice()
-                  .sort(
-                    (firstExercise, secondExercise) =>
-                      firstExercise.exerciseOrder -
-                      secondExercise.exerciseOrder,
-                  )
-                  .map((exercise) => (
-                    <div
-                      key={exercise.workoutExerciseId}
-                      className="grid gap-3 px-4 py-4 md:grid-cols-[64px_minmax(220px,1fr)_120px_120px_120px] md:items-center md:gap-x-6"
-                    >
-                      <div className="flex justify-center">
-                        <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#2F4F3E] text-sm font-semibold text-white">
-                          {exercise.exerciseOrder}
-                        </span>
-                      </div>
-
+              <div className="divide-y divide-[#303733]">
+                {sortedExercises.map((exercise) => (
+                  <div
+                    key={exercise.workoutExerciseId}
+                    className="grid gap-4 px-4 py-4 md:grid-cols-[70px_minmax(200px,1fr)_100px_110px_110px] md:items-center"
+                  >
+                    <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#20382a] text-xs font-semibold text-[#70e39b]">
+                      {exercise.exerciseOrder}
+                    </span>
+                    <div>
+                      <p className="text-sm font-semibold text-[#f5f7f5]">
+                        {exercise.exerciseName}
+                      </p>
+                      <p className="mt-1 text-xs text-[#7f8a84]">
+                        {exercise.muscleGroup ?? "Não informado"}
+                        {exercise.equipmentName
+                          ? ` • ${exercise.equipmentName}`
+                          : ""}
+                      </p>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 md:contents">
                       <div>
-                        <p className="font-medium text-[#1F1F1F]">
-                          {exercise.exerciseName}
+                        <span className="text-[9px] uppercase text-[#748078] md:hidden">
+                          Séries
+                        </span>
+                        <p className="mt-1 text-sm font-semibold text-[#f5f7f5] md:mt-0 md:text-center">
+                          {exercise.sets}
                         </p>
-
-                        <p className="mt-1 text-sm text-[#6F6A62]">
-                          {exercise.muscleGroup ??
-                            "Grupo muscular não informado"}
-                          {exercise.equipmentName
-                            ? ` • ${exercise.equipmentName}`
-                            : ""}
+                      </div>
+                      <div>
+                        <span className="text-[9px] uppercase text-[#748078] md:hidden">
+                          Repetições
+                        </span>
+                        <p className="mt-1 text-sm font-semibold text-[#f5f7f5] md:mt-0 md:text-center">
+                          {exercise.reps}
                         </p>
-
-                        {exercise.notes && (
-                          <p className="mt-2 text-sm text-[#8A8378]">
-                            {exercise.notes}
-                          </p>
-                        )}
-
-                        <div className="mt-3 flex flex-wrap gap-2 text-xs md:hidden">
-                          <span className="rounded-full bg-[#FAF9F6] px-3 py-1 font-semibold text-[#6F6A62]">
-                            {exercise.sets} séries
-                          </span>
-                          <span className="rounded-full bg-[#FAF9F6] px-3 py-1 font-semibold text-[#6F6A62]">
-                            {exercise.reps} reps
-                          </span>
-                          <span className="rounded-full bg-[#FAF9F6] px-3 py-1 font-semibold text-[#6F6A62]">
-                            {exercise.restTimeSeconds
-                              ? `${exercise.restTimeSeconds}s`
-                              : "Sem descanso"}
-                          </span>
-                        </div>
                       </div>
-
-                      <div className="hidden items-center justify-center text-sm text-[#6F6A62] md:flex">
-                        {exercise.sets}
-                      </div>
-
-                      <div className="hidden items-center justify-center text-sm text-[#6F6A62] md:flex">
-                        {exercise.reps}
-                      </div>
-
-                      <div className="hidden items-center justify-center text-sm text-[#6F6A62] md:flex">
-                        {exercise.restTimeSeconds
-                          ? `${exercise.restTimeSeconds}s`
-                          : "-"}
+                      <div>
+                        <span className="text-[9px] uppercase text-[#748078] md:hidden">
+                          Descanso
+                        </span>
+                        <p className="mt-1 text-sm font-semibold text-[#f5f7f5] md:mt-0 md:text-center">
+                          {exercise.restTimeSeconds
+                            ? `${exercise.restTimeSeconds}s`
+                            : "—"}
+                        </p>
                       </div>
                     </div>
-                  ))}
+                  </div>
+                ))}
               </div>
             </div>
           )}
         </div>
       )}
-    </Card>
+    </section>
   );
 }
