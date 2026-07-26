@@ -183,18 +183,7 @@ export function AdminExercisesPage() {
             </h1>
           </div>
 
-          <div className="flex w-full gap-3 lg:w-auto">
-            <label className="flex min-h-12 flex-1 items-center gap-3 rounded-xl border border-[#29302c] bg-[#141715] px-4 text-[#849087] transition focus-within:border-[#43644f] lg:w-60">
-              <Search size={18} strokeWidth={1.8} aria-hidden="true" />
-              <span className="sr-only">Pesquisar exercícios</span>
-              <input
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                placeholder="Pesquisar"
-                className="min-w-0 flex-1 bg-transparent text-sm text-[#f5f7f5] outline-none placeholder:text-[#69736d]"
-              />
-            </label>
-
+          <div className="flex w-full justify-end lg:w-auto">
             <button
               type="button"
               onClick={() => setIsCreateOpen(true)}
