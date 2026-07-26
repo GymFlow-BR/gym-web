@@ -1,287 +1,253 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import type { ReactNode, SVGProps } from 'react'
-import { NavLink, useNavigate } from 'react-router'
+import "@fontsource-variable/geist";
 
-import { useAuthenticatedUser } from '../../features/auth/hooks/useAuthenticatedUser'
-import { logout } from '../../features/auth/services/authService'
-import type { UserRole } from '../../features/auth/types/auth'
-import { SkipLink } from './SkipLink'
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  Dumbbell,
+  LayoutGrid,
+  LogOut,
+  MoreHorizontal,
+  Users,
+  Zap,
+  type LucideIcon,
+} from "lucide-react";
+import type { ReactNode } from "react";
+import { NavLink, useNavigate } from "react-router";
+
+import { useAuthenticatedUser } from "../../features/auth/hooks/useAuthenticatedUser";
+import { logout } from "../../features/auth/services/authService";
+import type { UserRole } from "../../features/auth/types/auth";
+import { SkipLink } from "./SkipLink";
 
 type AdminLayoutProps = {
-  children: ReactNode
-}
+  children: ReactNode;
+};
 
-function LogoMark({ className = '' }: { className?: string }) {
-  return (
-    <span
-      aria-hidden="true"
-      className={`flex items-center justify-center rounded-xl bg-gradient-to-br from-[#22C55E] to-[#0F3D31] ${className}`}
-    >
-      <svg viewBox="0 0 24 24" fill="none" className="h-[64%] w-[64%]">
-        <path
-          d="M8.3 19c0-3.1 6-2.7 6-6.4s-6-2.5-6-6.4"
-          stroke="#FFFFFF"
-          strokeWidth={2.7}
-          strokeLinecap="round"
-        />
-        <circle
-          cx="15.4"
-          cy="5.6"
-          r="2.1"
-          stroke="#FFFFFF"
-          strokeWidth={2.2}
-        />
-      </svg>
-    </span>
-  )
-}
+type NavigationItem = {
+  label: string;
+  to: string;
+  icon: LucideIcon;
+};
 
-function OverviewIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.8}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
-    >
-      <rect x="3.5" y="3.5" width="7.5" height="7.5" rx="1.5" />
-      <rect x="13" y="3.5" width="7.5" height="7.5" rx="1.5" />
-      <rect x="3.5" y="13" width="7.5" height="7.5" rx="1.5" />
-      <rect x="13" y="13" width="7.5" height="7.5" rx="1.5" />
-    </svg>
-  )
-}
-
-function StudentsIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.8}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
-    >
-      <circle cx="9" cy="8" r="3.2" />
-      <path d="M3 20c0-3.6 2.7-6 6-6s6 2.4 6 6" />
-      <path d="M15.5 5.2a3.2 3.2 0 0 1 0 6" />
-      <path d="M17.5 14.3c2.5.5 3.5 2.6 3.5 5.7" />
-    </svg>
-  )
-}
-
-function WorkoutsIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.8}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
-    >
-      <path d="M5 8v8M3.2 10v4M19 8v8M20.8 10v4M8.5 12h7" strokeWidth={2} />
-      <rect x="5" y="6.5" width="3" height="11" rx="1" />
-      <rect x="16" y="6.5" width="3" height="11" rx="1" />
-    </svg>
-  )
-}
-
-function ExercisesIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.8}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
-    >
-      <path d="M13 3 5 13h6l-1 8 8-10h-6z" />
-    </svg>
-  )
-}
-
-function EvaluationsIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.8}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
-    >
-      <rect x="5" y="4" width="14" height="17" rx="2" />
-      <path d="M9 3.5h6a1 1 0 0 1 1 1V6H8V4.5a1 1 0 0 1 1-1Z" />
-      <path d="m8.5 13 2 2 4-4" />
-    </svg>
-  )
-}
-
-function ReportsIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.8}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
-    >
-      <path d="M4 20V10M11 20V4M18 20v-7" />
-    </svg>
-  )
-}
-
-const navItems = [
-  { label: 'Visão geral', to: '/admin', icon: OverviewIcon },
-  { label: 'Alunos', to: '/admin/students', icon: StudentsIcon },
-  { label: 'Treinos', to: '/admin/workouts', icon: WorkoutsIcon },
-  { label: 'Exercícios', to: '/admin/exercises', icon: ExercisesIcon },
-  { label: 'Avaliações', to: '/admin/evaluations', icon: EvaluationsIcon },
-  { label: 'Relatórios', to: '/admin/reports', icon: ReportsIcon },
-]
+const navigationItems: NavigationItem[] = [
+  {
+    label: "Visão geral",
+    to: "/admin",
+    icon: LayoutGrid,
+  },
+  {
+    label: "Alunos",
+    to: "/admin/students",
+    icon: Users,
+  },
+  {
+    label: "Exercícios",
+    to: "/admin/exercises",
+    icon: Zap,
+  },
+  {
+    label: "Treinos",
+    to: "/admin/workouts",
+    icon: Dumbbell,
+  },
+];
 
 const roleLabels: Record<UserRole, string> = {
-  ADMIN: 'Administrador',
-  TEACHER: 'Personal',
-  STUDENT: 'Aluno',
-}
+  ADMIN: "Administrador",
+  TEACHER: "Personal trainer",
+  STUDENT: "Aluno",
+};
 
 function getInitials(name: string) {
   return name
-    .split(' ')
+    .trim()
+    .split(/\s+/)
     .filter(Boolean)
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase())
-    .join('')
+    .join("");
+}
+
+function Brand() {
+  return (
+    <div className="flex items-center gap-3">
+      <span
+        aria-hidden="true"
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#70e39b] text-[#0b120e]"
+      >
+        <Dumbbell className="h-5 w-5" strokeWidth={2.2} />
+      </span>
+
+      <span className="text-[21px] font-semibold tracking-[-0.04em] text-[#f4f7f4]">
+        GymFlow
+      </span>
+    </div>
+  );
 }
 
 export function AdminLayout({ children }: AdminLayoutProps) {
-  const navigate = useNavigate()
-  const queryClient = useQueryClient()
-  const { data: user } = useAuthenticatedUser()
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { data: user } = useAuthenticatedUser();
 
   const logoutMutation = useMutation({
     mutationFn: logout,
     onSuccess: () => {
-      queryClient.removeQueries({ queryKey: ['authenticated-user'] })
-      navigate('/login', { replace: true })
+      queryClient.removeQueries({
+        queryKey: ["authenticated-user"],
+      });
+
+      navigate("/login", { replace: true });
     },
-  })
+  });
 
   function handleLogout() {
-    logoutMutation.mutate()
+    logoutMutation.mutate();
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900">
+    <div
+      className="min-h-dvh font-['Geist_Variable',Arial,sans-serif] text-[#f4f7f4]"
+      style={{
+        background:
+          "radial-gradient(circle at 50% 0%, rgba(112, 227, 155, 0.04), transparent 34rem), #0d0f0e",
+      }}
+    >
       <SkipLink />
 
-      <aside className="fixed hidden h-screen w-64 flex-col bg-gradient-to-b from-[#0B2A24] to-[#123D32] px-4 py-6 lg:flex">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[240px] flex-col border-r border-[#242b27] bg-[#101311] px-5 py-8 lg:flex">
         <div className="px-2">
-          <span className="text-xl font-bold text-white">GymFlow</span>
+          <Brand />
         </div>
 
-        <nav aria-label="Navegação principal" className="mt-8 flex-1 space-y-1">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.to === '/admin'}
-              className={({ isActive }) =>
-                [
-                  'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition',
-                  isActive
-                    ? 'bg-[#1BA65A] text-white'
-                    : 'text-white/70 hover:bg-white/10 hover:text-white',
-                ].join(' ')
-              }
-            >
-              <item.icon aria-hidden="true" className="h-5 w-5 shrink-0" />
-              {item.label}
-            </NavLink>
-          ))}
+        <p className="mb-4 mt-14 px-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#7f8b84]">
+          Gestão
+        </p>
+
+        <nav
+          aria-label="Navegação principal"
+          className="flex flex-1 flex-col gap-2"
+        >
+          {navigationItems.map((item) => {
+            const Icon = item.icon;
+
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.to === "/admin"}
+                className={({ isActive }) =>
+                  [
+                    "flex min-h-11 items-center gap-3.5 rounded-xl border px-4 text-[14px] font-medium transition-colors",
+                    isActive
+                      ? "border-[#294536] bg-[#1b2e23] text-[#6ee59a]"
+                      : "border-transparent text-[#9aa49e] hover:bg-[#171a18] hover:text-[#f4f7f4]",
+                  ].join(" ")
+                }
+              >
+                <Icon
+                  aria-hidden="true"
+                  className="h-5 w-5 shrink-0"
+                  strokeWidth={1.8}
+                />
+
+                <span>{item.label}</span>
+              </NavLink>
+            );
+          })}
         </nav>
 
-        <div className="border-t border-white/10 pt-4">
+        <div className="border-t border-[#29302c] pt-5">
           <div className="flex items-center gap-3 px-2">
             <span
               aria-hidden="true"
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-sm font-semibold text-white"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#14291e] text-[12px] font-semibold uppercase tracking-[0.04em] text-[#87a693]"
             >
-              {user ? getInitials(user.name) : '...'}
+              {user ? getInitials(user.name) : "..."}
             </span>
 
-            <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-white">
-                {user?.name ?? 'Carregando...'}
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[14px] font-semibold text-[#f4f7f4]">
+                {user?.name ?? "Carregando..."}
               </p>
-              <p className="truncate text-xs text-white/60">
-                {user ? roleLabels[user.role] : ''}
+
+              <p className="mt-1 truncate text-[12px] text-[#87918b]">
+                {user ? roleLabels[user.role] : ""}
               </p>
             </div>
-          </div>
 
-          <button
-            type="button"
-            onClick={handleLogout}
-            disabled={logoutMutation.isPending}
-            aria-busy={logoutMutation.isPending}
-            className="mt-4 w-full rounded-xl border border-white/15 px-4 py-2.5 text-sm font-semibold text-white/80 transition hover:border-white/30 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {logoutMutation.isPending ? 'Saindo...' : 'Sair'}
-          </button>
+            <details className="group relative">
+              <summary
+                aria-label="Abrir opções do usuário"
+                className="flex h-9 w-9 cursor-pointer list-none items-center justify-center rounded-lg text-[#8b958f] transition-colors hover:bg-[#19201c] hover:text-[#f4f7f4] [&::-webkit-details-marker]:hidden"
+              >
+                <MoreHorizontal
+                  aria-hidden="true"
+                  className="h-5 w-5"
+                  strokeWidth={1.8}
+                />
+              </summary>
+
+              <div className="absolute bottom-11 right-0 z-40 w-40 rounded-xl border border-[#29302c] bg-[#171a18] p-1.5 shadow-2xl shadow-black/30">
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  disabled={logoutMutation.isPending}
+                  aria-busy={logoutMutation.isPending}
+                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-[13px] font-medium text-[#c7cec9] transition-colors hover:bg-[#202721] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  <LogOut
+                    aria-hidden="true"
+                    className="h-4 w-4"
+                    strokeWidth={1.8}
+                  />
+
+                  {logoutMutation.isPending ? "Saindo..." : "Sair"}
+                </button>
+              </div>
+            </details>
+          </div>
         </div>
       </aside>
 
-      <div className="lg:pl-64">
-        <header className="bg-gradient-to-b from-[#0B2A24] to-[#123D32] px-5 py-4 lg:hidden">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <LogoMark className="h-8 w-8" />
-              <span className="text-lg font-bold text-white">GymFlow</span>
-            </div>
+      <div className="lg:pl-[240px]">
+        <header className="border-b border-[#242b27] bg-[#101311] lg:hidden">
+          <div className="flex items-center justify-between gap-4 px-4 py-4">
+            <Brand />
 
             <button
               type="button"
               onClick={handleLogout}
               disabled={logoutMutation.isPending}
               aria-busy={logoutMutation.isPending}
-              className="rounded-xl border border-white/15 px-3 py-2 text-xs font-semibold text-white/80 disabled:cursor-not-allowed disabled:opacity-60"
+              aria-label={logoutMutation.isPending ? "Saindo" : "Sair"}
+              className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#29302c] text-[#9aa49e] transition-colors hover:bg-[#171a18] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {logoutMutation.isPending ? 'Saindo...' : 'Sair'}
+              <LogOut
+                aria-hidden="true"
+                className="h-[18px] w-[18px]"
+                strokeWidth={1.8}
+              />
             </button>
           </div>
 
           <nav
             aria-label="Navegação principal"
-            className="mt-4 flex gap-2 overflow-x-auto"
+            className="flex gap-1 overflow-x-auto px-4 pb-4"
           >
-            {navItems.map((item) => (
+            {navigationItems.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
-                end={item.to === '/admin'}
+                end={item.to === "/admin"}
                 className={({ isActive }) =>
                   [
-                    'flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl px-3 py-2 text-sm font-medium transition',
+                    "shrink-0 rounded-xl px-3 py-2.5 text-[13px] font-medium transition-colors",
                     isActive
-                      ? 'bg-[#1BA65A] text-white'
-                      : 'text-white/70 hover:text-white',
-                  ].join(' ')
+                      ? "bg-[#1b2e23] text-[#6ee59a]"
+                      : "text-[#929c96] hover:bg-[#171a18] hover:text-white",
+                  ].join(" ")
                 }
               >
-                <item.icon aria-hidden="true" className="h-4 w-4" />
                 {item.label}
               </NavLink>
             ))}
@@ -291,11 +257,11 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         <main
           id="main-content"
           tabIndex={-1}
-          className="px-5 py-6 focus:outline-none lg:px-8 lg:py-8"
+          className="min-h-dvh px-4 py-8 focus:outline-none sm:px-6 lg:px-12 lg:py-12 xl:px-16"
         >
-          {children}
+          <div className="mx-auto w-full max-w-[1435px]">{children}</div>
         </main>
       </div>
     </div>
-  )
+  );
 }
