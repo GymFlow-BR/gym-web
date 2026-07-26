@@ -1,6 +1,7 @@
-import { Card } from "../../../components/ui/Card";
-import type { Student } from "../types/student";
+import { ChevronRight } from "lucide-react";
+
 import type { StudentCurrentWorkout } from "../../student-workout/types/studentWorkout";
+import type { Student } from "../types/student";
 
 type StudentActionsCardProps = {
   student?: Student;
@@ -21,57 +22,50 @@ export function StudentActionsCard({
     return null;
   }
 
+  const actions = [
+    {
+      title: "Editar dados básicos",
+      description: "Atualize nome e e-mail.",
+      onClick: onStartEditing,
+    },
+    {
+      title: currentWorkout ? "Trocar treino" : "Atribuir treino",
+      description: currentWorkout
+        ? "Substitua o treino ativo."
+        : "Vincule um treino ativo.",
+      onClick: onStartAssigningWorkout,
+    },
+  ];
+
   return (
-    <Card>
-      <div className="mb-4 flex flex-col gap-1">
-        <p className="text-xs font-semibold uppercase tracking-wide text-[#8A8378]">
-          Ações do aluno
-        </p>
+    <section className="rounded-2xl border border-[#29302c] bg-[#171a18] p-6">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#89968f]">
+        Gerenciamento
+      </p>
 
-        <h2 className="text-lg font-semibold text-[#1F1F1F]">Gerenciamento</h2>
-
-        <p className="text-sm text-[#6F6A62]">
-          Gerencie dados básicos e vínculo de treino deste aluno.
-        </p>
+      <div className="mt-2 divide-y divide-[#29302c] border-t border-[#29302c]">
+        {actions.map((action) => (
+          <button
+            key={action.title}
+            type="button"
+            onClick={action.onClick}
+            className="flex w-full items-center justify-between gap-4 py-5 text-left transition hover:text-[#70e39b]"
+          >
+            <span>
+              <span className="block text-sm font-semibold text-[#f5f7f5]">
+                {action.title}
+              </span>
+              <span className="mt-2 block text-xs text-[#7f8a84]">
+                {action.description}
+              </span>
+            </span>
+            <ChevronRight
+              aria-hidden="true"
+              className="h-[18px] w-[18px] shrink-0 text-[#89948e]"
+            />
+          </button>
+        ))}
       </div>
-
-      <button
-        type="button"
-        onClick={onStartEditing}
-        className="flex w-full items-center justify-between rounded-2xl border border-[#E4DFD6] bg-[#FAF9F6] px-4 py-3 text-left transition hover:border-[#2F4F3E] hover:bg-[#F3F0E8]"
-      >
-        <span>
-          <span className="block text-sm font-semibold text-[#1F1F1F]">
-            Editar dados básicos
-          </span>
-          <span className="mt-1 block text-sm text-[#6F6A62]">
-            Atualize nome e email do aluno.
-          </span>
-        </span>
-
-        <span className="text-sm font-semibold text-[#2F4F3E]">Editar</span>
-      </button>
-
-      <button
-        type="button"
-        onClick={onStartAssigningWorkout}
-        className="mt-3 flex w-full items-center justify-between rounded-2xl border border-[#E4DFD6] bg-[#FAF9F6] px-4 py-3 text-left transition hover:border-[#2F4F3E] hover:bg-[#F3F0E8]"
-      >
-        <span>
-          <span className="block text-sm font-semibold text-[#1F1F1F]">
-            {currentWorkout ? "Trocar treino" : "Atribuir treino"}
-          </span>
-          <span className="mt-1 block text-sm text-[#6F6A62]">
-            {currentWorkout
-              ? "Substitua o treino ativo por outro treino disponível."
-              : "Vincule um treino ativo a este aluno."}
-          </span>
-        </span>
-
-        <span className="text-sm font-semibold text-[#2F4F3E]">
-          {currentWorkout ? "Trocar" : "Atribuir"}
-        </span>
-      </button>
-    </Card>
+    </section>
   );
 }

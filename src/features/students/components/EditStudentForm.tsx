@@ -9,22 +9,11 @@ import { updateStudent } from "../services/studentService";
 import type { Student } from "../types/student";
 
 const editStudentSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(1, "O nome do aluno é obrigatório.")
-    .min(2, "O nome do aluno deve ter pelo menos 2 caracteres.")
-    .max(120, "O nome do aluno deve ter no máximo 120 caracteres."),
-  email: z
-    .string()
-    .trim()
-    .min(1, "O email do aluno é obrigatório.")
-    .email("Informe um email válido.")
-    .max(160, "O email deve ter no máximo 160 caracteres."),
+  name: z.string().trim().min(2, "Informe pelo menos 2 caracteres.").max(120),
+  email: z.string().trim().email("Informe um e-mail válido.").max(160),
 });
 
 type EditStudentFormData = z.infer<typeof editStudentSchema>;
-
 type EditStudentFormProps = {
   student: Student;
   onCancel: () => void;
@@ -37,7 +26,6 @@ export function EditStudentForm({
   onSuccess,
 }: EditStudentFormProps) {
   const queryClient = useQueryClient();
-
   const {
     register,
     handleSubmit,
@@ -45,20 +33,14 @@ export function EditStudentForm({
     formState: { errors },
   } = useForm<EditStudentFormData>({
     resolver: zodResolver(editStudentSchema),
-    defaultValues: {
-      name: student.name,
-      email: student.email,
-    },
+    defaultValues: { name: student.name, email: student.email },
   });
 
   useEffect(() => {
-    reset({
-      name: student.name,
-      email: student.email,
-    });
+    reset({ name: student.name, email: student.email });
   }, [reset, student.email, student.name]);
 
-  const updateStudentMutation = useMutation({
+  const mutation = useMutation({
     mutationFn: (data: EditStudentFormData) =>
       updateStudent(student.id, {
         name: data.name.trim(),
@@ -66,120 +48,90 @@ export function EditStudentForm({
       }),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["students"] });
-
       onSuccess();
     },
   });
 
-  function handleEditStudent(data: EditStudentFormData) {
-    updateStudentMutation.mutate(data);
+  function getErrorMessage() {
+    if (isApiError(mutation.error)) {
+      if (mutation.error.status === 403) return "Você não possui permissão.";
+      if (mutation.error.status === 404) return "Aluno não encontrado.";
+      if (mutation.error.status === 409)
+        return "Já existe um usuário com este e-mail.";
+      if (mutation.error.status === 400) return "Revise os dados preenchidos.";
+    }
+    return "Não foi possível editar o aluno.";
   }
 
-  function getUpdateStudentErrorMessage() {
-    if (!updateStudentMutation.error) {
-      return null;
-    }
-
-    if (isApiError(updateStudentMutation.error)) {
-      if (updateStudentMutation.error.status === 403) {
-        return "Você não possui permissão para editar este aluno.";
-      }
-
-      if (updateStudentMutation.error.status === 404) {
-        return "Aluno não encontrado.";
-      }
-
-      if (updateStudentMutation.error.status === 409) {
-        return "Já existe um usuário cadastrado com este email.";
-      }
-
-      if (updateStudentMutation.error.status === 400) {
-        return "Revise os dados preenchidos e tente novamente.";
-      }
-    }
-
-    return "Não foi possível editar o aluno. Tente novamente.";
-  }
+  const inputClass =
+    "h-12 w-full rounded-xl border border-[#343b37] bg-[#1d211f] px-4 text-sm text-[#f5f7f5] outline-none transition focus:border-[#70e39b] focus:ring-2 focus:ring-[#70e39b]/15 disabled:opacity-60";
 
   return (
-    <form className="space-y-4" onSubmit={handleSubmit(handleEditStudent)}>
-      {updateStudentMutation.isError && (
-        <div
+    <form
+      className="space-y-5"
+      onSubmit={handleSubmit((data) => mutation.mutate(data))}
+    >
+      {mutation.isError && (
+        <p
           role="alert"
-          className="rounded-2xl border border-red-200 bg-red-50 p-4"
+          className="rounded-xl border border-[#633a3a] bg-[#251918] px-4 py-3 text-xs text-[#ff8c87]"
         >
-          <p className="text-sm font-semibold text-red-700">
-            Erro ao editar aluno.
-          </p>
-          <p className="mt-1 text-sm text-red-600">
-            {getUpdateStudentErrorMessage()}
-          </p>
-        </div>
+          {getErrorMessage()}
+        </p>
       )}
 
       <div>
         <label
           htmlFor="editStudentName"
-          className="mb-2 block text-sm font-medium text-[#1F1F1F]"
+          className="mb-2 block text-xs font-medium text-[#d7dcd9]"
         >
           Nome
         </label>
-
         <input
           id="editStudentName"
-          placeholder="Ex: Maria Silva"
-          autoComplete="off"
-          className="h-12 w-full rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] px-4 text-sm text-[#1F1F1F] outline-none transition placeholder:text-[#B7B2A8] focus:border-[#2F4F3E] focus:ring-2 focus:ring-[#2F4F3E]/10 disabled:cursor-not-allowed disabled:bg-[#F3F0E8] disabled:text-[#8A8378]"
-          disabled={updateStudentMutation.isPending}
+          className={inputClass}
+          disabled={mutation.isPending}
           {...register("name")}
         />
-
         {errors.name && (
-          <p className="mt-2 text-sm text-red-600">{errors.name.message}</p>
+          <p className="mt-2 text-xs text-[#ff7f79]">{errors.name.message}</p>
         )}
       </div>
 
       <div>
         <label
           htmlFor="editStudentEmail"
-          className="mb-2 block text-sm font-medium text-[#1F1F1F]"
+          className="mb-2 block text-xs font-medium text-[#d7dcd9]"
         >
-          Email
+          E-mail
         </label>
-
         <input
           id="editStudentEmail"
           type="email"
-          placeholder="aluno@email.com"
-          autoComplete="off"
-          className="h-12 w-full rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] px-4 text-sm text-[#1F1F1F] outline-none transition placeholder:text-[#B7B2A8] focus:border-[#2F4F3E] focus:ring-2 focus:ring-[#2F4F3E]/10 disabled:cursor-not-allowed disabled:bg-[#F3F0E8] disabled:text-[#8A8378]"
-          disabled={updateStudentMutation.isPending}
+          className={inputClass}
+          disabled={mutation.isPending}
           {...register("email")}
         />
-
         {errors.email && (
-          <p className="mt-2 text-sm text-red-600">{errors.email.message}</p>
+          <p className="mt-2 text-xs text-[#ff7f79]">{errors.email.message}</p>
         )}
       </div>
 
-      <div className="flex flex-col gap-3 border-t border-[#E4DFD6] pt-5 sm:flex-row sm:justify-end">
+      <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
         <button
           type="button"
           onClick={onCancel}
-          disabled={updateStudentMutation.isPending}
-          className="flex h-11 items-center justify-center rounded-2xl border border-[#D8D2C8] bg-[#FFFEFB] px-5 text-sm font-semibold text-[#2F4F3E] transition hover:border-[#2F4F3E] hover:bg-[#F3F0E8] disabled:cursor-not-allowed disabled:opacity-60"
+          disabled={mutation.isPending}
+          className="h-11 rounded-xl border border-[#39413c] px-4 text-sm font-semibold text-[#f5f7f5] hover:bg-[#1d211e] disabled:opacity-50"
         >
           Cancelar
         </button>
-
         <button
           type="submit"
-          disabled={updateStudentMutation.isPending}
-          className="flex h-11 items-center justify-center rounded-2xl bg-[#2F4F3E] px-5 text-sm font-semibold text-white transition hover:bg-[#243D30] disabled:cursor-not-allowed disabled:opacity-60"
+          disabled={mutation.isPending}
+          className="h-11 rounded-xl bg-[#70e39b] px-5 text-sm font-semibold text-[#0d1b13] hover:bg-[#83e8a8] disabled:opacity-50"
         >
-          {updateStudentMutation.isPending
-            ? "Salvando..."
-            : "Salvar alterações"}
+          {mutation.isPending ? "Salvando..." : "Salvar alterações"}
         </button>
       </div>
     </form>
