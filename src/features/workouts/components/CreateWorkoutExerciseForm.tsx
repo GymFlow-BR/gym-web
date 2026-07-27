@@ -1,10 +1,9 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Plus } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-import { Button } from "../../../components/ui/Button";
-import { Input } from "../../../components/ui/Input";
 import { isApiError } from "../../../services/apiError";
 import { getExercises } from "../../exercises/services/exerciseService";
 import { createWorkoutExercise } from "../services/workoutService";
@@ -107,6 +106,25 @@ function toCreateWorkoutExerciseRequest(
   };
 }
 
+function getFieldClassName(hasError?: boolean) {
+  return [
+    "h-14 w-full rounded-[14px] border bg-[#151917] px-4 text-[14px] text-[#F4F7F5] outline-none transition placeholder:text-[#6F7973]",
+    "[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none",
+    hasError
+      ? "border-[#B95757] focus:border-[#FF7A7A] focus:ring-2 focus:ring-[#FF7A7A]/15"
+      : "border-[#303632] focus:border-[#70E39B] focus:ring-2 focus:ring-[#70E39B]/15",
+  ].join(" ");
+}
+
+function getTextAreaClassName(hasError?: boolean) {
+  return [
+    "min-h-[92px] w-full rounded-[14px] border bg-[#151917] px-4 py-3 text-[14px] text-[#F4F7F5] outline-none transition placeholder:text-[#6F7973]",
+    hasError
+      ? "border-[#B95757] focus:border-[#FF7A7A] focus:ring-2 focus:ring-[#FF7A7A]/15"
+      : "border-[#303632] focus:border-[#70E39B] focus:ring-2 focus:ring-[#70E39B]/15",
+  ].join(" ");
+}
+
 export function CreateWorkoutExerciseForm({
   workoutId,
 }: CreateWorkoutExerciseFormProps) {
@@ -175,61 +193,58 @@ export function CreateWorkoutExerciseForm({
     return "Não foi possível adicionar o exercício ao treino. Tente novamente.";
   }
 
-  const errorMessage = getCreateWorkoutExerciseErrorMessage();
-
   function handleCreateWorkoutExercise(data: CreateWorkoutExerciseFormData) {
     createWorkoutExerciseMutation.mutate(toCreateWorkoutExerciseRequest(data));
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] shadow-sm">
-      <div className="border-b border-[#E4DFD6] p-5">
-        <p className="text-xs font-semibold uppercase tracking-wide text-[#8A8378]">
+    <section className="overflow-hidden rounded-[22px] border border-[#29302C] bg-[#171A18] text-[#F4F7F5] shadow-[0_24px_80px_rgba(0,0,0,0.22)]">
+      <div className="border-b border-[#29302C] px-5 py-6 sm:px-7">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#91A097]">
           Montagem do treino
         </p>
 
-        <h2 className="mt-2 text-lg font-semibold text-[#1F1F1F]">
+        <h2 className="mt-3 text-[26px] font-semibold tracking-[-0.04em] text-white">
           Adicionar exercício
         </h2>
 
-        <p className="mt-1 max-w-2xl text-sm text-[#6F6A62]">
-          Escolha um exercício cadastrado e defina ordem, séries, repetições,
-          carga, descanso e observações para este treino modelo.
+        <p className="mt-2 max-w-2xl text-[14px] leading-6 text-[#91A097]">
+          Defina ordem, séries, repetições, carga, descanso e observações.
         </p>
       </div>
 
-      <div className="p-5">
+      <div className="px-5 py-6 sm:px-7">
         {createWorkoutExerciseMutation.isSuccess && (
-          <div className="mb-5 rounded-2xl border border-green-200 bg-green-50 p-4">
-            <p className="text-sm font-medium text-green-700">
-              Exercício adicionado ao treino com sucesso.
-            </p>
+          <div className="mb-5 rounded-[14px] border border-[#2D6945] bg-[#173323] px-4 py-3 text-[13px] font-medium text-[#70E39B]">
+            Exercício adicionado ao treino com sucesso.
           </div>
         )}
 
         {createWorkoutExerciseMutation.isError && (
           <div
             role="alert"
-            className="mb-5 rounded-2xl border border-red-200 bg-red-50 p-4"
+            className="mb-5 rounded-[14px] border border-[#6A3434] bg-[#2B1919] px-4 py-3"
           >
-            <p className="text-sm font-semibold text-red-700">
+            <p className="text-[13px] font-semibold text-[#FF8A8A]">
               Erro ao adicionar exercício.
             </p>
 
-            <p className="mt-1 text-sm text-red-600">{errorMessage}</p>
+            <p className="mt-1 text-[13px] text-[#FFB0B0]">
+              {getCreateWorkoutExerciseErrorMessage()}
+            </p>
           </div>
         )}
 
         {isExercisesError && (
           <div
             role="alert"
-            className="mb-5 rounded-2xl border border-red-200 bg-red-50 p-4"
+            className="mb-5 rounded-[14px] border border-[#6A3434] bg-[#2B1919] px-4 py-3"
           >
-            <p className="text-sm font-semibold text-red-700">
+            <p className="text-[13px] font-semibold text-[#FF8A8A]">
               Não foi possível carregar os exercícios.
             </p>
 
-            <p className="mt-1 text-sm text-red-600">
+            <p className="mt-1 text-[13px] text-[#FFB0B0]">
               Verifique se a API está rodando e se existem exercícios
               cadastrados.
             </p>
@@ -237,13 +252,14 @@ export function CreateWorkoutExerciseForm({
         )}
 
         <form
-          className="grid gap-4 lg:grid-cols-12"
+          className="grid gap-x-4 gap-y-5 lg:grid-cols-12"
           onSubmit={handleSubmit(handleCreateWorkoutExercise)}
+          noValidate
         >
           <div className="lg:col-span-6">
             <label
               htmlFor="workout-exercise-select"
-              className="mb-2 block text-sm font-medium text-[#1F1F1F]"
+              className="mb-2 block text-[12px] font-semibold text-[#DDE3DF]"
             >
               Exercício
             </label>
@@ -254,7 +270,7 @@ export function CreateWorkoutExerciseForm({
               aria-describedby={
                 errors.exerciseId ? "workout-exercise-error" : undefined
               }
-              className="h-12 w-full rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] px-4 text-sm text-[#1F1F1F] outline-none transition focus:border-[#2F4F3E] focus:ring-2 focus:ring-[#2F4F3E]/10"
+              className={getFieldClassName(Boolean(errors.exerciseId))}
               disabled={isLoadingExercises || isExercisesError}
               {...register("exerciseId")}
             >
@@ -274,7 +290,7 @@ export function CreateWorkoutExerciseForm({
             {errors.exerciseId?.message && (
               <p
                 id="workout-exercise-error"
-                className="mt-2 text-sm text-red-600"
+                className="mt-2 text-[12px] font-medium text-[#FF7A7A]"
               >
                 {errors.exerciseId.message}
               </p>
@@ -282,63 +298,98 @@ export function CreateWorkoutExerciseForm({
           </div>
 
           <div className="lg:col-span-2">
-            <Input
-              label="Ordem"
+            <label className="mb-2 block text-[12px] font-semibold text-[#DDE3DF]">
+              Ordem
+            </label>
+            <input
               type="number"
               min={1}
-              placeholder="Ex: 1"
-              error={errors.exerciseOrder?.message}
+              placeholder="Ex.: 1"
+              className={getFieldClassName(Boolean(errors.exerciseOrder))}
               {...register("exerciseOrder")}
             />
+            {errors.exerciseOrder?.message && (
+              <p className="mt-2 text-[12px] font-medium text-[#FF7A7A]">
+                {errors.exerciseOrder.message}
+              </p>
+            )}
           </div>
 
           <div className="lg:col-span-2">
-            <Input
-              label="Séries"
+            <label className="mb-2 block text-[12px] font-semibold text-[#DDE3DF]">
+              Séries
+            </label>
+            <input
               type="number"
               min={1}
-              placeholder="Ex: 3"
-              error={errors.sets?.message}
+              placeholder="Ex.: 3"
+              className={getFieldClassName(Boolean(errors.sets))}
               {...register("sets")}
             />
+            {errors.sets?.message && (
+              <p className="mt-2 text-[12px] font-medium text-[#FF7A7A]">
+                {errors.sets.message}
+              </p>
+            )}
           </div>
 
           <div className="lg:col-span-2">
-            <Input
-              label="Repetições"
-              placeholder="Ex: 8-12"
-              error={errors.reps?.message}
+            <label className="mb-2 block text-[12px] font-semibold text-[#DDE3DF]">
+              Repetições
+            </label>
+            <input
+              placeholder="Ex.: 8–12"
+              className={getFieldClassName(Boolean(errors.reps))}
               {...register("reps")}
             />
-          </div>
-
-          <div className="lg:col-span-3">
-            <Input
-              label="Carga recomendada"
-              type="number"
-              min={0}
-              step="0.01"
-              placeholder="Ex: 40"
-              error={errors.recommendedLoad?.message}
-              {...register("recommendedLoad")}
-            />
-          </div>
-
-          <div className="lg:col-span-3">
-            <Input
-              label="Descanso em segundos"
-              type="number"
-              min={0}
-              placeholder="Ex: 90"
-              error={errors.restTimeSeconds?.message}
-              {...register("restTimeSeconds")}
-            />
+            {errors.reps?.message && (
+              <p className="mt-2 text-[12px] font-medium text-[#FF7A7A]">
+                {errors.reps.message}
+              </p>
+            )}
           </div>
 
           <div className="lg:col-span-6">
+            <label className="mb-2 block text-[12px] font-semibold text-[#DDE3DF]">
+              Carga recomendada
+            </label>
+            <input
+              type="number"
+              min={0}
+              step="0.01"
+              placeholder="Ex.: 40"
+              className={getFieldClassName(Boolean(errors.recommendedLoad))}
+              {...register("recommendedLoad")}
+            />
+            {errors.recommendedLoad?.message && (
+              <p className="mt-2 text-[12px] font-medium text-[#FF7A7A]">
+                {errors.recommendedLoad.message}
+              </p>
+            )}
+          </div>
+
+          <div className="lg:col-span-2">
+            <label className="mb-2 block text-[12px] font-semibold text-[#DDE3DF]">
+              Descanso em segundos
+            </label>
+            <input
+              type="number"
+              min={0}
+              placeholder="Ex.: 90"
+              className={getFieldClassName(Boolean(errors.restTimeSeconds))}
+              {...register("restTimeSeconds")}
+            />
+            {errors.restTimeSeconds?.message && (
+              <p className="mt-2 text-[12px] font-medium text-[#FF7A7A]">
+                {errors.restTimeSeconds.message}
+              </p>
+            )}
+          </div>
+
+          <div className="lg:col-span-4">
             <label
               htmlFor="workout-exercise-notes"
-              className="mb-2 block text-sm font-medium text-[#1F1F1F]"
+              className="mb-2 block text-[12px] font-semibold text-[#DDE3DF]"
             >
               Observações
             </label>
@@ -349,38 +400,39 @@ export function CreateWorkoutExerciseForm({
               aria-describedby={
                 errors.notes ? "workout-exercise-notes-error" : undefined
               }
-              className="min-h-24 w-full rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] px-4 py-3 text-sm text-[#1F1F1F] outline-none transition placeholder:text-[#B7B2A8] focus:border-[#2F4F3E] focus:ring-2 focus:ring-[#2F4F3E]/10"
-              placeholder="Ex: Controlar a descida e manter amplitude completa"
+              className={getTextAreaClassName(Boolean(errors.notes))}
+              placeholder="Orientação específica para este treino."
               {...register("notes")}
             />
 
             {errors.notes?.message && (
               <p
                 id="workout-exercise-notes-error"
-                className="mt-2 text-sm text-red-600"
+                className="mt-2 text-[12px] font-medium text-[#FF7A7A]"
               >
                 {errors.notes.message}
               </p>
             )}
           </div>
 
-          <div className="flex items-end lg:col-span-6 lg:justify-end">
-            <Button
+          <div className="flex justify-center lg:col-span-12">
+            <button
               type="submit"
-              className="w-full lg:w-auto"
               disabled={
                 createWorkoutExerciseMutation.isPending ||
                 isLoadingExercises ||
                 isExercisesError
               }
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-[13px] bg-[#70E39B] px-6 text-[14px] font-semibold text-[#07100A] transition hover:-translate-y-0.5 hover:bg-[#85EBAB] disabled:cursor-not-allowed disabled:opacity-60"
             >
+              <Plus className="h-4 w-4" strokeWidth={2} />
               {createWorkoutExerciseMutation.isPending
                 ? "Adicionando..."
-                : "Adicionar exercício ao treino"}
-            </Button>
+                : "Adicionar ao treino"}
+            </button>
           </div>
         </form>
       </div>
-    </div>
+    </section>
   );
 }

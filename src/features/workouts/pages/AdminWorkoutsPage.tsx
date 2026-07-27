@@ -1,439 +1,492 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-import type { SVGProps } from "react";
-import { Link } from "react-router";
-import { PageHeader } from "../../../components/layout/PageHeader";
+import { useMemo, useState } from "react";
+import {
+  useMutation,
+  useQueries,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import { Link, useNavigate } from "react-router";
 
-import { isApiError } from "../../../services/apiError";
+import {
+  deactivateWorkout,
+  getWorkoutExercises,
+  getWorkouts,
+} from "../services/workoutService";
+import type { Workout } from "../types/workout";
 import { CreateWorkoutForm } from "../components/CreateWorkoutForm";
 import { EditWorkoutForm } from "../components/EditWorkoutForm";
-import { deactivateWorkout, getWorkouts } from "../services/workoutService";
-import type { Workout, WorkoutStatus } from "../types/workout";
 
-function PlusIcon(props: SVGProps<SVGSVGElement>) {
+type WorkoutFilter = "ALL" | "ACTIVE" | "INACTIVE";
+
+function SearchIcon() {
   return (
     <svg
       viewBox="0 0 24 24"
+      className="h-5 w-5"
       fill="none"
       stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
+      strokeWidth="1.8"
+    >
+      <circle cx="11" cy="11" r="6.5" />
+      <path d="m16 16 4 4" />
+    </svg>
+  );
+}
+
+function PlusIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="h-5 w-5"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
     >
       <path d="M12 5v14M5 12h14" />
     </svg>
   );
 }
 
-function SearchIcon(props: SVGProps<SVGSVGElement>) {
+function WorkoutIcon() {
   return (
     <svg
       viewBox="0 0 24 24"
+      className="h-6 w-6"
       fill="none"
       stroke="currentColor"
-      strokeWidth={1.8}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
+      strokeWidth="1.8"
     >
-      <circle cx="11" cy="11" r="7" />
-      <path d="m20 20-3.5-3.5" />
+      <path d="M6 9v6M3.5 10.5v3M9 7.5v9M15 7.5v9M18 9v6M20.5 10.5v3M9 12h6" />
     </svg>
   );
 }
 
-function ChevronDownIcon(props: SVGProps<SVGSVGElement>) {
+function EyeIcon() {
   return (
     <svg
       viewBox="0 0 24 24"
+      className="h-4 w-4"
       fill="none"
       stroke="currentColor"
-      strokeWidth={1.8}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
+      strokeWidth="1.8"
     >
-      <path d="m6 9 6 6 6-6" />
+      <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" />
+      <circle cx="12" cy="12" r="2.5" />
     </svg>
   );
 }
 
-function PencilIcon(props: SVGProps<SVGSVGElement>) {
+function ListIcon() {
   return (
     <svg
       viewBox="0 0 24 24"
+      className="h-4 w-4"
       fill="none"
       stroke="currentColor"
-      strokeWidth={1.8}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
+      strokeWidth="1.8"
     >
-      <path d="M12 20h9" />
-      <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+      <path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01" />
     </svg>
   );
 }
 
-function ManageIcon(props: SVGProps<SVGSVGElement>) {
+function PencilIcon() {
   return (
     <svg
       viewBox="0 0 24 24"
+      className="h-4 w-4"
       fill="none"
       stroke="currentColor"
-      strokeWidth={1.8}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
+      strokeWidth="1.8"
     >
-      <path d="M9 6h11M9 12h11M9 18h11" />
-      <path d="M4 6h.01M4 12h.01M4 18h.01" />
+      <path d="m4 20 4.2-1 10.6-10.6a2.1 2.1 0 0 0-3-3L5.2 16 4 20Z" />
     </svg>
   );
 }
 
-function BanIcon(props: SVGProps<SVGSVGElement>) {
+function BanIcon() {
   return (
     <svg
       viewBox="0 0 24 24"
+      className="h-4 w-4"
       fill="none"
       stroke="currentColor"
-      strokeWidth={1.8}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
+      strokeWidth="1.8"
     >
-      <circle cx="12" cy="12" r="9" />
-      <path d="m5.5 5.5 13 13" />
+      <path d="M9 5v14M15 5v14" />
     </svg>
   );
 }
 
-function WorkoutTileIcon(props: SVGProps<SVGSVGElement>) {
+function MoreIcon() {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
-    >
-      <path d="M5 8v8M3.2 10v4M19 8v8M20.8 10v4M8.5 12h7" />
-      <rect x="5" y="6.5" width="3" height="11" rx="1" />
-      <rect x="16" y="6.5" width="3" height="11" rx="1" />
+    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor">
+      <circle cx="5" cy="12" r="1.5" />
+      <circle cx="12" cy="12" r="1.5" />
+      <circle cx="19" cy="12" r="1.5" />
     </svg>
   );
 }
-
-const statusLabels: Record<WorkoutStatus, string> = {
-  ACTIVE: "Ativo",
-  INACTIVE: "Inativo",
-  ARCHIVED: "Arquivado",
-};
-
-const statusBadgeClassName: Record<WorkoutStatus, string> = {
-  ACTIVE: "bg-[#2F4F3E]/10 text-[#2F4F3E]",
-  INACTIVE: "bg-[#EDEAE3] text-[#6F6A62]",
-  ARCHIVED: "bg-amber-50 text-amber-700",
-};
 
 function formatDate(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+
   return new Intl.DateTimeFormat("pt-BR", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
-  }).format(new Date(value));
+  }).format(date);
+}
+
+function statusLabel(status: Workout["status"]) {
+  if (status === "ACTIVE") return "Ativo";
+  if (status === "ARCHIVED") return "Arquivado";
+  return "Inativo";
 }
 
 export function AdminWorkoutsPage() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [selectedWorkout, setSelectedWorkout] = useState<Workout | null>(null);
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState<WorkoutFilter>("ALL");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"ALL" | WorkoutStatus>(
-    "ALL",
-  );
+  const [editingWorkout, setEditingWorkout] = useState<Workout | null>(null);
+  const [openMenuId, setOpenMenuId] = useState<number | null>(null);
+  const [feedback, setFeedback] = useState<string | null>(null);
 
-  const {
-    data: workouts,
-    isLoading,
-    isError,
-    error,
-  } = useQuery({
+  const workoutsQuery = useQuery({
     queryKey: ["workouts"],
     queryFn: getWorkouts,
   });
 
-  const deactivateWorkoutMutation = useMutation<void, Error, number>({
-    mutationFn: (workoutId: number) => deactivateWorkout(workoutId),
+  const workouts = workoutsQuery.data ?? [];
+
+  const exerciseQueries = useQueries({
+    queries: workouts.map((workout) => ({
+      queryKey: ["workout-exercises", workout.workoutId],
+      queryFn: () => getWorkoutExercises(workout.workoutId),
+      staleTime: 60_000,
+    })),
+  });
+
+  const exerciseCountByWorkoutId = useMemo(() => {
+    return new Map(
+      workouts.map((workout, index) => [
+        workout.workoutId,
+        exerciseQueries[index]?.data?.length,
+      ]),
+    );
+  }, [exerciseQueries, workouts]);
+
+  const filteredWorkouts = useMemo(() => {
+    const normalizedSearch = search.trim().toLocaleLowerCase("pt-BR");
+
+    return workouts.filter((workout) => {
+      const matchesSearch =
+        !normalizedSearch ||
+        workout.workoutName
+          .toLocaleLowerCase("pt-BR")
+          .includes(normalizedSearch);
+
+      const matchesFilter =
+        filter === "ALL" ||
+        (filter === "ACTIVE"
+          ? workout.status === "ACTIVE"
+          : workout.status !== "ACTIVE");
+
+      return matchesSearch && matchesFilter;
+    });
+  }, [filter, search, workouts]);
+
+  const deactivateMutation = useMutation({
+    mutationFn: deactivateWorkout,
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["workouts"] });
+      setFeedback("Treino inativado com sucesso.");
+      window.setTimeout(() => setFeedback(null), 3500);
     },
   });
 
-  const deactivateErrorMessage =
-    isApiError(deactivateWorkoutMutation.error) &&
-    deactivateWorkoutMutation.error.status === 403
-      ? "Você não possui permissão para inativar treinos."
-      : "Não foi possível inativar o treino. Tente novamente.";
+  function handleDeactivate(workout: Workout) {
+    setOpenMenuId(null);
 
-  function handleDeactivateWorkout(workoutId: number) {
-    deactivateWorkoutMutation.mutate(workoutId);
+    const confirmed = window.confirm(
+      `Deseja inativar o treino "${workout.workoutName}"?`,
+    );
+
+    if (confirmed) {
+      deactivateMutation.mutate(workout.workoutId);
+    }
   }
-
-  function handleEditWorkout(workout: Workout) {
-    setIsCreateOpen(false);
-    setSelectedWorkout(workout);
-  }
-
-  function handleCancelEdit() {
-    setSelectedWorkout(null);
-  }
-
-  function handleUpdateSuccess() {
-    setSelectedWorkout(null);
-  }
-
-  function handleToggleCreate() {
-    setSelectedWorkout(null);
-    setIsCreateOpen((value) => !value);
-  }
-
-  const filteredWorkouts = (workouts ?? []).filter((workout) => {
-    const matchesSearch = workout.workoutName
-      .toLowerCase()
-      .includes(searchTerm.trim().toLowerCase());
-    const matchesStatus =
-      statusFilter === "ALL" || workout.status === statusFilter;
-
-    return matchesSearch && matchesStatus;
-  });
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Treinos"
-        description="Gerencie os treinos modelo da sua organização."
-        action={
-          <button
-            type="button"
-            onClick={handleToggleCreate}
-            className="flex items-center justify-center gap-2 rounded-xl bg-[#2F4F3E] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#243D30]"
-          >
-            <PlusIcon className="h-4 w-4" />
-            Novo treino
-          </button>
-        }
-      />
-
-      {isCreateOpen && (
-        <div className="mt-6">
-          <CreateWorkoutForm onCancel={() => setIsCreateOpen(false)} />
-        </div>
-      )}
-
-      {selectedWorkout && (
-        <div className="mt-6">
-          <EditWorkoutForm
-            workout={selectedWorkout}
-            onCancel={handleCancelEdit}
-            onSuccess={handleUpdateSuccess}
-          />
-        </div>
-      )}
-
-      {deactivateWorkoutMutation.isError && (
-        <div
-          role="alert"
-          className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4"
-        >
-          <p className="text-sm font-semibold text-red-700">
-            Erro ao inativar treino.
-          </p>
-          <p className="mt-1 text-sm text-red-600">{deactivateErrorMessage}</p>
-        </div>
-      )}
-
-      <div className="overflow-hidden rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] shadow-sm">
-        <div className="flex flex-col gap-3 border-b border-[#E4DFD6] p-4 sm:flex-row sm:items-center">
-          <div className="relative flex-1">
-            <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
-              placeholder="Filtrar por nome do treino"
-              aria-label="Buscar treino"
-              className="w-full rounded-xl border border-[#D8D3CA] bg-[#FFFEFB] py-2.5 pl-9 pr-3 text-sm text-[#1F1F1F] outline-none transition placeholder:text-[#B7B2A8] focus:border-[#2F4F3E] focus:ring-4 focus:ring-[#2F4F3E]/10"
-            />
-          </div>
-
-          <div className="relative">
-            <select
-              aria-label="Filtrar por status"
-              value={statusFilter}
-              onChange={(event) =>
-                setStatusFilter(event.target.value as "ALL" | WorkoutStatus)
-              }
-              className="w-full appearance-none rounded-xl border border-[#D8D3CA] bg-[#FFFEFB] py-2.5 pl-3 pr-9 text-sm text-[#1F1F1F] outline-none transition focus:border-[#2F4F3E] focus:ring-4 focus:ring-[#2F4F3E]/10 sm:w-44"
-            >
-              <option value="ALL">Todos os status</option>
-              <option value="ACTIVE">Ativo</option>
-              <option value="INACTIVE">Inativo</option>
-              <option value="ARCHIVED">Arquivado</option>
-            </select>
-            <ChevronDownIcon className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-          </div>
-        </div>
-
-        {searchTerm.trim() && !isLoading && !isError && (
-          <div className="border-b border-[#EDEAE3] px-5 py-3">
-            <p className="text-sm text-[#6F6A62]">
-              Filtrando por:{" "}
-              <span className="font-semibold text-[#1F1F1F]">
-                {searchTerm.trim()}
-              </span>
+    <main className="min-h-full bg-[#0B0F0D] text-white">
+      <div className="mx-auto w-full max-w-[1440px] px-5 py-8 sm:px-8 lg:px-12 lg:py-12">
+        <header className="flex flex-col gap-7 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#91A097]">
+              Área do professor
             </p>
+            <h1 className="mt-4 text-4xl font-semibold tracking-[-0.04em] sm:text-5xl">
+              Treinos
+            </h1>
+          </div>
+
+          <label className="flex h-12 w-full items-center gap-3 rounded-xl border border-[#2A302C] bg-[#121614] px-4 text-[#7F8B84] transition focus-within:border-[#70E39B]/50 sm:w-60">
+            <SearchIcon />
+            <span className="sr-only">Pesquisar treino</span>
+            <input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Pesquisar"
+              className="min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-[#68736C]"
+            />
+          </label>
+        </header>
+
+        {feedback && (
+          <div
+            role="status"
+            className="mt-7 rounded-xl border border-[#2D6945] bg-[#173323] px-4 py-3 text-sm text-[#70E39B]"
+          >
+            {feedback}
           </div>
         )}
 
-        {isLoading && (
-          <p role="status" className="p-6 text-sm text-gray-500">
-            Carregando treinos cadastrados...
-          </p>
-        )}
-
-        {isError && (
+        {deactivateMutation.isError && (
           <div
             role="alert"
-            className="m-4 rounded-xl border border-red-200 bg-red-50 p-4"
+            className="mt-7 rounded-xl border border-[#6A3434] bg-[#2B1919] px-4 py-3 text-sm text-[#FF8A8A]"
           >
-            <p className="text-sm font-semibold text-red-700">
-              Não foi possível carregar os treinos.
-            </p>
-            <p className="mt-1 text-sm text-red-600">
-              Verifique se a API está rodando e se o usuário possui permissão
-              para acessar este recurso.
-            </p>
-            <p className="mt-2 text-xs text-red-500">
-              {error instanceof Error
-                ? error.message
-                : "Erro inesperado ao comunicar com a API."}
-            </p>
+            Não foi possível inativar o treino. Tente novamente.
           </div>
         )}
 
-        {!isLoading && !isError && workouts && workouts.length === 0 && (
-          <p className="p-6 text-sm text-gray-500">
-            Nenhum treino cadastrado. Clique em "Novo treino" para começar.
-          </p>
-        )}
-
-        {!isLoading &&
-          !isError &&
-          workouts &&
-          workouts.length > 0 &&
-          filteredWorkouts.length === 0 && (
-            <p className="p-6 text-sm text-gray-500">
-              Nenhum treino encontrado para os filtros selecionados.
-            </p>
-          )}
-
-        {!isLoading && !isError && filteredWorkouts.length > 0 && (
-          <>
-            <div className="hidden grid-cols-[1fr_140px_110px_140px] gap-4 border-b border-[#EDEAE3] px-5 py-3 text-xs font-medium text-[#8A8378] md:grid">
-              <span>Treino</span>
-              <span>Criado em</span>
-              <span>Status</span>
-              <span className="text-right">Ações</span>
-            </div>
-
-            <div className="divide-y divide-[#EDEAE3]">
-              {filteredWorkouts.map((workout) => (
-                <div
-                  key={workout.workoutId}
-                  className="grid grid-cols-1 gap-3 px-5 py-4 transition hover:bg-[#FAF9F6] md:grid-cols-[1fr_140px_110px_140px] md:items-center"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#22C55E] to-[#0F3D31] text-white">
-                      <WorkoutTileIcon className="h-6 w-6" />
-                    </span>
-
-                    <div className="min-w-0">
-                      <p className="truncate font-semibold text-[#1F1F1F]">
-                        {workout.workoutName}
-                      </p>
-                      <p className="truncate text-sm text-[#6F6A62]">
-                        Treino modelo
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="text-sm text-[#1F1F1F]">
-                    <span className="text-xs text-[#8A8378] md:hidden">
-                      Criado em:{" "}
-                    </span>
-                    {formatDate(workout.createdAt)}
-                  </div>
-
-                  <div>
-                    <span
-                      className={[
-                        "inline-flex w-fit items-center rounded-full px-2.5 py-1 text-xs font-semibold",
-                        statusBadgeClassName[workout.status],
-                      ].join(" ")}
-                    >
-                      {statusLabels[workout.status]}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-1 md:justify-end">
-                    <Link
-                      to={`/admin/workouts/${workout.workoutId}`}
-                      aria-label="Gerenciar treino"
-                      title="Gerenciar treino"
-                      className="rounded-lg p-2 text-[#8A8378] transition hover:bg-[#EDEAE3] hover:text-[#1F1F1F]"
-                    >
-                      <ManageIcon className="h-4 w-4" />
-                    </Link>
-
-                    <button
-                      type="button"
-                      onClick={() => handleEditWorkout(workout)}
-                      aria-label="Editar treino"
-                      title="Editar treino"
-                      className="rounded-lg p-2 text-[#8A8378] transition hover:bg-[#EDEAE3] hover:text-[#1F1F1F]"
-                    >
-                      <PencilIcon className="h-4 w-4" />
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => handleDeactivateWorkout(workout.workoutId)}
-                      disabled={deactivateWorkoutMutation.isPending}
-                      aria-label="Inativar treino"
-                      title="Inativar treino"
-                      className="rounded-lg p-2 text-[#8A8378] transition hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-40"
-                    >
-                      <BanIcon className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="border-t border-[#E4DFD6] px-5 py-3">
-              <p className="text-sm text-[#6F6A62]">
-                Mostrando {filteredWorkouts.length} de {workouts?.length ?? 0}{" "}
-                treinos
+        <section className="mt-12">
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#91A097]">
+                Treinos reutilizáveis
+              </p>
+              <p className="mt-2 text-sm text-[#91A097]">
+                Crie uma vez e atribua para diferentes alunos.
               </p>
             </div>
-          </>
-        )}
+
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="inline-flex rounded-xl border border-[#2A302C] bg-[#101412] p-1">
+                {[
+                  ["ALL", "Todos"],
+                  ["ACTIVE", "Ativos"],
+                  ["INACTIVE", "Inativos"],
+                ].map(([value, label]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setFilter(value as WorkoutFilter)}
+                    className={`rounded-lg px-4 py-2 text-xs transition ${
+                      filter === value
+                        ? "bg-[#252C28] text-[#70E39B]"
+                        : "text-[#91A097] hover:text-white"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsCreateOpen(true)}
+                className="inline-flex h-12 items-center gap-2 rounded-xl bg-[#70E39B] px-5 text-sm font-semibold text-[#07100A] transition hover:-translate-y-0.5 hover:bg-[#85EBAB]"
+              >
+                <PlusIcon />
+                Criar treino
+              </button>
+            </div>
+          </div>
+
+          {workoutsQuery.isLoading && (
+            <div className="mt-6 rounded-2xl border border-[#2A302C] bg-[#171A18] px-6 py-12 text-center text-sm text-[#91A097]">
+              Carregando treinos...
+            </div>
+          )}
+
+          {workoutsQuery.isError && (
+            <div className="mt-6 rounded-2xl border border-[#6A3434] bg-[#2B1919] px-6 py-12 text-center text-sm text-[#FF8A8A]">
+              Não foi possível carregar os treinos.
+            </div>
+          )}
+
+          {!workoutsQuery.isLoading && !workoutsQuery.isError && (
+            <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {filteredWorkouts.map((workout, index) => {
+                const exerciseCount = exerciseCountByWorkoutId.get(
+                  workout.workoutId,
+                );
+                const isActive = workout.status === "ACTIVE";
+
+                return (
+                  <article
+                    key={workout.workoutId}
+                    className="group relative h-[260px] rounded-2xl border border-[#2A302C] bg-[#171A18] p-5 transition duration-200 hover:-translate-y-1 hover:border-[#3C5546] hover:bg-[#1A1F1C]"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div
+                        className={`grid h-11 w-11 place-items-center rounded-xl ${
+                          index % 3 === 1
+                            ? "bg-[#222E39] text-[#75B5FF]"
+                            : index % 3 === 2
+                              ? "bg-[#2E2937] text-[#C895FF]"
+                              : "bg-[#1D3B2A] text-[#70E39B]"
+                        }`}
+                      >
+                        <WorkoutIcon />
+                      </div>
+
+                      <span
+                        className={`rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-wide ${
+                          isActive
+                            ? "bg-[#183925] text-[#70E39B]"
+                            : "bg-[#292D2A] text-[#9AA49E]"
+                        }`}
+                      >
+                        {statusLabel(workout.status)}
+                      </span>
+                    </div>
+
+                    <div className="mt-8">
+                      <h2 className="text-lg font-semibold tracking-[-0.02em]">
+                        {workout.workoutName}
+                      </h2>
+                      <p className="mt-2 text-sm text-[#91A097]">
+                        {exerciseCount === undefined
+                          ? "Carregando exercícios..."
+                          : `${exerciseCount} ${
+                              exerciseCount === 1 ? "exercício" : "exercícios"
+                            }`}
+                      </p>
+                      <p className="mt-2 text-xs text-[#68736C]">
+                        Criado em {formatDate(workout.createdAt)}
+                      </p>
+                    </div>
+
+                    <div className="absolute inset-x-5 bottom-5 flex items-center justify-between">
+                      <Link
+                        to={`/admin/workouts/${workout.workoutId}`}
+                        className="inline-flex h-10 items-center gap-2 rounded-xl border border-[#39413C] px-4 text-xs font-semibold text-white transition hover:border-[#70E39B]/50 hover:bg-[#1D2A22]"
+                      >
+                        <EyeIcon />
+                        Gerenciar treino
+                      </Link>
+
+                      <button
+                        type="button"
+                        aria-label={`Abrir ações de ${workout.workoutName}`}
+                        aria-expanded={openMenuId === workout.workoutId}
+                        onClick={() =>
+                          setOpenMenuId((current) =>
+                            current === workout.workoutId
+                              ? null
+                              : workout.workoutId,
+                          )
+                        }
+                        className="grid h-10 w-10 place-items-center rounded-xl border border-[#303733] text-[#91A097] transition hover:border-[#70E39B]/40 hover:text-white"
+                      >
+                        <MoreIcon />
+                      </button>
+                    </div>
+
+                    {openMenuId === workout.workoutId && (
+                      <div className="absolute bottom-16 right-5 z-20 w-52 overflow-hidden rounded-xl border border-[#3A423D] bg-[#202522] p-2 shadow-2xl">
+                        <Link
+                          to={`/admin/workouts/${workout.workoutId}`}
+                          onClick={() => setOpenMenuId(null)}
+                          className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-[#DDE3DF] transition hover:bg-[#2A302C]"
+                        >
+                          <ListIcon />
+                          Gerenciar exercícios
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingWorkout(workout);
+                            setOpenMenuId(null);
+                          }}
+                          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-[#DDE3DF] transition hover:bg-[#2A302C]"
+                        >
+                          <PencilIcon />
+                          Editar treino
+                        </button>
+                        {isActive && (
+                          <button
+                            type="button"
+                            onClick={() => handleDeactivate(workout)}
+                            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-[#FF7A7A] transition hover:bg-[#3A2222]"
+                          >
+                            <BanIcon />
+                            Inativar
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </article>
+                );
+              })}
+
+              <button
+                type="button"
+                onClick={() => setIsCreateOpen(true)}
+                className="group h-[260px] rounded-2xl border border-dashed border-[#343B37] bg-[#151917] p-5 transition hover:border-[#70E39B]/45 hover:bg-[#18201B]"
+              >
+                <span className="mx-auto grid h-11 w-11 place-items-center rounded-xl bg-[#202522] text-[#91A097] transition group-hover:bg-[#1D3B2A] group-hover:text-[#70E39B]">
+                  <PlusIcon />
+                </span>
+                <span className="mt-4 block text-sm font-semibold text-white">
+                  Novo treino modelo
+                </span>
+                <span className="mt-2 block text-xs text-[#7F8B84]">
+                  Começar do zero
+                </span>
+              </button>
+            </div>
+          )}
+
+          {!workoutsQuery.isLoading &&
+            !workoutsQuery.isError &&
+            filteredWorkouts.length === 0 && (
+              <div className="mt-6 rounded-2xl border border-[#2A302C] bg-[#171A18] px-6 py-12 text-center">
+                <p className="font-medium">Nenhum treino encontrado.</p>
+                <p className="mt-2 text-sm text-[#91A097]">
+                  Ajuste a busca ou o filtro para visualizar outros resultados.
+                </p>
+              </div>
+            )}
+        </section>
       </div>
-    </div>
+
+      {isCreateOpen && (
+        <CreateWorkoutForm
+          onCancel={() => setIsCreateOpen(false)}
+          onSuccess={(workout) => {
+            setIsCreateOpen(false);
+            navigate(`/admin/workouts/${workout.workoutId}`);
+          }}
+        />
+      )}
+
+      {editingWorkout && (
+        <EditWorkoutForm
+          workout={editingWorkout}
+          onCancel={() => setEditingWorkout(null)}
+          onSuccess={() => {
+            setEditingWorkout(null);
+            setFeedback("Treino atualizado com sucesso.");
+            window.setTimeout(() => setFeedback(null), 3500);
+          }}
+        />
+      )}
+    </main>
   );
 }

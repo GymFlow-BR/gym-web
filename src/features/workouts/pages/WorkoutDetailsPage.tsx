@@ -1,15 +1,23 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { isApiError } from "../../../services/apiError";
+import {
+  useMutation,
+  useQueries,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import { ArrowLeft, CheckCircle2, Dumbbell, Trash2, Users } from "lucide-react";
+import { useMemo } from "react";
 import { Link, useParams } from "react-router";
 
-import { PageHeader } from "../../../components/layout/PageHeader";
-import { Card } from "../../../components/ui/Card";
+import { isApiError } from "../../../services/apiError";
+import { useAuthenticatedUser } from "../../auth/hooks/useAuthenticatedUser";
+import { getStudentsByOrganization } from "../../students/services/studentService";
+import { getStudentWorkouts } from "../../student-workout/services/studentWorkoutService";
+import { CreateWorkoutExerciseForm } from "../components/CreateWorkoutExerciseForm";
 import {
   getWorkoutById,
   getWorkoutExercises,
   removeWorkoutExercise,
 } from "../services/workoutService";
-import { CreateWorkoutExerciseForm } from "../components/CreateWorkoutExerciseForm";
 
 function formatWorkoutStatus(status: string) {
   const statusMap: Record<string, string> = {
@@ -21,21 +29,29 @@ function formatWorkoutStatus(status: string) {
   return statusMap[status] ?? status;
 }
 
-function getWorkoutStatusClassName(status: string) {
+function getWorkoutStatusDescription(status: string) {
   if (status === "ACTIVE") {
-    return "bg-[#2F4F3E]/10 text-[#2F4F3E]";
+    return "Disponível para atribuição";
+  }
+
+  return "Indisponível para novas atribuições";
+}
+
+function getWorkoutStatusDotClassName(status: string) {
+  if (status === "ACTIVE") {
+    return "bg-[#70E39B]";
   }
 
   if (status === "ARCHIVED") {
-    return "bg-[#EDEAE3] text-[#6F6A62]";
+    return "bg-[#A8B0AA]";
   }
 
-  return "bg-yellow-50 text-yellow-700";
+  return "bg-[#F4C76B]";
 }
 
 function formatRestTime(seconds: number | null) {
   if (seconds === null) {
-    return "Não informado";
+    return "—";
   }
 
   if (seconds < 60) {
@@ -54,7 +70,7 @@ function formatRestTime(seconds: number | null) {
 
 function formatRecommendedLoad(value: number | null) {
   if (value === null) {
-    return "Não informado";
+    return "—";
   }
 
   return `${value} kg`;
@@ -63,9 +79,13 @@ function formatRecommendedLoad(value: number | null) {
 export function WorkoutDetailsPage() {
   const queryClient = useQueryClient();
   const { workoutId } = useParams();
+  const authenticatedUserQuery = useAuthenticatedUser();
 
   const parsedWorkoutId = Number(workoutId);
-  const isValidWorkoutId = Number.isFinite(parsedWorkoutId);
+  const isValidWorkoutId =
+    Number.isFinite(parsedWorkoutId) && parsedWorkoutId > 0;
+
+  const organizationId = authenticatedUserQuery.data?.organizationId;
 
   const {
     data: workout,
@@ -89,6 +109,37 @@ export function WorkoutDetailsPage() {
     enabled: isValidWorkoutId,
   });
 
+  const studentsQuery = useQuery({
+    queryKey: ["students", organizationId],
+    queryFn: () => getStudentsByOrganization(Number(organizationId)),
+    enabled: Boolean(organizationId),
+  });
+
+  const students = studentsQuery.data ?? [];
+
+  const studentWorkoutQueries = useQueries({
+    queries: students.map((student) => ({
+      queryKey: ["student-workouts", student.id],
+      queryFn: () => getStudentWorkouts(student.id),
+      enabled: isValidWorkoutId && Boolean(organizationId),
+      staleTime: 60_000,
+    })),
+  });
+
+  const linkedStudentsCount = useMemo(() => {
+    return studentWorkoutQueries.filter((query) =>
+      query.data?.some(
+        (studentWorkout) =>
+          studentWorkout.workoutId === parsedWorkoutId &&
+          studentWorkout.status === "ACTIVE",
+      ),
+    ).length;
+  }, [parsedWorkoutId, studentWorkoutQueries]);
+
+  const isLoadingLinkedStudents =
+    studentsQuery.isLoading ||
+    studentWorkoutQueries.some((query) => query.isLoading);
+
   const removeWorkoutExerciseMutation = useMutation<void, Error, number>({
     mutationFn: (workoutExerciseId: number) =>
       removeWorkoutExercise(parsedWorkoutId, workoutExerciseId),
@@ -106,8 +157,18 @@ export function WorkoutDetailsPage() {
       : "Não foi possível remover o exercício do treino. Tente novamente.";
 
   function handleRemoveWorkoutExercise(workoutExerciseId: number) {
-    removeWorkoutExerciseMutation.mutate(workoutExerciseId);
+    const confirmed = window.confirm(
+      "Deseja remover este exercício do treino?",
+    );
+
+    if (confirmed) {
+      removeWorkoutExerciseMutation.mutate(workoutExerciseId);
+    }
   }
+
+  const sortedWorkoutExercises = [...(workoutExercises ?? [])].sort(
+    (first, second) => first.exerciseOrder - second.exerciseOrder,
+  );
 
   const isLoading = isLoadingWorkout || isLoadingWorkoutExercises;
   const isError = isWorkoutError || isWorkoutExercisesError;
@@ -115,268 +176,317 @@ export function WorkoutDetailsPage() {
 
   if (!isValidWorkoutId) {
     return (
-      <div className="space-y-6">
-        <PageHeader
-          title="Treino inválido"
-          description="Não foi possível identificar o treino solicitado."
-        />
+      <main className="min-h-full bg-[#0B0F0D] text-white">
+        <div className="mx-auto w-full max-w-[1440px] px-5 py-8 sm:px-8 lg:px-12 lg:py-12">
+          <section className="rounded-[22px] border border-[#29302C] bg-[#171A18] p-6">
+            <p className="text-sm font-semibold text-[#FF8A8A]">
+              Treino inválido.
+            </p>
 
-        <div className="rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] p-5 shadow-sm">
-          <p className="text-sm text-[#6F6A62]">
-            O identificador informado na URL não corresponde a um treino válido.
-          </p>
+            <p className="mt-2 text-sm text-[#91A097]">
+              Não foi possível identificar o treino solicitado.
+            </p>
 
-          <Link
-            to="/admin/workouts"
-            className="mt-4 inline-flex w-fit items-center gap-2 rounded-xl border border-[#D8D3CA] bg-[#FFFEFB] px-3 py-2 text-sm font-semibold text-[#2F4F3E] shadow-sm transition hover:border-[#2F4F3E] hover:bg-[#F6F4EF]"
-          >
-            ← Voltar para treinos
-          </Link>
+            <Link
+              to="/admin/workouts"
+              className="mt-5 inline-flex h-11 items-center gap-2 rounded-xl border border-[#39413C] px-4 text-sm font-semibold text-white transition hover:border-[#70E39B]/50 hover:bg-[#1D2A22]"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Voltar para treinos
+            </Link>
+          </section>
         </div>
-      </div>
+      </main>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div>
+    <main className="min-h-full bg-[#0B0F0D] text-white">
+      <div className="mx-auto w-full max-w-[1440px] px-5 py-8 sm:px-8 lg:px-12 lg:py-12">
         <Link
           to="/admin/workouts"
-          className="inline-flex w-fit items-center gap-2 rounded-xl border border-[#D8D3CA] bg-[#FFFEFB] px-3 py-2 text-sm font-semibold text-[#2F4F3E] shadow-sm transition hover:border-[#2F4F3E] hover:bg-[#F6F4EF]"
+          className="inline-flex h-11 items-center gap-2 rounded-xl border border-[#29302C] bg-[#101412] px-4 text-sm font-semibold text-[#C8D0CC] transition hover:border-[#70E39B]/45 hover:bg-[#18201B] hover:text-white"
         >
-          ← Voltar para treinos
+          <ArrowLeft className="h-4 w-4" />
+          Voltar para treinos
         </Link>
-      </div>
 
-      <PageHeader
-        title={workout?.workoutName ?? "Detalhes do treino"}
-        description="Visualize os detalhes do treino modelo e os exercícios vinculados."
-      />
+        <header className="mt-8">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#91A097]">
+            Treino modelo
+          </p>
 
-      {isLoading && (
-        <div
-          role="status"
-          className="rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] p-5 shadow-sm"
-        >
-          <p className="text-sm font-semibold text-[#1F1F1F]">
+          <h1 className="mt-4 text-4xl font-semibold tracking-[-0.05em] sm:text-5xl">
+            {workout?.workoutName ?? "Detalhes do treino"}
+          </h1>
+
+          <p className="mt-4 max-w-2xl text-sm leading-6 text-[#91A097]">
+            Configure a sequência e os parâmetros antes de atribuir aos alunos.
+          </p>
+        </header>
+
+        {isLoading && (
+          <div
+            role="status"
+            className="mt-8 rounded-[22px] border border-[#29302C] bg-[#171A18] px-6 py-12 text-center text-sm text-[#91A097]"
+          >
             Carregando detalhes do treino...
-          </p>
+          </div>
+        )}
 
-          <p className="mt-1 text-sm text-[#6F6A62]">
-            Estamos buscando as informações do treino e os exercícios
-            vinculados.
-          </p>
-        </div>
-      )}
-
-      {isError && (
-        <Card>
-          <div role="alert" className="rounded-2xl border border-red-200 bg-red-50 p-4">
-            <p className="font-semibold text-red-700">
+        {isError && (
+          <div
+            role="alert"
+            className="mt-8 rounded-[22px] border border-[#6A3434] bg-[#2B1919] p-5"
+          >
+            <p className="text-sm font-semibold text-[#FF8A8A]">
               Não foi possível carregar os detalhes do treino.
             </p>
 
-            <p className="mt-2 text-sm text-red-600">
+            <p className="mt-2 text-sm text-[#FFB0B0]">
               Verifique se a API está rodando e se o usuário possui permissão
               para acessar este recurso.
             </p>
 
-            <p className="mt-3 text-xs text-red-500">
+            <p className="mt-3 text-xs text-[#FF8A8A]">
               {error instanceof Error
                 ? error.message
                 : "Erro inesperado ao comunicar com a API."}
             </p>
           </div>
-        </Card>
-      )}
-
-      {!isLoading && !isError && workout && (
-        <div className="rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] p-5 shadow-sm">
-          <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-[#8A8378]">
-                Treino modelo
-              </p>
-
-              <h2 className="mt-2 text-xl font-bold text-[#1F1F1F]">
-                {workout.workoutName}
-              </h2>
-
-              <p className="mt-1 text-sm text-[#6F6A62]">
-                Configure os exercícios que farão parte deste treino antes de
-                atribuí-lo aos alunos.
-              </p>
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-2 md:flex md:items-center">
-              <div className="rounded-2xl border border-[#EDEAE3] bg-[#FAF9F6] px-4 py-3">
-                <p className="text-xs font-semibold text-[#8A8378]">
-                  Professor ID
-                </p>
-                <p className="mt-1 text-sm font-bold text-[#1F1F1F]">
-                  {workout.teacherId}
-                </p>
-              </div>
-
-              <div className="rounded-2xl border border-[#EDEAE3] bg-[#FAF9F6] px-4 py-3">
-                <p className="text-xs font-semibold text-[#8A8378]">Status</p>
-
-                <span
-                  className={[
-                    "mt-1 inline-flex w-fit rounded-full px-3 py-1 text-xs font-semibold",
-                    getWorkoutStatusClassName(workout.status),
-                  ].join(" ")}
-                >
-                  {formatWorkoutStatus(workout.status)}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {!isLoading && !isError && workout && (
-        <CreateWorkoutExerciseForm workoutId={parsedWorkoutId} />
-      )}
-
-      {removeWorkoutExerciseMutation.isError && (
-        <Card>
-          <div role="alert" className="rounded-2xl border border-red-200 bg-red-50 p-4">
-            <p className="text-sm font-semibold text-red-700">
-              Erro ao remover exercício.
-            </p>
-
-            <p className="mt-1 text-sm text-red-600">
-              {removeWorkoutExerciseErrorMessage}
-            </p>
-          </div>
-        </Card>
-      )}
-
-      {!isLoading &&
-        !isError &&
-        workoutExercises &&
-        workoutExercises.length === 0 && (
-          <div className="rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] p-6 text-center shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-wide text-[#8A8378]">
-              Exercícios do treino
-            </p>
-
-            <h2 className="mt-2 text-lg font-semibold text-[#1F1F1F]">
-              Nenhum exercício vinculado
-            </h2>
-
-            <p className="mx-auto mt-2 max-w-xl text-sm text-[#6F6A62]">
-              Use o formulário acima para adicionar exercícios a este treino
-              modelo. Depois disso, eles aparecerão organizados por ordem de
-              execução.
-            </p>
-          </div>
         )}
 
-      {!isLoading &&
-        !isError &&
-        workoutExercises &&
-        workoutExercises.length > 0 && (
-          <div className="overflow-hidden rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] shadow-sm">
-            <div className="border-b border-[#E4DFD6] p-5">
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <h2 className="text-lg font-semibold text-[#1F1F1F]">
-                    Exercícios do treino
-                  </h2>
+        {!isLoading && !isError && workout && (
+          <>
+            <section className="mt-8 rounded-[22px] border border-[#29302C] bg-[#171A18] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.2)]">
+              <div className="flex flex-col gap-7 lg:flex-row lg:items-center lg:justify-between">
+                <div className="flex items-start gap-4">
+                  <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-[#1D3B2A] text-[#70E39B]">
+                    <Dumbbell className="h-6 w-6" strokeWidth={1.9} />
+                  </span>
 
-                  <p className="mt-1 text-sm text-[#6F6A62]">
-                    Mostrando {workoutExercises.length} exercício
-                    {workoutExercises.length === 1 ? "" : "s"} vinculado
-                    {workoutExercises.length === 1 ? "" : "s"}.
-                  </p>
+                  <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#91A097]">
+                      Treino modelo
+                    </p>
+
+                    <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-white">
+                      {workout.workoutName}
+                    </h2>
+
+                    <p className="mt-2 text-sm text-[#91A097]">
+                      {sortedWorkoutExercises.length}{" "}
+                      {sortedWorkoutExercises.length === 1
+                        ? "exercício organizado"
+                        : "exercícios organizados"}{" "}
+                      na sequência.
+                    </p>
+                  </div>
                 </div>
 
-                <span className="w-fit rounded-full bg-[#2F4F3E]/10 px-3 py-1 text-xs font-semibold text-[#2F4F3E]">
-                  Ordenado por execução
-                </span>
-              </div>
-            </div>
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
+                  <div className="hidden h-14 w-px bg-[#29302C] lg:block" />
 
-            <div className="divide-y divide-[#EDEAE3]">
-              {[...workoutExercises]
-                .sort(
-                  (first, second) => first.exerciseOrder - second.exerciseOrder,
-                )
-                .map((workoutExercise) => (
-                  <div
-                    key={workoutExercise.id}
-                    className="grid gap-4 p-5 transition hover:bg-[#FAF9F6] lg:grid-cols-[auto_1fr_76px_96px_88px_96px_auto] lg:items-center lg:gap-4"
-                  >
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#2F4F3E]/10 text-sm font-bold text-[#2F4F3E]">
-                      {workoutExercise.exerciseOrder}
-                    </div>
+                  <div className="flex min-w-[150px] items-center gap-3 rounded-[16px] border border-[#29302C] bg-[#121614] px-4 py-3">
+                    <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#1D3B2A] text-[#70E39B]">
+                      <Users className="h-5 w-5" strokeWidth={1.8} />
+                    </span>
 
                     <div>
-                      <h3 className="font-semibold text-[#1F1F1F]">
-                        {workoutExercise.exerciseName}
-                      </h3>
-
-                      <p className="mt-1 text-sm text-[#6F6A62]">
-                        {workoutExercise.muscleGroup} •{" "}
-                        {workoutExercise.equipmentName || "Sem equipamento"}
+                      <p className="text-lg font-semibold leading-none text-white">
+                        {isLoadingLinkedStudents ? "..." : linkedStudentsCount}
                       </p>
 
-                      {workoutExercise.notes && (
-                        <p className="mt-2 text-sm text-[#6F6A62]">
-                          {workoutExercise.notes}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="text-left">
-                      <p className="text-xs text-[#8A8378]">Séries</p>
-                      <p className="mt-1 font-semibold text-[#1F1F1F]">
-                        {workoutExercise.sets}
+                      <p className="mt-1 text-xs text-[#77827B]">
+                        alunos vinculados
                       </p>
-                    </div>
-
-                    <div className="text-left">
-                      <p className="text-xs text-[#8A8378]">Repetições</p>
-                      <p className="mt-1 font-semibold text-[#1F1F1F]">
-                        {workoutExercise.reps}
-                      </p>
-                    </div>
-
-                    <div className="text-left">
-                      <p className="text-xs text-[#8A8378]">Carga</p>
-                      <p className="mt-1 font-semibold text-[#1F1F1F]">
-                        {formatRecommendedLoad(workoutExercise.recommendedLoad)}
-                      </p>
-                    </div>
-
-                    <div className="text-left">
-                      <p className="text-xs text-[#8A8378]">Descanso</p>
-                      <p className="mt-1 font-semibold text-[#1F1F1F]">
-                        {formatRestTime(workoutExercise.restTimeSeconds)}
-                      </p>
-                    </div>
-
-                    <div className="lg:text-right">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          handleRemoveWorkoutExercise(workoutExercise.id)
-                        }
-                        disabled={removeWorkoutExerciseMutation.isPending}
-                        className="w-fit rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs font-semibold text-red-700 transition hover:border-red-300 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
-                      >
-                        {removeWorkoutExerciseMutation.isPending
-                          ? "Removendo..."
-                          : "Remover"}
-                      </button>
                     </div>
                   </div>
-                ))}
+
+                  <div className="hidden h-14 w-px bg-[#29302C] lg:block" />
+
+                  <div className="flex min-w-[190px] items-center gap-3 rounded-[16px] border border-[#29302C] bg-[#121614] px-4 py-3">
+                    <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#1D3B2A] text-[#70E39B]">
+                      <CheckCircle2 className="h-5 w-5" strokeWidth={1.8} />
+                    </span>
+
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={[
+                            "h-2.5 w-2.5 rounded-full",
+                            getWorkoutStatusDotClassName(workout.status),
+                          ].join(" ")}
+                        />
+
+                        <span className="text-sm font-semibold text-white">
+                          Treino{" "}
+                          {workout.status === "ACTIVE"
+                            ? "ativo"
+                            : formatWorkoutStatus(workout.status).toLowerCase()}
+                        </span>
+                      </div>
+
+                      <p className="mt-1 text-xs text-[#77827B]">
+                        {getWorkoutStatusDescription(workout.status)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <div className="mt-5">
+              <CreateWorkoutExerciseForm workoutId={parsedWorkoutId} />
             </div>
-          </div>
+
+            {removeWorkoutExerciseMutation.isError && (
+              <div
+                role="alert"
+                className="mt-5 rounded-[14px] border border-[#6A3434] bg-[#2B1919] px-4 py-3"
+              >
+                <p className="text-[13px] font-semibold text-[#FF8A8A]">
+                  Erro ao remover exercício.
+                </p>
+
+                <p className="mt-1 text-[13px] text-[#FFB0B0]">
+                  {removeWorkoutExerciseErrorMessage}
+                </p>
+              </div>
+            )}
+
+            {sortedWorkoutExercises.length === 0 && (
+              <section className="mt-5 rounded-[22px] border border-dashed border-[#343B37] bg-[#151917] p-8 text-center">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#91A097]">
+                  Sequência do treino
+                </p>
+
+                <h2 className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-white">
+                  Nenhum exercício vinculado
+                </h2>
+
+                <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-[#91A097]">
+                  Use o formulário acima para adicionar exercícios a este treino
+                  modelo. Depois disso, eles aparecerão organizados por ordem de
+                  execução.
+                </p>
+              </section>
+            )}
+
+            {sortedWorkoutExercises.length > 0 && (
+              <section className="mt-5 overflow-hidden rounded-[22px] border border-[#29302C] bg-[#171A18] shadow-[0_24px_80px_rgba(0,0,0,0.2)]">
+                <div className="flex flex-col gap-3 border-b border-[#29302C] px-5 py-6 sm:flex-row sm:items-center sm:justify-between sm:px-7">
+                  <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#91A097]">
+                      Sequência do treino
+                    </p>
+
+                    <h2 className="mt-3 text-[26px] font-semibold tracking-[-0.04em] text-white">
+                      Exercícios vinculados
+                    </h2>
+
+                    <p className="mt-2 text-sm text-[#91A097]">
+                      Mostrando {sortedWorkoutExercises.length}{" "}
+                      {sortedWorkoutExercises.length === 1
+                        ? "exercício vinculado"
+                        : "exercícios vinculados"}
+                      .
+                    </p>
+                  </div>
+
+                  <span className="w-fit rounded-full bg-[#1C2B36] px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-[#8FC7FF]">
+                    Ordenado por execução
+                  </span>
+                </div>
+
+                <div className="divide-y divide-[#29302C]">
+                  {sortedWorkoutExercises.map((workoutExercise) => (
+                    <div
+                      key={workoutExercise.id}
+                      className="grid gap-4 px-5 py-5 transition hover:bg-[#1A1F1C] sm:px-7 lg:grid-cols-[auto_1fr_76px_96px_88px_96px_auto] lg:items-center"
+                    >
+                      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#202721] text-sm font-semibold text-[#C8D0CC]">
+                        {workoutExercise.exerciseOrder}
+                      </div>
+
+                      <div>
+                        <h3 className="font-semibold text-white">
+                          {workoutExercise.exerciseName}
+                        </h3>
+
+                        <p className="mt-1 text-sm text-[#91A097]">
+                          {workoutExercise.muscleGroup} •{" "}
+                          {workoutExercise.equipmentName || "Sem equipamento"}
+                        </p>
+
+                        {workoutExercise.notes && (
+                          <p className="mt-2 text-sm text-[#77827B]">
+                            {workoutExercise.notes}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="text-center">
+                        <p className="text-[10px] font-semibold uppercase text-[#68736C]">
+                          Séries
+                        </p>
+                        <p className="mt-1 font-semibold text-white">
+                          {workoutExercise.sets}
+                        </p>
+                      </div>
+
+                      <div className="text-center">
+                        <p className="text-[10px] font-semibold uppercase text-[#68736C]">
+                          Repetições
+                        </p>
+                        <p className="mt-1 font-semibold text-white">
+                          {workoutExercise.reps}
+                        </p>
+                      </div>
+
+                      <div className="text-center">
+                        <p className="text-[10px] font-semibold uppercase text-[#68736C]">
+                          Carga
+                        </p>
+                        <p className="mt-1 font-semibold text-white">
+                          {formatRecommendedLoad(
+                            workoutExercise.recommendedLoad,
+                          )}
+                        </p>
+                      </div>
+
+                      <div className="text-center">
+                        <p className="text-[10px] font-semibold uppercase text-[#68736C]">
+                          Descanso
+                        </p>
+                        <p className="mt-1 font-semibold text-white">
+                          {formatRestTime(workoutExercise.restTimeSeconds)}
+                        </p>
+                      </div>
+
+                      <div className="lg:text-right">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleRemoveWorkoutExercise(workoutExercise.id)
+                          }
+                          disabled={removeWorkoutExerciseMutation.isPending}
+                          className="inline-flex h-10 items-center gap-2 rounded-xl border border-[#5C3030] bg-[#2A1919] px-3 text-xs font-semibold text-[#FF8A8A] transition hover:border-[#FF7A7A]/70 hover:bg-[#3A2222] disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          <Trash2 className="h-4 w-4" strokeWidth={1.9} />
+                          {removeWorkoutExerciseMutation.isPending
+                            ? "Removendo..."
+                            : "Remover"}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+          </>
         )}
-    </div>
+      </div>
+    </main>
   );
 }
