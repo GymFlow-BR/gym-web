@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import type { SVGProps } from "react";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { z } from "zod";
 import "@fontsource-variable/geist";
 import { LockKeyhole, ShieldCheck } from "lucide-react";
@@ -216,10 +216,10 @@ export function LoginPage() {
             <ShieldCheck size={20} strokeWidth={2} />
           </span>
           <div>
-            <strong className="block text-[11px] font-semibold text-[#f4f6f4]/90">
+            <strong className="block text-[13px] font-semibold text-[#f4f6f4]/90">
               Seu treino sempre à mão
             </strong>
-            <span className="mt-1 block text-[9px] leading-4 text-[#dee8e1]/50">
+            <span className="mt-1 block text-[11px] leading-4 text-[#dee8e1]/50">
               Orientações, vídeos e progresso em uma experiência organizada.
             </span>
           </div>
@@ -395,9 +395,18 @@ export function LoginPage() {
               )}
             </button>
           </form>
+          <p className="mt-6 text-center text-[12px] text-[#8c9790]">
+            Ainda não tem conta?{" "}
+            <Link
+              to="/register"
+              className="font-semibold text-[#74e29a] transition hover:text-[#8ff0ad]"
+            >
+              Criar organização
+            </Link>
+          </p>
         </div>
 
-        <footer className="mt-auto hidden justify-between gap-5 text-[10px] tracking-[0.02em] text-[#747d77] lg:flex">
+        <footer className="mt-auto hidden justify-between gap-5 text-[12px] tracking-[0.02em] text-[#747d77] lg:flex">
           <span>© 2026 GymFlow</span>
           <span>Treino simples. Evolução constante.</span>
         </footer>

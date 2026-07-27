@@ -14,6 +14,7 @@ import { AdminWorkoutsPage } from "../features/workouts/pages/AdminWorkoutsPage"
 import { WorkoutDetailsPage } from "../features/workouts/pages/WorkoutDetailsPage";
 import { AppEntryRoute } from "../features/auth/components/AppEntryRoute";
 import { StudentDetailsPage } from "../features/students/pages/StudentDetailsPage";
+import { RegisterPage } from "../features/auth/pages/RegisterPage";
 
 export function AppRouter() {
   return (
@@ -25,6 +26,15 @@ export function AppRouter() {
         element={
           <PublicOnlyRoute>
             <LoginPage />
+          </PublicOnlyRoute>
+        }
+      />
+
+      <Route
+        path="/register"
+        element={
+          <PublicOnlyRoute>
+            <RegisterPage />
           </PublicOnlyRoute>
         }
       />
