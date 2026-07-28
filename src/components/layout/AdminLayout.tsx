@@ -6,6 +6,7 @@ import {
   LayoutGrid,
   LogOut,
   MoreHorizontal,
+  UserCog,
   Users,
   Zap,
   type LucideIcon,
@@ -26,6 +27,7 @@ type NavigationItem = {
   label: string;
   to: string;
   icon: LucideIcon;
+  allowedRoles?: UserRole[];
 };
 
 const navigationItems: NavigationItem[] = [
@@ -33,21 +35,31 @@ const navigationItems: NavigationItem[] = [
     label: "Visão geral",
     to: "/admin",
     icon: LayoutGrid,
+    allowedRoles: ["ADMIN", "TEACHER"],
   },
   {
     label: "Alunos",
     to: "/admin/students",
     icon: Users,
+    allowedRoles: ["ADMIN", "TEACHER"],
+  },
+  {
+    label: "Professores",
+    to: "/admin/teachers",
+    icon: UserCog,
+    allowedRoles: ["ADMIN"],
   },
   {
     label: "Exercícios",
     to: "/admin/exercises",
     icon: Zap,
+    allowedRoles: ["ADMIN", "TEACHER"],
   },
   {
     label: "Treinos",
     to: "/admin/workouts",
     icon: Dumbbell,
+    allowedRoles: ["ADMIN", "TEACHER"],
   },
 ];
 
@@ -89,6 +101,18 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const queryClient = useQueryClient();
   const { data: user } = useAuthenticatedUser();
 
+  const visibleNavigationItems = navigationItems.filter((item) => {
+    if (!item.allowedRoles || item.allowedRoles.length === 0) {
+      return true;
+    }
+
+    if (!user) {
+      return false;
+    }
+
+    return item.allowedRoles.includes(user.role);
+  });
+
   const logoutMutation = useMutation({
     mutationFn: logout,
     onSuccess: () => {
@@ -127,7 +151,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           aria-label="Navegação principal"
           className="flex flex-1 flex-col gap-2"
         >
-          {navigationItems.map((item) => {
+          {visibleNavigationItems.map((item) => {
             const Icon = item.icon;
 
             return (
@@ -234,7 +258,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             aria-label="Navegação principal"
             className="flex gap-1 overflow-x-auto px-4 pb-4"
           >
-            {navigationItems.map((item) => (
+            {visibleNavigationItems.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}

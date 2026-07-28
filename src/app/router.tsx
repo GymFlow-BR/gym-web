@@ -15,6 +15,7 @@ import { WorkoutDetailsPage } from "../features/workouts/pages/WorkoutDetailsPag
 import { AppEntryRoute } from "../features/auth/components/AppEntryRoute";
 import { StudentDetailsPage } from "../features/students/pages/StudentDetailsPage";
 import { RegisterPage } from "../features/auth/pages/RegisterPage";
+import { AdminTeachersPage } from "../features/teachers/pages/AdminTeachersPage";
 
 export function AppRouter() {
   return (
@@ -89,6 +90,17 @@ export function AppRouter() {
           <ProtectedRoute allowedRoles={["ADMIN", "TEACHER"]}>
             <AdminLayout>
               <AdminStudentsPage />
+            </AdminLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/teachers"
+        element={
+          <ProtectedRoute allowedRoles={["ADMIN"]}>
+            <AdminLayout>
+              <AdminTeachersPage />
             </AdminLayout>
           </ProtectedRoute>
         }
