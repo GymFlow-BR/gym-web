@@ -7,6 +7,7 @@ import { AssignWorkoutToStudentForm } from "./AssignWorkoutToStudentForm";
 
 type Props = {
   studentId: number;
+  isStudentActive: boolean;
   currentWorkout?: StudentCurrentWorkout;
   isLoading: boolean;
   isError: boolean;
@@ -41,6 +42,7 @@ function isNotFound(error: unknown) {
 
 export function StudentCurrentWorkoutCard({
   studentId,
+  isStudentActive,
   currentWorkout,
   isLoading,
   isError,
@@ -76,13 +78,23 @@ export function StudentCurrentWorkoutCard({
         )}
       </div>
 
+      {!isStudentActive && !isAssigningWorkout && (
+        <div className="mt-5 rounded-xl border border-[#453b25] bg-[#211d14] px-4 py-3">
+          <p className="text-xs font-semibold text-[#f2c97d]">Aluno inativo</p>
+          <p className="mt-1 text-xs leading-5 text-[#b9a57d]">
+            Este aluno permanece visível para consulta, mas não pode receber ou
+            trocar treinos enquanto estiver inativo.
+          </p>
+        </div>
+      )}
+
       {workoutSuccessMessage && !isAssigningWorkout && (
         <p className="mt-5 rounded-xl border border-[#2f5b40] bg-[#20382a] px-4 py-3 text-sm text-[#70e39b]">
           {workoutSuccessMessage}
         </p>
       )}
 
-      {isAssigningWorkout && (
+      {isAssigningWorkout && isStudentActive && (
         <div className="mt-6 rounded-2xl border border-[#303733] bg-[#1a1e1b] p-5">
           <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#89968f]">
             {currentWorkout ? "Troca de treino" : "Atribuição de treino"}
@@ -118,15 +130,20 @@ export function StudentCurrentWorkoutCard({
             Nenhum treino atual
           </p>
           <p className="mt-2 text-xs text-[#89948e]">
-            Este aluno ainda não possui um treino ativo.
+            {isStudentActive
+              ? "Este aluno ainda não possui um treino ativo."
+              : "Este aluno está inativo e não pode receber novos treinos."}
           </p>
-          <button
-            type="button"
-            onClick={onStartAssigningWorkout}
-            className="mt-5 h-11 rounded-xl bg-[#70e39b] px-5 text-sm font-semibold text-[#0d1b13]"
-          >
-            Atribuir treino
-          </button>
+
+          {isStudentActive && (
+            <button
+              type="button"
+              onClick={onStartAssigningWorkout}
+              className="mt-5 h-11 rounded-xl bg-[#70e39b] px-5 text-sm font-semibold text-[#0d1b13]"
+            >
+              Atribuir treino
+            </button>
+          )}
         </div>
       )}
 
@@ -150,14 +167,17 @@ export function StudentCurrentWorkoutCard({
                 Atribuído em {formatDate(currentWorkout.assignedAt)}
               </p>
             </div>
-            <button
-              type="button"
-              onClick={onStartAssigningWorkout}
-              className="inline-flex items-center gap-2 text-sm font-semibold text-[#a8b5ae] hover:text-[#70e39b]"
-            >
-              Trocar
-              <ArrowRight aria-hidden="true" className="h-4 w-4" />
-            </button>
+
+            {isStudentActive && (
+              <button
+                type="button"
+                onClick={onStartAssigningWorkout}
+                className="inline-flex items-center gap-2 text-sm font-semibold text-[#a8b5ae] hover:text-[#70e39b]"
+              >
+                Trocar
+                <ArrowRight aria-hidden="true" className="h-4 w-4" />
+              </button>
+            )}
           </div>
 
           <div className="mt-3 grid gap-2 sm:grid-cols-3">

@@ -12,7 +12,6 @@ export type Student = {
 };
 
 export type CreateStudentRequest = {
-  organizationId: number;
   name: string;
   email: string;
   password: string;
@@ -20,6 +19,7 @@ export type CreateStudentRequest = {
 };
 
 export type UpdateStudentRequest = {
-  name: string;
-  email: string;
+  name?: string;
+  email?: string;
+  active?: boolean;
 };

@@ -185,6 +185,7 @@ export function StudentDetailsPage() {
         <div className="space-y-4">
           <StudentCurrentWorkoutCard
             studentId={studentId}
+            isStudentActive={student?.active ?? false}
             currentWorkout={currentWorkout}
             isLoading={studentsQuery.isLoading || currentWorkoutQuery.isLoading}
             isError={currentWorkoutQuery.isError}

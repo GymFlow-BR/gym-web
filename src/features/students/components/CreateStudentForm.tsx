@@ -59,7 +59,6 @@ export function CreateStudentForm({
   const createStudentMutation = useMutation({
     mutationFn: (data: CreateStudentFormData) =>
       createStudent({
-        organizationId: Number(organizationId),
         name: data.name.trim(),
         email: data.email.trim(),
         password: data.password,
