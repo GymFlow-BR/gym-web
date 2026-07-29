@@ -22,11 +22,14 @@ export function StudentActionsCard({
     return null;
   }
 
+  const isStudentActive = student.active;
+
   const actions = [
     {
       title: "Editar dados básicos",
       description: "Atualize nome e e-mail.",
       onClick: onStartEditing,
+      disabled: false,
     },
     {
       title: currentWorkout ? "Trocar treino" : "Atribuir treino",
@@ -34,6 +37,7 @@ export function StudentActionsCard({
         ? "Substitua o treino ativo."
         : "Vincule um treino ativo.",
       onClick: onStartAssigningWorkout,
+      disabled: !isStudentActive,
     },
   ];
 
@@ -43,20 +47,38 @@ export function StudentActionsCard({
         Gerenciamento
       </p>
 
-      <div className="mt-2 divide-y divide-[#29302c] border-t border-[#29302c]">
+      {!isStudentActive && (
+        <div className="mt-5 rounded-xl border border-[#453b25] bg-[#211d14] px-4 py-3">
+          <p className="text-xs font-semibold text-[#f2c97d]">Aluno inativo</p>
+          <p className="mt-1 text-xs leading-5 text-[#b9a57d]">
+            Este aluno pode ser consultado e editado, mas não deve receber novos
+            treinos enquanto estiver inativo.
+          </p>
+        </div>
+      )}
+
+      <div className="mt-5 divide-y divide-[#29302c] border-t border-[#29302c]">
         {actions.map((action) => (
           <button
             key={action.title}
             type="button"
-            onClick={action.onClick}
-            className="flex w-full items-center justify-between gap-4 py-5 text-left transition hover:text-[#70e39b]"
+            onClick={action.disabled ? undefined : action.onClick}
+            disabled={action.disabled}
+            className={[
+              "flex w-full items-center justify-between gap-4 py-5 text-left transition",
+              action.disabled
+                ? "cursor-not-allowed opacity-45"
+                : "hover:text-[#70e39b]",
+            ].join(" ")}
           >
             <span>
               <span className="block text-sm font-semibold text-[#f5f7f5]">
                 {action.title}
               </span>
               <span className="mt-2 block text-xs text-[#7f8a84]">
-                {action.description}
+                {action.disabled
+                  ? "Reative o aluno antes de atribuir ou trocar treino."
+                  : action.description}
               </span>
             </span>
             <ChevronRight

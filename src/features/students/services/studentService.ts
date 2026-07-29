@@ -21,3 +21,13 @@ export function updateStudent(studentId: number, data: UpdateStudentRequest) {
     data,
   );
 }
+
+export function deactivateStudent(studentId: number) {
+  return api.delete<void>(`/api/users/${studentId}`);
+}
+
+export function reactivateStudent(studentId: number) {
+  return api.patch<Student, { active: boolean }>(`/api/users/${studentId}`, {
+    active: true,
+  });
+}

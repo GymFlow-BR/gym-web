@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Plus, Search, SlidersHorizontal } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { useAuthenticatedUser } from "../../auth/hooks/useAuthenticatedUser";
@@ -7,9 +7,21 @@ import { CreateStudentForm } from "../components/CreateStudentForm";
 import { StudentsList } from "../components/StudentsList";
 import { getStudentsByOrganization } from "../services/studentService";
 
+type StudentStatusFilter = "ALL" | "ACTIVE" | "INACTIVE";
+
+const statusFilters: Array<{
+  label: string;
+  value: StudentStatusFilter;
+}> = [
+  { label: "Todos", value: "ALL" },
+  { label: "Ativos", value: "ACTIVE" },
+  { label: "Inativos", value: "INACTIVE" },
+];
+
 export function AdminStudentsPage() {
   const authenticatedUserQuery = useAuthenticatedUser();
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<StudentStatusFilter>("ALL");
   const [isCreateStudentModalOpen, setIsCreateStudentModalOpen] =
     useState(false);
 
@@ -26,19 +38,22 @@ export function AdminStudentsPage() {
   const filteredStudents = useMemo(() => {
     const normalizedSearchTerm = searchTerm.trim().toLocaleLowerCase("pt-BR");
 
-    if (!normalizedSearchTerm) {
-      return students;
-    }
-
     return students.filter((student) => {
-      return (
+      const matchesSearch =
+        !normalizedSearchTerm ||
         student.name
           .toLocaleLowerCase("pt-BR")
           .includes(normalizedSearchTerm) ||
-        student.email.toLocaleLowerCase("pt-BR").includes(normalizedSearchTerm)
-      );
+        student.email.toLocaleLowerCase("pt-BR").includes(normalizedSearchTerm);
+
+      const matchesStatus =
+        statusFilter === "ALL" ||
+        (statusFilter === "ACTIVE" && student.active) ||
+        (statusFilter === "INACTIVE" && !student.active);
+
+      return matchesSearch && matchesStatus;
     });
-  }, [searchTerm, students]);
+  }, [searchTerm, statusFilter, students]);
 
   const isLoading = authenticatedUserQuery.isLoading || studentsQuery.isLoading;
 
@@ -73,22 +88,33 @@ export function AdminStudentsPage() {
             />
           </label>
 
-          <div className="flex w-full gap-3 sm:w-auto">
-            <button
-              type="button"
-              className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-xl border border-[#303733] bg-[#151816] px-5 text-sm font-semibold text-[#f5f7f5] transition hover:border-[#465049] hover:bg-[#1a1e1b] sm:flex-none"
-            >
-              <SlidersHorizontal
-                aria-hidden="true"
-                className="h-[18px] w-[18px]"
-              />
-              Filtrar
-            </button>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="flex rounded-xl border border-[#303733] bg-[#151816] p-1">
+              {statusFilters.map((filter) => {
+                const isSelected = statusFilter === filter.value;
+
+                return (
+                  <button
+                    key={filter.value}
+                    type="button"
+                    onClick={() => setStatusFilter(filter.value)}
+                    className={[
+                      "h-10 rounded-lg px-4 text-xs font-semibold transition",
+                      isSelected
+                        ? "bg-[#70e39b] text-[#0d1b13]"
+                        : "text-[#a4ada8] hover:bg-[#1d211f] hover:text-[#f5f7f5]",
+                    ].join(" ")}
+                  >
+                    {filter.label}
+                  </button>
+                );
+              })}
+            </div>
 
             <button
               type="button"
               onClick={() => setIsCreateStudentModalOpen(true)}
-              className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-[#70e39b] px-5 text-sm font-semibold text-[#0d1b13] transition hover:bg-[#83e8a8] focus:outline-none focus:ring-2 focus:ring-[#70e39b] focus:ring-offset-2 focus:ring-offset-[#0d0f0e] sm:flex-none"
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[#70e39b] px-5 text-sm font-semibold text-[#0d1b13] transition hover:bg-[#83e8a8] focus:outline-none focus:ring-2 focus:ring-[#70e39b] focus:ring-offset-2 focus:ring-offset-[#0d0f0e]"
             >
               <Plus aria-hidden="true" className="h-[18px] w-[18px]" />
               Adicionar aluno
