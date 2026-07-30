@@ -298,10 +298,14 @@ export function CreateWorkoutExerciseForm({
           </div>
 
           <div className="lg:col-span-2">
-            <label className="mb-2 block text-[12px] font-semibold text-[#DDE3DF]">
+            <label
+              htmlFor="workout-exercise-order"
+              className="mb-2 block text-[12px] font-semibold text-[#DDE3DF]"
+            >
               Ordem
             </label>
             <input
+              id="workout-exercise-order"
               type="number"
               min={1}
               placeholder="Ex.: 1"
@@ -316,10 +320,14 @@ export function CreateWorkoutExerciseForm({
           </div>
 
           <div className="lg:col-span-2">
-            <label className="mb-2 block text-[12px] font-semibold text-[#DDE3DF]">
+            <label
+              htmlFor="workout-exercise-sets"
+              className="mb-2 block text-[12px] font-semibold text-[#DDE3DF]"
+            >
               Séries
             </label>
             <input
+              id="workout-exercise-sets"
               type="number"
               min={1}
               placeholder="Ex.: 3"
@@ -334,10 +342,14 @@ export function CreateWorkoutExerciseForm({
           </div>
 
           <div className="lg:col-span-2">
-            <label className="mb-2 block text-[12px] font-semibold text-[#DDE3DF]">
+            <label
+              htmlFor="workout-exercise-reps"
+              className="mb-2 block text-[12px] font-semibold text-[#DDE3DF]"
+            >
               Repetições
             </label>
             <input
+              id="workout-exercise-reps"
               placeholder="Ex.: 8–12"
               className={getFieldClassName(Boolean(errors.reps))}
               {...register("reps")}
@@ -350,10 +362,14 @@ export function CreateWorkoutExerciseForm({
           </div>
 
           <div className="lg:col-span-6">
-            <label className="mb-2 block text-[12px] font-semibold text-[#DDE3DF]">
+            <label
+              htmlFor="workout-exercise-load"
+              className="mb-2 block text-[12px] font-semibold text-[#DDE3DF]"
+            >
               Carga recomendada
             </label>
             <input
+              id="workout-exercise-load"
               type="number"
               min={0}
               step="0.01"
@@ -369,10 +385,14 @@ export function CreateWorkoutExerciseForm({
           </div>
 
           <div className="lg:col-span-2">
-            <label className="mb-2 block text-[12px] font-semibold text-[#DDE3DF]">
+            <label
+              htmlFor="workout-exercise-rest"
+              className="mb-2 block text-[12px] font-semibold text-[#DDE3DF]"
+            >
               Descanso em segundos
             </label>
             <input
+              id="workout-exercise-rest"
               type="number"
               min={0}
               placeholder="Ex.: 90"

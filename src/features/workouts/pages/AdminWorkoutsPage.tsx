@@ -356,11 +356,11 @@ export function AdminWorkoutsPage() {
                       </span>
                     </div>
 
-                    <div className="mt-8">
-                      <h2 className="text-lg font-semibold tracking-[-0.02em]">
+                    <div className="mt-6">
+                      <h2 className="truncate text-lg font-semibold tracking-[-0.02em]">
                         {workout.workoutName}
                       </h2>
-                      <p className="mt-2 text-sm text-[#91A097]">
+                      <p className="mt-1.5 text-sm text-[#91A097]">
                         {exerciseCount === undefined
                           ? "Carregando exercícios..."
                           : `${exerciseCount} ${
@@ -368,11 +368,11 @@ export function AdminWorkoutsPage() {
                             }`}
                       </p>
                       {workout.teacherName && (
-                        <p className="mt-2 text-sm text-[#91A097]">
+                        <p className="mt-1.5 truncate text-sm text-[#91A097]">
                           Prof. {workout.teacherName}
                         </p>
                       )}
-                      <p className="mt-2 text-xs text-[#68736C]">
+                      <p className="mt-1.5 text-xs text-[#68736C]">
                         Criado em {formatDate(workout.createdAt)}
                       </p>
                     </div>
