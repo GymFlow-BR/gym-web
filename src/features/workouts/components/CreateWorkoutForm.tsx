@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -60,6 +61,23 @@ export function CreateWorkoutForm({
 }: CreateWorkoutFormProps) {
   const queryClient = useQueryClient();
   const { data: authenticatedUser } = useAuthenticatedUser();
+  const nameInputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    nameInputRef.current?.focus();
+  }, []);
+
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        onCancel();
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [onCancel]);
 
   const {
     register,
@@ -99,6 +117,7 @@ export function CreateWorkoutForm({
 
   return (
     <div
+      role="presentation"
       className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-black/75 px-4 py-8 backdrop-blur-sm"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) {
@@ -108,6 +127,9 @@ export function CreateWorkoutForm({
     >
       <form
         onSubmit={handleCreateWorkout}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="create-workout-title"
         className="relative w-full max-w-xl rounded-[24px] border border-[#303632] bg-[#171A18] p-7 text-[#F4F7F5] shadow-2xl shadow-black/40 sm:p-8"
       >
         <button
@@ -124,7 +146,10 @@ export function CreateWorkoutForm({
             Treino modelo
           </p>
 
-          <h2 className="mt-4 text-[28px] font-semibold tracking-[-0.04em] text-[#F4F7F5]">
+          <h2
+            id="create-workout-title"
+            className="mt-4 text-[28px] font-semibold tracking-[-0.04em] text-[#F4F7F5]"
+          >
             Criar novo treino
           </h2>
 
@@ -145,8 +170,11 @@ export function CreateWorkoutForm({
             id="workoutName"
             type="text"
             placeholder="Ex.: Inferiores B"
-            autoFocus
             {...register("workoutName")}
+            ref={(element) => {
+              register("workoutName").ref(element);
+              nameInputRef.current = element;
+            }}
             className={[
               "h-14 w-full rounded-[14px] border bg-[#1D211F] px-4 text-[15px] text-[#F4F7F5] outline-none transition placeholder:text-[#727B76]",
               errors.workoutName

@@ -212,6 +212,18 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               </summary>
 
               <div className="absolute bottom-11 right-0 z-40 w-40 rounded-xl border border-[#29302c] bg-[#171a18] p-1.5 shadow-2xl shadow-black/30">
+                <NavLink
+                  to="/admin/profile"
+                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-[13px] font-medium text-[#c7cec9] transition-colors hover:bg-[#202721] hover:text-white"
+                >
+                  <UserCog
+                    aria-hidden="true"
+                    className="h-4 w-4"
+                    strokeWidth={1.8}
+                  />
+                  Perfil
+                </NavLink>
+
                 <button
                   type="button"
                   onClick={handleLogout}

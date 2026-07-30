@@ -1,6 +1,7 @@
 import { api } from "../../../services/api";
 import type {
   AuthenticatedUser,
+  ChangePasswordRequest,
   LoginRequest,
   RegisterOrganizationRequest,
   RegisterOrganizationResponse,
@@ -23,4 +24,11 @@ export function getAuthenticatedUser() {
 
 export function logout() {
   return api.post<void>("/api/auth/logout");
+}
+
+export function changePassword(data: ChangePasswordRequest) {
+  return api.post<void, ChangePasswordRequest>(
+    "/api/auth/change-password",
+    data,
+  );
 }

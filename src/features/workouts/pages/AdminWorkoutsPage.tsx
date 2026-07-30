@@ -367,6 +367,11 @@ export function AdminWorkoutsPage() {
                               exerciseCount === 1 ? "exercício" : "exercícios"
                             }`}
                       </p>
+                      {workout.teacherName && (
+                        <p className="mt-2 text-sm text-[#91A097]">
+                          Prof. {workout.teacherName}
+                        </p>
+                      )}
                       <p className="mt-2 text-xs text-[#68736C]">
                         Criado em {formatDate(workout.createdAt)}
                       </p>

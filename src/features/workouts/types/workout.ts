@@ -3,6 +3,7 @@ export type WorkoutStatus = 'ACTIVE' | 'INACTIVE' | 'ARCHIVED'
 export type Workout = {
   workoutId: number
   teacherId: number
+  teacherName: string
   workoutName: string
   status: WorkoutStatus
   createdAt: string

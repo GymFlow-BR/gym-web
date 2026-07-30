@@ -33,3 +33,8 @@ export type AuthenticatedUser = {
   email: string;
   role: UserRole;
 };
+
+export type ChangePasswordRequest = {
+  currentPassword: string;
+  newPassword: string;
+};

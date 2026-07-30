@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -59,6 +60,23 @@ export function EditWorkoutForm({
   onSuccess,
 }: EditWorkoutFormProps) {
   const queryClient = useQueryClient();
+  const nameInputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    nameInputRef.current?.focus();
+  }, []);
+
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        onCancel();
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [onCancel]);
 
   const {
     register,
@@ -89,6 +107,7 @@ export function EditWorkoutForm({
 
   return (
     <div
+      role="presentation"
       className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-black/75 px-4 py-8 backdrop-blur-sm"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onCancel();
@@ -133,8 +152,11 @@ export function EditWorkoutForm({
             </label>
             <input
               id="edit-workout-name"
-              autoFocus
               {...register("workoutName")}
+              ref={(element) => {
+                register("workoutName").ref(element);
+                nameInputRef.current = element;
+              }}
               className={`mt-2 h-14 w-full rounded-xl border bg-[#1D211F] px-4 text-sm text-white outline-none transition ${
                 errors.workoutName
                   ? "border-[#A64F4F] focus:border-[#FF7A7A]"
