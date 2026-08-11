@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Eye, EyeOff, LockKeyhole } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -27,51 +28,32 @@ const changePasswordSchema = z
 
 type ChangePasswordFormData = z.infer<typeof changePasswordSchema>;
 
-function EyeIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className="h-5 w-5"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      aria-hidden="true"
-    >
-      <path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12Z" />
-      <circle cx="12" cy="12" r="3" />
-    </svg>
-  );
-}
-
-function EyeOffIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className="h-5 w-5"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      aria-hidden="true"
-    >
-      <path d="M3 3l18 18" />
-      <path d="M10.6 5.1A10.6 10.6 0 0 1 12 5c7 0 10.5 7 10.5 7a13.4 13.4 0 0 1-3.2 4.1M6.5 6.6C3.4 8.5 1.5 12 1.5 12s3.5 7 10.5 7a10.4 10.4 0 0 0 4.6-1" />
-      <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2" />
-    </svg>
-  );
-}
+type ChangePasswordFormProps = {
+  variant?: "card" | "plain";
+  onSuccess?: () => void;
+};
 
 function fieldClassName(hasError: boolean) {
   return [
-    "h-14 w-full rounded-[14px] border bg-[#1D211F] px-4 pr-12 text-[15px] text-[#F4F7F5] outline-none transition placeholder:text-[#727B76]",
+    "student-password-input h-13 w-full rounded-2xl border bg-[#0d130f] px-4 pr-12 text-[15px] text-[#f5f7f5] caret-[#70e39b] outline-none transition placeholder:text-[#66716a]",
     hasError
-      ? "border-[#D66565] focus:border-[#EF7676] focus:ring-2 focus:ring-[#EF7676]/15"
-      : "border-[#343A36] focus:border-[#69DF98] focus:ring-2 focus:ring-[#69DF98]/15",
+      ? "border-red-400/45 focus:border-red-300 focus:ring-2 focus:ring-red-400/15"
+      : "border-[#26322b] focus:border-[#70e39b]/70 focus:ring-2 focus:ring-[#70e39b]/15",
   ].join(" ");
 }
 
-export function ChangePasswordForm() {
+export function ChangePasswordForm({
+  variant = "card",
+  onSuccess,
+}: ChangePasswordFormProps) {
   const [visibleFields, setVisibleFields] = useState<Record<string, boolean>>(
     {},
+  );
+
+  const [readOnlyFields, setReadOnlyFields] = useState<Record<string, boolean>>(
+    {
+      currentPassword: true,
+    },
   );
 
   const {
@@ -93,11 +75,17 @@ export function ChangePasswordForm() {
     onSuccess: () => {
       reset();
       setVisibleFields({});
+      setReadOnlyFields({ currentPassword: true });
+      onSuccess?.();
     },
   });
 
   function toggleVisibility(field: string) {
     setVisibleFields((current) => ({ ...current, [field]: !current[field] }));
+  }
+
+  function enableField(field: string) {
+    setReadOnlyFields((current) => ({ ...current, [field]: false }));
   }
 
   function getErrorMessage() {
@@ -110,7 +98,6 @@ export function ChangePasswordForm() {
     }
 
     if (mutation.error.status === 400) {
-      // A API responde em inglês; traduzimos os casos conhecidos.
       const apiMessage = mutation.error.message ?? "";
 
       if (apiMessage.includes("Current password is invalid")) {
@@ -139,8 +126,9 @@ export function ChangePasswordForm() {
       name: "currentPassword" as const,
       label: "Senha atual",
       placeholder: "Digite sua senha atual",
-      autoComplete: "current-password",
+      autoComplete: "new-password",
       error: errors.currentPassword?.message,
+      preventAutofill: true,
     },
     {
       name: "newPassword" as const,
@@ -148,6 +136,7 @@ export function ChangePasswordForm() {
       placeholder: "Pelo menos 6 caracteres",
       autoComplete: "new-password",
       error: errors.newPassword?.message,
+      preventAutofill: false,
     },
     {
       name: "confirmPassword" as const,
@@ -155,31 +144,34 @@ export function ChangePasswordForm() {
       placeholder: "Repita a nova senha",
       autoComplete: "new-password",
       error: errors.confirmPassword?.message,
+      preventAutofill: false,
     },
   ];
 
-  return (
-    <section className="rounded-[22px] border border-[#2A302C] bg-[#171A18] p-6 text-[#F4F7F5] sm:p-7">
-      <header>
-        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#8D9791]">
-          Segurança
-        </p>
+  const autofillStyles = (
+    <style>
+      {`
+        .student-password-input:-webkit-autofill,
+        .student-password-input:-webkit-autofill:hover,
+        .student-password-input:-webkit-autofill:focus,
+        .student-password-input:-webkit-autofill:active {
+          -webkit-box-shadow: 0 0 0 1000px #0d130f inset !important;
+          -webkit-text-fill-color: #f5f7f5 !important;
+          caret-color: #70e39b !important;
+          transition: background-color 9999s ease-in-out 0s !important;
+        }
+      `}
+    </style>
+  );
 
-        <h2 className="mt-3 text-[22px] font-semibold tracking-[-0.03em]">
-          Alterar senha
-        </h2>
-
-        <p className="mt-2 text-[14px] leading-6 text-[#8D9791]">
-          Para sua segurança, confirme a senha atual antes de definir uma nova.
-        </p>
-      </header>
-
+  const formContent = (
+    <>
       {mutation.isSuccess && (
         <div
           role="status"
-          className="mt-5 rounded-[14px] border border-[#2D6945] bg-[#173323] px-4 py-3"
+          className="mb-5 rounded-2xl border border-[#70e39b]/25 bg-[#1d3828] px-4 py-3"
         >
-          <p className="text-[13px] font-semibold text-[#70E39B]">
+          <p className="text-sm font-semibold text-[#70e39b]">
             Senha alterada com sucesso.
           </p>
         </div>
@@ -188,17 +180,42 @@ export function ChangePasswordForm() {
       {mutation.isError && (
         <div
           role="alert"
-          className="mt-5 rounded-[14px] border border-[#6A3434] bg-[#2B1919] px-4 py-3"
+          className="mb-5 rounded-2xl border border-red-400/20 bg-red-500/10 px-4 py-3"
         >
-          <p className="text-[13px] font-semibold text-[#FF8A8A]">
+          <p className="text-sm font-semibold text-red-200">
             Erro ao alterar senha.
           </p>
 
-          <p className="mt-1 text-[13px] text-[#FFB0B0]">{getErrorMessage()}</p>
+          <p className="mt-1 text-sm leading-6 text-red-100/80">
+            {getErrorMessage()}
+          </p>
         </div>
       )}
 
-      <form onSubmit={submit} className="mt-6 space-y-5" noValidate>
+      <form
+        onSubmit={submit}
+        className="space-y-5"
+        autoComplete="off"
+        noValidate
+      >
+        <input
+          type="text"
+          name="fake-username"
+          autoComplete="username"
+          className="hidden"
+          tabIndex={-1}
+          aria-hidden="true"
+        />
+
+        <input
+          type="password"
+          name="fake-password"
+          autoComplete="current-password"
+          className="hidden"
+          tabIndex={-1}
+          aria-hidden="true"
+        />
+
         {fields.map((field) => {
           const isVisible = Boolean(visibleFields[field.name]);
 
@@ -206,7 +223,7 @@ export function ChangePasswordForm() {
             <div key={field.name}>
               <label
                 htmlFor={field.name}
-                className="mb-2 block text-[12px] font-medium text-[#C9D0CC]"
+                className="mb-2 block text-xs font-semibold text-[#c9d0cc]"
               >
                 {field.label}
               </label>
@@ -217,6 +234,12 @@ export function ChangePasswordForm() {
                   type={isVisible ? "text" : "password"}
                   placeholder={field.placeholder}
                   autoComplete={field.autoComplete}
+                  readOnly={field.preventAutofill && readOnlyFields[field.name]}
+                  onFocus={() => {
+                    if (field.preventAutofill) {
+                      enableField(field.name);
+                    }
+                  }}
                   aria-invalid={field.error ? true : undefined}
                   aria-describedby={
                     field.error ? `${field.name}-error` : undefined
@@ -233,16 +256,20 @@ export function ChangePasswordForm() {
                       ? `Ocultar ${field.label.toLowerCase()}`
                       : `Mostrar ${field.label.toLowerCase()}`
                   }
-                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-[#8C9690] transition hover:bg-[#232825] hover:text-white"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-xl p-1.5 text-[#8c9690] transition hover:bg-[#17221b] hover:text-[#f5f7f5]"
                 >
-                  {isVisible ? <EyeOffIcon /> : <EyeIcon />}
+                  {isVisible ? (
+                    <EyeOff aria-hidden="true" className="h-5 w-5" />
+                  ) : (
+                    <Eye aria-hidden="true" className="h-5 w-5" />
+                  )}
                 </button>
               </div>
 
               {field.error && (
                 <p
                   id={`${field.name}-error`}
-                  className="mt-2 text-[13px] text-[#FF7B7B]"
+                  className="mt-2 text-sm text-red-300"
                 >
                   {field.error}
                 </p>
@@ -255,11 +282,50 @@ export function ChangePasswordForm() {
           type="submit"
           disabled={mutation.isPending}
           aria-busy={mutation.isPending}
-          className="inline-flex h-12 items-center justify-center rounded-[14px] bg-[#1BA65A] px-6 text-[14px] font-semibold text-white transition hover:bg-[#159452] disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex h-12 w-full items-center justify-center rounded-2xl bg-[#70e39b] px-6 text-sm font-bold text-[#0d1b13] transition hover:bg-[#83e8a8] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {mutation.isPending ? "Alterando..." : "Alterar senha"}
         </button>
       </form>
+    </>
+  );
+
+  if (variant === "plain") {
+    return (
+      <>
+        {autofillStyles}
+        {formContent}
+      </>
+    );
+  }
+
+  return (
+    <section className="overflow-hidden rounded-[24px] border border-[#253128] bg-[#111914] shadow-xl shadow-black/10">
+      {autofillStyles}
+
+      <header className="border-b border-[#253128] bg-[#101812] p-5">
+        <div className="flex items-start gap-3">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#1d3828] text-[#70e39b]">
+            <LockKeyhole aria-hidden="true" className="h-5 w-5" />
+          </span>
+
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#70e39b]">
+              Segurança
+            </p>
+
+            <h2 className="mt-1 text-xl font-semibold tracking-[-0.035em] text-[#f5f7f5]">
+              Alterar senha
+            </h2>
+
+            <p className="mt-2 text-sm leading-6 text-[#8fa098]">
+              Confirme a senha atual antes de definir uma nova.
+            </p>
+          </div>
+        </div>
+      </header>
+
+      <div className="p-5">{formContent}</div>
     </section>
   );
 }
