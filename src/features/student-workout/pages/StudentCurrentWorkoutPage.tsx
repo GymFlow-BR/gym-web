@@ -9,56 +9,10 @@ import {
   getStudentCurrentWorkoutProgress,
   uncompleteStudentWorkoutExercise,
 } from "../services/studentWorkoutService";
-import { RestTimer } from "../components/RestTimer";
-import { StudentWorkoutSummaryCard } from "../components/StudentWorkoutSummaryCard";
-import { StudentWorkoutProgressCard } from "../components/StudentWorkoutProgressCard";
 import { StudentWorkoutCompletionCard } from "../components/StudentWorkoutCompletionCard";
-
-function formatRestTime(seconds: number | null) {
-  if (seconds === null) {
-    return "Não informado";
-  }
-
-  if (seconds < 60) {
-    return `${seconds}s`;
-  }
-
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = seconds % 60;
-
-  if (remainingSeconds === 0) {
-    return `${minutes}min`;
-  }
-
-  return `${minutes}min ${remainingSeconds}s`;
-}
-
-function formatRecommendedLoad(value: number | null) {
-  if (value === null) {
-    return "Não informado";
-  }
-
-  return `${value} kg`;
-}
-
-function getProgressMessage(
-  progressPercentage: number,
-  totalExercises: number,
-) {
-  if (totalExercises === 0) {
-    return "Seu treino ainda não possui exercícios cadastrados.";
-  }
-
-  if (progressPercentage === 0) {
-    return "Comece pelo primeiro exercício quando estiver pronto.";
-  }
-
-  if (progressPercentage === 100) {
-    return "Todos os exercícios foram concluídos.";
-  }
-
-  return "Continue no seu ritmo. Seu progresso está sendo salvo.";
-}
+import { StudentWorkoutGreeting } from "../components/StudentWorkoutGreeting";
+import { StudentWorkoutTodayCard } from "../components/StudentWorkoutTodayCard";
+import { StudentWorkoutExerciseCard } from "../components/StudentWorkoutExerciseCard";
 
 export function StudentCurrentWorkoutPage() {
   const queryClient = useQueryClient();
@@ -214,70 +168,31 @@ export function StudentCurrentWorkoutPage() {
 
   const isWorkoutCompleted = totalExercises > 0 && progressPercentage === 100;
 
-  const progressMessage = getProgressMessage(
-    progressPercentage,
-    totalExercises,
-  );
-
-  function getWorkoutStatusLabel(
-    progressPercentage: number,
-    totalExercises: number,
-  ) {
-    if (totalExercises === 0) {
-      return "Aguardando exercícios";
-    }
-
-    if (progressPercentage === 100) {
-      return "Concluído";
-    }
-
-    if (progressPercentage === 0) {
-      return "Não iniciado";
-    }
-
-    return "Em andamento";
-  }
-
-  const workoutStatusLabel = getWorkoutStatusLabel(
-    progressPercentage,
-    totalExercises,
-  );
-
   function getExerciseProgress(workoutExerciseId: number) {
     return currentWorkoutProgress?.exercises.find(
       (exercise) => exercise.workoutExerciseId === workoutExerciseId,
     );
   }
 
-  function hasExerciseDetails(exercise: {
-    description: string | null;
-    notes: string | null;
-    imageUrl: string | null;
-    videoUrl: string | null;
-  }) {
-    return Boolean(
-      exercise.description ||
-      exercise.notes ||
-      exercise.imageUrl ||
-      exercise.videoUrl,
-    );
-  }
-
-  function getNextPendingWorkoutExerciseId() {
+  function getPendingWorkoutExerciseIds() {
     if (isWorkoutCompleted) {
-      return null;
+      return [];
     }
 
-    const nextPendingExercise = sortedExercises.find((exercise) => {
-      const exerciseProgress = getExerciseProgress(exercise.workoutExerciseId);
+    return sortedExercises
+      .filter((exercise) => {
+        const exerciseProgress = getExerciseProgress(
+          exercise.workoutExerciseId,
+        );
 
-      return !exerciseProgress?.completed;
-    });
-
-    return nextPendingExercise?.workoutExerciseId ?? null;
+        return !exerciseProgress?.completed;
+      })
+      .map((exercise) => exercise.workoutExerciseId);
   }
 
-  const nextPendingWorkoutExerciseId = getNextPendingWorkoutExerciseId();
+  const pendingWorkoutExerciseIds = getPendingWorkoutExerciseIds();
+  const startWorkoutExerciseId = pendingWorkoutExerciseIds[0] ?? null;
+  const nextWorkoutExerciseId = pendingWorkoutExerciseIds[1] ?? null;
 
   useEffect(() => {
     if (remainingRestSeconds === null || isRestTimerPaused) {
@@ -366,7 +281,10 @@ export function StudentCurrentWorkoutPage() {
   if (isAuthenticatedUserError) {
     return (
       <Card>
-        <div role="alert" className="rounded-2xl border border-red-200 bg-red-50 p-4">
+        <div
+          role="alert"
+          className="rounded-2xl border border-red-200 bg-red-50 p-4"
+        >
           <p className="text-sm font-semibold text-red-700">
             Não foi possível identificar o aluno autenticado.
           </p>
@@ -431,33 +349,15 @@ export function StudentCurrentWorkoutPage() {
   return (
     <>
       <section>
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-sm text-[#C9C3B8]">Treino atual</p>
+        <StudentWorkoutGreeting studentName={authenticatedUser.name} />
 
-            <h2 className="mt-1 text-2xl font-bold text-[#F6F4EF]">
-              {currentWorkout.workoutName}
-            </h2>
-          </div>
-
-          <span className="rounded-full border border-[#9FC5AE]/20 bg-[#9FC5AE]/10 px-3 py-1 text-xs font-semibold text-[#9FC5AE]">
-            Ativo
-          </span>
-        </div>
-
-        <StudentWorkoutSummaryCard
+        <StudentWorkoutTodayCard
+          workoutName={currentWorkout.workoutName}
+          assignedAt={currentWorkout.assignedAt}
           totalExercises={totalExercises}
           completedExercises={completedExercises}
           pendingExercises={pendingExercises}
           progressPercentage={progressPercentage}
-          statusLabel={workoutStatusLabel}
-        />
-
-        <StudentWorkoutProgressCard
-          progressPercentage={progressPercentage}
-          completedExercises={completedExercises}
-          totalExercises={totalExercises}
-          progressMessage={progressMessage}
         />
 
         {isWorkoutCompleted && (
@@ -535,235 +435,66 @@ export function StudentCurrentWorkoutPage() {
       )}
 
       {sortedExercises.length > 0 && (
-        <div className="mt-5 space-y-3">
-          {sortedExercises.map((exercise) => {
-            const exerciseProgress = getExerciseProgress(
-              exercise.workoutExerciseId,
-            );
-            const isCompleted = exerciseProgress?.completed ?? false;
-            const isUpdatingThisExercise =
-              updatingWorkoutExerciseId === exercise.workoutExerciseId;
-            const isExpanded = expandedWorkoutExerciseIds.includes(
-              exercise.workoutExerciseId,
-            );
-            const exerciseHasDetails = hasExerciseDetails(exercise);
-            const isRestActiveForThisExercise =
-              activeRestWorkoutExerciseId === exercise.workoutExerciseId &&
-              remainingRestSeconds !== null;
-            const isNextPendingExercise =
-              nextPendingWorkoutExerciseId === exercise.workoutExerciseId;
+        <section className="mt-7">
+          <div className="mb-4 flex items-end justify-between gap-4">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8fa098]">
+                Exercícios
+              </p>
+              <h2 className="mt-2 text-xl font-semibold tracking-[-0.035em] text-[#f5f7f5]">
+                Sua sequência de hoje
+              </h2>
+            </div>
 
-            return (
-              <div
-                key={exercise.workoutExerciseId}
-                className={[
-                  "rounded-2xl border p-4 shadow-sm transition",
-                  isCompleted
-                    ? "border-[#9FC5AE]/20 bg-[#101A14]/85 text-[#F6F4EF]"
-                    : isNextPendingExercise
-                      ? "border-[#9FC5AE]/50 bg-[#16221B] text-[#F6F4EF] shadow-md ring-2 ring-[#9FC5AE]/10"
-                      : "border-white/10 bg-[#16221B] text-[#F6F4EF]",
-                ].join(" ")}
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="text-sm font-semibold text-[#F6F4EF]">
-                        {exercise.exerciseOrder}. {exercise.exerciseName}
-                      </p>
+            <p className="text-xs font-medium text-[#8fa098]">
+              {completedExercises}/{totalExercises}
+            </p>
+          </div>
 
-                      {isNextPendingExercise && (
-                        <span className="rounded-full bg-[#2F4F3E] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
-                          Próximo
-                        </span>
-                      )}
+          <div className="space-y-3">
+            {sortedExercises.map((exercise) => {
+              const exerciseProgress = getExerciseProgress(
+                exercise.workoutExerciseId,
+              );
 
-                      {isCompleted && (
-                        <span className="rounded-full border border-[#9FC5AE]/30 bg-[#9FC5AE]/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#D8F3E0]">
-                          Concluído
-                        </span>
-                      )}
-                    </div>
+              const isUpdatingThisExercise =
+                updatingWorkoutExerciseId === exercise.workoutExerciseId;
 
-                    <p className="mt-1 text-xs text-[#C9C3B8]">
-                      {exercise.muscleGroup || "Grupo muscular não informado"} •{" "}
-                      {exercise.equipmentName || "Sem equipamento"}
-                    </p>
-                  </div>
+              const isExpanded = expandedWorkoutExerciseIds.includes(
+                exercise.workoutExerciseId,
+              );
 
-                  <button
-                    type="button"
-                    onClick={() =>
-                      handleToggleExerciseCompletion(
-                        exercise.workoutExerciseId,
-                        isCompleted,
-                      )
-                    }
-                    disabled={
-                      isUpdatingThisExercise || isCurrentWorkoutProgressError
-                    }
-                    className={[
-                      "flex shrink-0 items-center justify-center rounded-full border px-3 py-1.5 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-60",
-                      isCompleted
-                        ? "border-[#9FC5AE]/30 bg-[#2F4F3E] text-[#F6F4EF]"
-                        : "border-[#9FC5AE]/30 bg-[#9FC5AE]/10 text-[#D8F3E0] hover:bg-[#9FC5AE]/15",
-                    ].join(" ")}
-                    aria-label={
-                      isUpdatingThisExercise
-                        ? "Salvando alteração do exercício"
-                        : isCompleted
-                          ? "Desmarcar exercício como concluído"
-                          : "Marcar exercício como concluído"
-                    }
-                  >
-                    {isUpdatingThisExercise
-                      ? "Salvando..."
-                      : isCompleted
-                        ? "Feito"
-                        : "Marcar"}
-                  </button>
-                </div>
+              const exerciseSequenceTag = exerciseProgress?.completed
+                ? "COMPLETED"
+                : startWorkoutExerciseId === exercise.workoutExerciseId
+                  ? "START"
+                  : nextWorkoutExerciseId === exercise.workoutExerciseId
+                    ? "NEXT"
+                    : null;
 
-                <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
-                  <div className="rounded-2xl border border-white/10 bg-[#1D2B23] p-3">
-                    <p className="text-xs font-semibold text-[#9CA89F]">
-                      Séries
-                    </p>
-                    <p className="mt-1 text-base font-bold text-[#F6F4EF]">
-                      {exercise.sets}
-                    </p>
-                  </div>
-
-                  <div className="rounded-2xl border border-white/10 bg-[#1D2B23] p-3">
-                    <p className="text-xs font-semibold text-[#9CA89F]">
-                      Repetições
-                    </p>
-                    <p className="mt-1 text-base font-bold text-[#F6F4EF]">
-                      {exercise.reps}
-                    </p>
-                  </div>
-
-                  <div className="rounded-2xl border border-white/10 bg-[#1D2B23] p-3">
-                    <p className="text-xs font-semibold text-[#9CA89F]">
-                      Carga
-                    </p>
-                    <p className="mt-1 text-base font-bold text-[#F6F4EF]">
-                      {formatRecommendedLoad(exercise.recommendedLoad)}
-                    </p>
-                  </div>
-
-                  <div className="rounded-2xl border border-white/10 bg-[#1D2B23] p-3">
-                    <p className="text-xs font-semibold text-[#9CA89F]">
-                      Descanso
-                    </p>
-                    <p className="mt-1 text-base font-bold text-[#F6F4EF]">
-                      {formatRestTime(exercise.restTimeSeconds)}
-                    </p>
-                  </div>
-                </div>
-
-                {exercise.restTimeSeconds !== null &&
-                  exercise.restTimeSeconds > 0 && (
-                    <RestTimer
-                      restTimeSeconds={exercise.restTimeSeconds}
-                      remainingRestSeconds={remainingRestSeconds}
-                      isActive={isRestActiveForThisExercise}
-                      isPaused={isRestTimerPaused}
-                      onStart={() =>
-                        handleStartRestTimer(
-                          exercise.workoutExerciseId,
-                          exercise.restTimeSeconds!,
-                        )
-                      }
-                      onPause={handlePauseRestTimer}
-                      onResume={handleResumeRestTimer}
-                      onCancel={handleCancelRestTimer}
-                    />
-                  )}
-
-                {exerciseHasDetails && (
-                  <div className="mt-4 border-t border-white/10 pt-4">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        handleToggleExerciseDetails(exercise.workoutExerciseId)
-                      }
-                      className="inline-flex items-center gap-2 text-sm font-semibold text-[#F6F4EF]"
-                    >
-                      <span>
-                        {isExpanded ? "Ocultar detalhes" : "Ver detalhes"}
-                      </span>
-
-                      <span
-                        className={[
-                          "text-xs transition-transform",
-                          isExpanded ? "rotate-180" : "rotate-0",
-                        ].join(" ")}
-                        aria-hidden="true"
-                      >
-                        ▼
-                      </span>
-                    </button>
-
-                    {isExpanded && (
-                      <div className="mt-4 space-y-3">
-                        {exercise.description && (
-                          <div className="rounded-2xl border border-white/10 bg-[#1D2B23] p-3">
-                            <p className="text-xs font-semibold text-[#9CA89F]">
-                              Descrição
-                            </p>
-
-                            <p className="mt-1 text-sm text-[#F6F4EF]">
-                              {exercise.description}
-                            </p>
-                          </div>
-                        )}
-
-                        {exercise.notes && (
-                          <div className="rounded-2xl border border-white/10 bg-[#1D2B23] p-3">
-                            <p className="text-xs font-semibold text-[#9CA89F]">
-                              Observações
-                            </p>
-
-                            <p className="mt-1 text-sm text-[#C9C3B8]">
-                              {exercise.notes}
-                            </p>
-                          </div>
-                        )}
-
-                        {(exercise.imageUrl || exercise.videoUrl) && (
-                          <div className="flex flex-wrap gap-2">
-                            {exercise.imageUrl && (
-                              <a
-                                href={exercise.imageUrl}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="rounded-full border border-[#9FC5AE]/30 bg-[#9FC5AE]/10 px-3 py-1 text-xs font-semibold text-[#D8F3E0] transition hover:bg-[#9FC5AE]/15"
-                              >
-                                Ver imagem
-                              </a>
-                            )}
-
-                            {exercise.videoUrl && (
-                              <a
-                                href={exercise.videoUrl}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="rounded-full border border-[#9FC5AE]/30 bg-[#9FC5AE]/10 px-3 py-1 text-xs font-semibold text-[#D8F3E0] transition hover:bg-[#9FC5AE]/15"
-                              >
-                                Ver vídeo
-                              </a>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
+              return (
+                <StudentWorkoutExerciseCard
+                  key={exercise.workoutExerciseId}
+                  exercise={exercise}
+                  exerciseProgress={exerciseProgress}
+                  exerciseSequenceTag={exerciseSequenceTag}
+                  isExpanded={isExpanded}
+                  isUpdating={isUpdatingThisExercise}
+                  isCurrentWorkoutProgressError={isCurrentWorkoutProgressError}
+                  activeRestWorkoutExerciseId={activeRestWorkoutExerciseId}
+                  remainingRestSeconds={remainingRestSeconds}
+                  isRestTimerPaused={isRestTimerPaused}
+                  onToggleCompletion={handleToggleExerciseCompletion}
+                  onToggleDetails={handleToggleExerciseDetails}
+                  onStartRestTimer={handleStartRestTimer}
+                  onPauseRestTimer={handlePauseRestTimer}
+                  onResumeRestTimer={handleResumeRestTimer}
+                  onCancelRestTimer={handleCancelRestTimer}
+                />
+              );
+            })}
+          </div>
+        </section>
       )}
     </>
   );

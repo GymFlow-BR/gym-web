@@ -27,7 +27,7 @@ export function logout() {
 }
 
 export function changePassword(data: ChangePasswordRequest) {
-  return api.post<void, ChangePasswordRequest>(
+  return api.patch<void, ChangePasswordRequest>(
     "/api/auth/change-password",
     data,
   );

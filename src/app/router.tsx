@@ -9,6 +9,7 @@ import { LoginPage } from "../features/auth/pages/LoginPage";
 import { AdminExercisesPage } from "../features/exercises/pages/AdminExercisesPage";
 import { NotFoundPage } from "../features/not-found/pages/NotFoundPage";
 import { AdminStudentsPage } from "../features/students/pages/AdminStudentsPage";
+import { StudentWorkoutsPage } from "../features/student-workout/pages/StudentWorkoutsPage";
 import { StudentCurrentWorkoutPage } from "../features/student-workout/pages/StudentCurrentWorkoutPage";
 import { AdminWorkoutsPage } from "../features/workouts/pages/AdminWorkoutsPage";
 import { WorkoutDetailsPage } from "../features/workouts/pages/WorkoutDetailsPage";
@@ -135,6 +136,17 @@ export function AppRouter() {
           <ProtectedRoute allowedRoles={["STUDENT"]}>
             <StudentLayout>
               <StudentCurrentWorkoutPage />
+            </StudentLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/student/workouts"
+        element={
+          <ProtectedRoute allowedRoles={["STUDENT"]}>
+            <StudentLayout>
+              <StudentWorkoutsPage />
             </StudentLayout>
           </ProtectedRoute>
         }
