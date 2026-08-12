@@ -1,5 +1,14 @@
 export type StudentWorkoutStatus = "ACTIVE" | "INACTIVE" | "ARCHIVED";
 
+export type WeekDay =
+  | "MONDAY"
+  | "TUESDAY"
+  | "WEDNESDAY"
+  | "THURSDAY"
+  | "FRIDAY"
+  | "SATURDAY"
+  | "SUNDAY";
+
 export type StudentCurrentWorkoutExercise = {
   workoutExerciseId: number;
   exerciseId: number;
@@ -22,7 +31,9 @@ export type StudentCurrentWorkout = {
   studentWorkoutId: number;
   workoutId: number;
   workoutName: string;
+  teacherName: string;
   assignedAt: string;
+  weekDay: WeekDay;
   status: StudentWorkoutStatus;
   exercises: StudentCurrentWorkoutExercise[];
 };
@@ -56,6 +67,7 @@ export type StudentWorkoutExerciseProgress = {
 
 export type CreateStudentWorkoutRequest = {
   workoutId: number;
+  weekDay: WeekDay;
 };
 
 export type StudentWorkout = {
@@ -64,7 +76,9 @@ export type StudentWorkout = {
   studentName: string;
   workoutId: number;
   workoutName: string;
+  teacherName: string;
   assignedAt: string;
+  weekDay: WeekDay;
   status: StudentWorkoutStatus;
   createdAt: string;
   updatedAt: string;

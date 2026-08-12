@@ -13,7 +13,6 @@ type StudentActionsCardProps = {
 
 export function StudentActionsCard({
   student,
-  currentWorkout,
   isEditingStudent,
   onStartEditing,
   onStartAssigningWorkout,
@@ -32,10 +31,8 @@ export function StudentActionsCard({
       disabled: false,
     },
     {
-      title: currentWorkout ? "Trocar treino" : "Atribuir treino",
-      description: currentWorkout
-        ? "Substitua o treino ativo."
-        : "Vincule um treino ativo.",
+      title: "Atribuir treino",
+      description: "Vincule um treino a um dia da semana.",
       onClick: onStartAssigningWorkout,
       disabled: !isStudentActive,
     },
@@ -57,7 +54,7 @@ export function StudentActionsCard({
         </div>
       )}
 
-      <div className="mt-5 divide-y divide-[#29302c] border-t border-[#29302c]">
+      <div className="mt-5 space-y-2 border-t border-[#29302c] pt-4">
         {actions.map((action) => (
           <button
             key={action.title}
@@ -65,25 +62,32 @@ export function StudentActionsCard({
             onClick={action.disabled ? undefined : action.onClick}
             disabled={action.disabled}
             className={[
-              "flex w-full items-center justify-between gap-4 py-5 text-left transition",
+              "group flex w-full items-center justify-between gap-4 rounded-xl px-4 py-4 text-left transition duration-200",
               action.disabled
                 ? "cursor-not-allowed opacity-45"
-                : "hover:text-[#70e39b]",
+                : "hover:-translate-y-0.5 hover:bg-[#202720] hover:shadow-lg hover:shadow-black/10",
             ].join(" ")}
           >
             <span>
-              <span className="block text-sm font-semibold text-[#f5f7f5]">
+              <span className="block text-sm font-semibold text-[#f5f7f5] transition group-hover:text-[#ffffff]">
                 {action.title}
               </span>
-              <span className="mt-2 block text-xs text-[#7f8a84]">
+
+              <span className="mt-2 block text-xs leading-5 text-[#7f8a84] transition group-hover:text-[#a4aea8]">
                 {action.disabled
-                  ? "Reative o aluno antes de atribuir ou trocar treino."
+                  ? "Reative o aluno antes de atribuir treino."
                   : action.description}
               </span>
             </span>
+
             <ChevronRight
               aria-hidden="true"
-              className="h-[18px] w-[18px] shrink-0 text-[#89948e]"
+              className={[
+                "h-[18px] w-[18px] shrink-0 transition duration-200",
+                action.disabled
+                  ? "text-[#58625c]"
+                  : "text-[#89948e] group-hover:translate-x-1 group-hover:text-[#70e39b]",
+              ].join(" ")}
             />
           </button>
         ))}
