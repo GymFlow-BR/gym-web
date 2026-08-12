@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, CalendarDays, CheckCircle2, Dumbbell } from "lucide-react";
+import { ArrowRight, CalendarDays, CheckCircle2 } from "lucide-react";
 import { Link } from "react-router";
 
 import { Card } from "../../../components/ui/Card";
@@ -8,12 +8,46 @@ import {
   getStudentCurrentWorkout,
   getStudentWorkouts,
 } from "../services/studentWorkoutService";
-import type { StudentWorkoutStatus } from "../types/studentWorkout";
+import type {
+  StudentWorkout,
+  StudentWorkoutStatus,
+  WeekDay,
+} from "../types/studentWorkout";
 
 const statusLabels: Record<StudentWorkoutStatus, string> = {
   ACTIVE: "Ativo",
   INACTIVE: "Inativo",
   ARCHIVED: "Arquivado",
+};
+
+const weekDayLabels: Record<WeekDay, string> = {
+  MONDAY: "Segunda-feira",
+  TUESDAY: "Terça-feira",
+  WEDNESDAY: "Quarta-feira",
+  THURSDAY: "Quinta-feira",
+  FRIDAY: "Sexta-feira",
+  SATURDAY: "Sábado",
+  SUNDAY: "Domingo",
+};
+
+const weekDayShortLabels: Record<WeekDay, string> = {
+  MONDAY: "SEG",
+  TUESDAY: "TER",
+  WEDNESDAY: "QUA",
+  THURSDAY: "QUI",
+  FRIDAY: "SEX",
+  SATURDAY: "SÁB",
+  SUNDAY: "DOM",
+};
+
+const weekDayOrder: Record<WeekDay, number> = {
+  MONDAY: 1,
+  TUESDAY: 2,
+  WEDNESDAY: 3,
+  THURSDAY: 4,
+  FRIDAY: 5,
+  SATURDAY: 6,
+  SUNDAY: 7,
 };
 
 function formatDate(value: string) {
@@ -34,6 +68,15 @@ function getStatusClassName(status: StudentWorkoutStatus) {
   }
 
   return "border-[#3a423d] bg-[#171d19] text-[#8f9b94]";
+}
+
+function sortByWeekDay(
+  firstWorkout: StudentWorkout,
+  secondWorkout: StudentWorkout,
+) {
+  return (
+    weekDayOrder[firstWorkout.weekDay] - weekDayOrder[secondWorkout.weekDay]
+  );
 }
 
 export function StudentWorkoutsPage() {
@@ -75,6 +118,10 @@ export function StudentWorkoutsPage() {
           new Date(secondWorkout.assignedAt).getTime() -
           new Date(firstWorkout.assignedAt).getTime(),
       ) ?? [];
+
+  const activeWeeklyWorkouts = assignedWorkouts
+    .filter((workout) => workout.status === "ACTIVE")
+    .sort(sortByWeekDay);
 
   const currentWorkout = currentWorkoutQuery.data;
 
@@ -137,85 +184,110 @@ export function StudentWorkoutsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-7">
       <header className="pt-1">
         <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#8fa098]">
           Seus treinos
         </p>
 
         <h1 className="mt-3 text-[32px] font-semibold leading-none tracking-[-0.055em] text-[#f5f7f5]">
-          Treinos
+          Rotina da semana
         </h1>
 
         <p className="mt-4 max-w-[320px] text-sm leading-6 text-[#9ca8a1]">
-          Consulte o treino ativo e os treinos que já foram atribuídos ao seu
-          perfil.
+          Veja os treinos ativos preparados para a sua semana e acompanhe seu
+          histórico de atribuições.
         </p>
       </header>
 
-      {currentWorkout ? (
-        <section className="overflow-hidden rounded-[26px] border border-[#70e39b]/35 bg-[#142019] shadow-2xl shadow-black/20">
-          <div className="border-b border-[#26322b] bg-[#172a1f] px-5 py-4">
-            <div className="flex items-center gap-3">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#70e39b] text-[#0d1b13]">
-                <Dumbbell aria-hidden="true" className="h-5 w-5" />
-              </span>
+      <section>
+        <div className="mb-4 flex items-end justify-between gap-4">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8fa098]">
+              Semana atual
+            </p>
 
-              <div className="min-w-0">
-                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#70e39b]">
-                  Treino ativo
-                </p>
-
-                <h2 className="mt-1 truncate text-xl font-semibold tracking-[-0.04em] text-[#f5f7f5]">
-                  {currentWorkout.workoutName}
-                </h2>
-              </div>
-            </div>
+            <h2 className="mt-2 text-xl font-semibold tracking-[-0.035em] text-[#f5f7f5]">
+              Treinos ativos
+            </h2>
           </div>
 
-          <div className="p-5">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-2xl border border-[#26322b] bg-[#0d130f] p-4">
-                <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#77847d]">
-                  Exercícios
-                </p>
+          <p className="text-xs font-medium text-[#8fa098]">
+            {activeWeeklyWorkouts.length}
+          </p>
+        </div>
 
-                <p className="mt-2 text-2xl font-semibold text-[#f5f7f5]">
-                  {currentWorkout.exercises.length}
-                </p>
-              </div>
+        {activeWeeklyWorkouts.length === 0 ? (
+          <div className="rounded-[26px] border border-[#26322b] bg-[#111914] p-5 text-center shadow-xl shadow-black/10">
+            <p className="text-sm font-semibold text-[#f5f7f5]">
+              Nenhum treino ativo na semana
+            </p>
 
-              <div className="rounded-2xl border border-[#26322b] bg-[#0d130f] p-4">
-                <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#77847d]">
-                  Status
-                </p>
-
-                <p className="mt-3 inline-flex rounded-full border border-[#70e39b]/25 bg-[#1d3828] px-3 py-1 text-xs font-bold text-[#70e39b]">
-                  Ativo
-                </p>
-              </div>
-            </div>
-
-            <Link
-              to="/student/current-workout"
-              className="mt-5 flex h-12 items-center justify-center gap-2 rounded-2xl bg-[#70e39b] text-sm font-bold text-[#0d1b13] transition hover:bg-[#83e8a8]"
-            >
-              Abrir treino de hoje
-              <ArrowRight aria-hidden="true" className="h-4 w-4" />
-            </Link>
+            <p className="mt-2 text-sm leading-6 text-[#8fa098]">
+              Quando seu professor atribuir treinos ativos para a sua rotina,
+              eles aparecerão aqui.
+            </p>
           </div>
-        </section>
-      ) : (
-        <section className="rounded-[26px] border border-[#26322b] bg-[#111914] p-5 text-center shadow-xl shadow-black/10">
-          <p className="text-sm font-semibold text-[#f5f7f5]">
-            Nenhum treino ativo
-          </p>
+        ) : (
+          <div className="space-y-3">
+            {activeWeeklyWorkouts.map((workout) => {
+              const isTodayWorkout =
+                currentWorkout?.studentWorkoutId === workout.studentWorkoutId;
 
-          <p className="mt-2 text-sm leading-6 text-[#8fa098]">
-            Quando seu professor atribuir um treino ativo, ele aparecerá aqui.
-          </p>
-        </section>
-      )}
+              return (
+                <Link
+                  key={workout.studentWorkoutId}
+                  to={`/student/workouts/${workout.studentWorkoutId}`}
+                  className={[
+                    "group flex items-center gap-4 rounded-[24px] border p-4 shadow-xl shadow-black/10 transition duration-200",
+                    isTodayWorkout
+                      ? "border-[#70e39b]/35 bg-[#142019]"
+                      : "border-[#26322b] bg-[#111914] hover:-translate-y-0.5 hover:border-[#3b4a41] hover:bg-[#141a16]",
+                  ].join(" ")}
+                >
+                  <span
+                    className={[
+                      "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-[11px] font-bold uppercase tracking-[0.06em]",
+                      isTodayWorkout
+                        ? "bg-[#70e39b] text-[#0d1b13]"
+                        : "bg-[#1d3828] text-[#70e39b]",
+                    ].join(" ")}
+                  >
+                    {weekDayShortLabels[workout.weekDay]}
+                  </span>
+
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="truncate text-base font-semibold text-[#f5f7f5]">
+                        {workout.workoutName}
+                      </h3>
+
+                      {isTodayWorkout && (
+                        <span className="rounded-full border border-[#70e39b]/25 bg-[#1d3828] px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.08em] text-[#70e39b]">
+                          Hoje
+                        </span>
+                      )}
+                    </div>
+
+                    <p className="mt-1 text-xs text-[#8fa098]">
+                      {weekDayLabels[workout.weekDay]}
+                    </p>
+
+                    <p className="mt-1 text-xs text-[#7f8a84]">
+                      Criado por {workout.teacherName}
+                    </p>
+                  </div>
+
+                  <ArrowRight
+                    aria-hidden="true"
+                    className="h-4 w-4 shrink-0 text-[#7f8a84] transition group-hover:translate-x-1 group-hover:text-[#70e39b]"
+                  />
+                </Link>
+              );
+            })}
+          </div>
+        )}
+      </section>
 
       <section>
         <div className="mb-4 flex items-end justify-between gap-4">
@@ -249,12 +321,12 @@ export function StudentWorkoutsPage() {
             {assignedWorkouts.map((workout) => (
               <article
                 key={workout.studentWorkoutId}
-                className="rounded-[24px] border border-[#26322b] bg-[#111914] p-4 shadow-xl shadow-black/10"
+                className="rounded-[22px] border border-[#26322b] bg-[#111914] px-4 py-3.5 shadow-xl shadow-black/10"
               >
-                <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <div className="flex items-center gap-3">
-                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#1d3828] text-[#70e39b]">
+                    <div className="flex items-start gap-3">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#1d3828] text-[#70e39b]">
                         {workout.status === "ACTIVE" ? (
                           <CheckCircle2
                             aria-hidden="true"
@@ -268,14 +340,22 @@ export function StudentWorkoutsPage() {
                         )}
                       </span>
 
-                      <div className="min-w-0">
-                        <h3 className="truncate text-base font-semibold text-[#f5f7f5]">
-                          {workout.workoutName}
-                        </h3>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h3 className="truncate text-base font-semibold leading-tight text-[#f5f7f5]">
+                            {workout.workoutName}
+                          </h3>
+                        </div>
 
-                        <p className="mt-1 text-xs text-[#8fa098]">
-                          Atribuído em {formatDate(workout.assignedAt)}
-                        </p>
+                        <div className="mt-1.5 flex flex-col gap-0.5">
+                          <p className="text-xs leading-5 text-[#7f8a84]">
+                            Criado por {workout.teacherName}
+                          </p>
+
+                          <p className="text-xs leading-5 text-[#8fa098]">
+                            Atribuído em {formatDate(workout.assignedAt)}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>

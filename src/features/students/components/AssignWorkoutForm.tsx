@@ -6,12 +6,37 @@ import { z } from "zod";
 import { Card } from "../../../components/ui/Card";
 import { isApiError } from "../../../services/apiError";
 import { createStudentWorkout } from "../../student-workout/services/studentWorkoutService";
+import type { WeekDay } from "../../student-workout/types/studentWorkout";
 import type { Workout } from "../../workouts/types/workout";
 import type { Student } from "../types/student";
+
+const weekDayOptions: { value: WeekDay; label: string }[] = [
+  { value: "MONDAY", label: "Segunda-feira" },
+  { value: "TUESDAY", label: "Terça-feira" },
+  { value: "WEDNESDAY", label: "Quarta-feira" },
+  { value: "THURSDAY", label: "Quinta-feira" },
+  { value: "FRIDAY", label: "Sexta-feira" },
+  { value: "SATURDAY", label: "Sábado" },
+  { value: "SUNDAY", label: "Domingo" },
+];
 
 const assignWorkoutSchema = z.object({
   studentId: z.number().min(1, "Selecione um aluno."),
   workoutId: z.number().min(1, "Selecione um treino."),
+  weekDay: z.enum(
+    [
+      "MONDAY",
+      "TUESDAY",
+      "WEDNESDAY",
+      "THURSDAY",
+      "FRIDAY",
+      "SATURDAY",
+      "SUNDAY",
+    ],
+    {
+      message: "Selecione o dia da semana.",
+    },
+  ),
 });
 
 type AssignWorkoutFormData = z.infer<typeof assignWorkoutSchema>;
@@ -39,6 +64,7 @@ export function AssignWorkoutForm({
     defaultValues: {
       studentId: 0,
       workoutId: 0,
+      weekDay: "MONDAY",
     },
   });
 
@@ -46,6 +72,7 @@ export function AssignWorkoutForm({
     mutationFn: (data: AssignWorkoutFormData) =>
       createStudentWorkout(data.studentId, {
         workoutId: data.workoutId,
+        weekDay: data.weekDay,
       }),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["students"] });
@@ -57,6 +84,7 @@ export function AssignWorkoutForm({
       reset({
         studentId: 0,
         workoutId: 0,
+        weekDay: "MONDAY",
       });
     },
   });
@@ -83,7 +111,7 @@ export function AssignWorkoutForm({
       }
 
       if (assignWorkoutMutation.error.status === 409) {
-        return "Este aluno já possui esse treino atribuído. Escolha outro treino ou outro aluno.";
+        return "Este aluno já possui um treino ativo neste dia da semana.";
       }
 
       if (assignWorkoutMutation.error.status === 400) {
@@ -106,7 +134,7 @@ export function AssignWorkoutForm({
         </h2>
 
         <p className="text-sm text-[#6F6A62]">
-          Selecione um aluno e um treino modelo ativo.
+          Selecione um aluno, um treino modelo ativo e o dia da semana.
         </p>
       </div>
 
@@ -116,7 +144,7 @@ export function AssignWorkoutForm({
             Treino atribuído com sucesso.
           </p>
           <p className="mt-1 text-sm text-green-600">
-            O aluno já pode visualizar o treino atual.
+            O aluno já pode visualizar o treino no dia selecionado.
           </p>
         </div>
       )}
@@ -198,6 +226,34 @@ export function AssignWorkoutForm({
           {!isLoading && !hasActiveWorkouts && (
             <p className="mt-2 text-sm text-[#6F6A62]">
               Nenhum treino ativo disponível para atribuição.
+            </p>
+          )}
+        </div>
+
+        <div>
+          <label
+            htmlFor="weekDay"
+            className="mb-2 block text-sm font-medium text-[#1F1F1F]"
+          >
+            Dia da semana
+          </label>
+
+          <select
+            id="weekDay"
+            className="h-12 w-full rounded-2xl border border-[#E4DFD6] bg-[#FFFEFB] px-4 text-sm text-[#1F1F1F] outline-none transition focus:border-[#2F4F3E] focus:ring-2 focus:ring-[#2F4F3E]/10 disabled:cursor-not-allowed disabled:bg-[#F3F0E8] disabled:text-[#8A8378]"
+            disabled={isLoading || assignWorkoutMutation.isPending}
+            {...register("weekDay")}
+          >
+            {weekDayOptions.map((weekDay) => (
+              <option key={weekDay.value} value={weekDay.value}>
+                {weekDay.label}
+              </option>
+            ))}
+          </select>
+
+          {errors.weekDay && (
+            <p className="mt-2 text-sm text-red-600">
+              {errors.weekDay.message}
             </p>
           )}
         </div>

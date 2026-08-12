@@ -77,6 +77,10 @@ export function StudentDetailsPage() {
           new Date(firstWorkout.assignedAt).getTime(),
       ) ?? [];
 
+  const hasActiveAssignedWorkouts = studentWorkoutHistory.some(
+    (workout) => workout.status === "ACTIVE",
+  );
+
   const activeWorkouts =
     workoutsQuery.data?.filter((workout) => workout.status === "ACTIVE") ?? [];
 
@@ -187,6 +191,8 @@ export function StudentDetailsPage() {
             studentId={studentId}
             isStudentActive={student?.active ?? false}
             currentWorkout={currentWorkout}
+            hasActiveAssignedWorkouts={hasActiveAssignedWorkouts}
+            assignedWorkouts={studentWorkoutHistory}
             isLoading={studentsQuery.isLoading || currentWorkoutQuery.isLoading}
             isError={currentWorkoutQuery.isError}
             error={currentWorkoutQuery.error}

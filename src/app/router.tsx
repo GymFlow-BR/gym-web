@@ -18,6 +18,7 @@ import { StudentDetailsPage } from "../features/students/pages/StudentDetailsPag
 import { RegisterPage } from "../features/auth/pages/RegisterPage";
 import { AdminTeachersPage } from "../features/teachers/pages/AdminTeachersPage";
 import { ProfilePage } from "../features/profile/pages/ProfilePage";
+import { StudentWorkoutDetailsPage } from "../features/student-workout/pages/StudentWorkoutDetailsPage";
 
 export function AppRouter() {
   return (
@@ -137,6 +138,15 @@ export function AppRouter() {
             <StudentLayout>
               <StudentCurrentWorkoutPage />
             </StudentLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/student/workouts/:studentWorkoutId"
+        element={
+          <ProtectedRoute allowedRoles={["STUDENT"]}>
+            <StudentWorkoutDetailsPage />
           </ProtectedRoute>
         }
       />
