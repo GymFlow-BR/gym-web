@@ -12,7 +12,10 @@ export function createStudentWorkout(
   studentId: number,
   data: CreateStudentWorkoutRequest,
 ) {
-  return api.post<StudentWorkout>(`/api/students/${studentId}/workouts`, data);
+  return api.post<StudentWorkout, CreateStudentWorkoutRequest>(
+    `/api/students/${studentId}/workouts`,
+    data,
+  );
 }
 
 export function getStudentWorkouts(studentId: number) {
@@ -33,7 +36,7 @@ export function updateStudentWorkout(
   studentWorkoutId: number,
   data: PatchStudentWorkoutRequest,
 ) {
-  return api.patch<StudentWorkout>(
+  return api.patch<StudentWorkout, PatchStudentWorkoutRequest>(
     `/api/students/${studentId}/workouts/${studentWorkoutId}`,
     data,
   );
@@ -60,6 +63,15 @@ export function getStudentCurrentWorkoutProgress(studentId: number) {
   );
 }
 
+export function getStudentWorkoutProgress(
+  studentId: number,
+  studentWorkoutId: number,
+) {
+  return api.get<StudentCurrentWorkoutProgress>(
+    `/api/students/${studentId}/workouts/${studentWorkoutId}/progress`,
+  );
+}
+
 export function completeStudentWorkoutExercise(
   studentId: number,
   workoutExerciseId: number,
@@ -75,5 +87,25 @@ export function uncompleteStudentWorkoutExercise(
 ) {
   return api.patch<StudentWorkoutExerciseProgress>(
     `/api/students/${studentId}/workouts/current/exercises/${workoutExerciseId}/uncomplete`,
+  );
+}
+
+export function completeSpecificStudentWorkoutExercise(
+  studentId: number,
+  studentWorkoutId: number,
+  workoutExerciseId: number,
+) {
+  return api.patch<StudentWorkoutExerciseProgress>(
+    `/api/students/${studentId}/workouts/${studentWorkoutId}/exercises/${workoutExerciseId}/complete`,
+  );
+}
+
+export function uncompleteSpecificStudentWorkoutExercise(
+  studentId: number,
+  studentWorkoutId: number,
+  workoutExerciseId: number,
+) {
+  return api.patch<StudentWorkoutExerciseProgress>(
+    `/api/students/${studentId}/workouts/${studentWorkoutId}/exercises/${workoutExerciseId}/uncomplete`,
   );
 }

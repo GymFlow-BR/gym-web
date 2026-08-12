@@ -1,7 +1,11 @@
 import { ArrowRight } from "lucide-react";
 
 import { isApiError } from "../../../services/apiError";
-import type { StudentCurrentWorkout } from "../../student-workout/types/studentWorkout";
+import type {
+  StudentCurrentWorkout,
+  StudentWorkout,
+  WeekDay,
+} from "../../student-workout/types/studentWorkout";
 import type { Workout } from "../../workouts/types/workout";
 import { AssignWorkoutToStudentForm } from "./AssignWorkoutToStudentForm";
 
@@ -9,6 +13,8 @@ type Props = {
   studentId: number;
   isStudentActive: boolean;
   currentWorkout?: StudentCurrentWorkout;
+  hasActiveAssignedWorkouts: boolean;
+  assignedWorkouts: StudentWorkout[];
   isLoading: boolean;
   isError: boolean;
   error: unknown;
@@ -19,6 +25,16 @@ type Props = {
   onStartAssigningWorkout: () => void;
   onCancelAssigningWorkout: () => void;
   onAssignWorkoutSuccess: () => void | Promise<void>;
+};
+
+const weekDayLabels: Record<WeekDay, string> = {
+  MONDAY: "Segunda-feira",
+  TUESDAY: "Terça-feira",
+  WEDNESDAY: "Quarta-feira",
+  THURSDAY: "Quinta-feira",
+  FRIDAY: "Sexta-feira",
+  SATURDAY: "Sábado",
+  SUNDAY: "Domingo",
 };
 
 function formatDate(value: string) {
@@ -44,6 +60,8 @@ export function StudentCurrentWorkoutCard({
   studentId,
   isStudentActive,
   currentWorkout,
+  hasActiveAssignedWorkouts,
+  assignedWorkouts,
   isLoading,
   isError,
   error,
@@ -65,12 +83,13 @@ export function StudentCurrentWorkoutCard({
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#89968f]">
-            Treino atual
+            Treino de hoje
           </p>
           <h2 className="mt-3 text-xl font-semibold tracking-[-0.025em] text-[#f5f7f5]">
-            Treino atribuído
+            Treino do dia atual
           </h2>
         </div>
+
         {currentWorkout && !isAssigningWorkout && (
           <span className="inline-flex min-h-7 items-center rounded-full bg-[#183725] px-3 text-[10px] font-semibold uppercase text-[#70e39b]">
             {formatStatus(currentWorkout.status)}
@@ -97,18 +116,21 @@ export function StudentCurrentWorkoutCard({
       {isAssigningWorkout && isStudentActive && (
         <div className="mt-6 rounded-2xl border border-[#303733] bg-[#1a1e1b] p-5">
           <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#89968f]">
-            {currentWorkout ? "Troca de treino" : "Atribuição de treino"}
+            Atribuição de treino
           </p>
           <h3 className="mt-3 text-lg font-semibold text-[#f5f7f5]">
-            {currentWorkout ? "Trocar treino atual" : "Atribuir treino"}
+            Atribuir treino ao aluno
           </h3>
           <p className="mt-2 text-sm text-[#89948e]">
-            Selecione um treino ativo para este aluno.
+            Selecione um treino ativo e o dia da semana em que ele deve aparecer
+            na rotina do aluno.
           </p>
+
           <div className="mt-6">
             <AssignWorkoutToStudentForm
               studentId={studentId}
               activeWorkouts={activeWorkouts}
+              assignedWorkouts={assignedWorkouts}
               currentWorkoutId={currentWorkout?.workoutId}
               isLoading={isWorkoutsLoading}
               onCancel={onCancelAssigningWorkout}
@@ -120,18 +142,21 @@ export function StudentCurrentWorkoutCard({
 
       {isLoading && !isAssigningWorkout && (
         <p role="status" className="mt-6 text-sm text-[#89948e]">
-          Carregando treino atual...
+          Carregando treino de hoje...
         </p>
       )}
 
       {!isLoading && !isAssigningWorkout && isError && isNotFound(error) && (
         <div className="mt-6 rounded-xl border border-dashed border-[#343b37] px-5 py-8 text-center">
           <p className="text-sm font-semibold text-[#f5f7f5]">
-            Nenhum treino atual
+            Nenhum treino para hoje
           </p>
-          <p className="mt-2 text-xs text-[#89948e]">
+
+          <p className="mt-2 text-xs leading-5 text-[#89948e]">
             {isStudentActive
-              ? "Este aluno ainda não possui um treino ativo."
+              ? hasActiveAssignedWorkouts
+                ? "Este aluno possui treinos ativos em outros dias da semana, mas nenhum treino ativo para o dia atual."
+                : "Este aluno ainda não possui treinos ativos atribuídos."
               : "Este aluno está inativo e não pode receber novos treinos."}
           </p>
 
@@ -149,7 +174,7 @@ export function StudentCurrentWorkoutCard({
 
       {!isLoading && !isAssigningWorkout && isError && !isNotFound(error) && (
         <p role="alert" className="mt-6 text-sm text-[#ff8c87]">
-          Não foi possível carregar o treino atual.
+          Não foi possível carregar o treino de hoje.
         </p>
       )}
 
@@ -158,12 +183,18 @@ export function StudentCurrentWorkoutCard({
           <div className="flex flex-col gap-5 rounded-2xl border border-[#2f5b40] bg-[#20382a] p-5 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.13em] text-[#70e39b]">
-                Nome do treino
+                {weekDayLabels[currentWorkout.weekDay]}
               </p>
+
               <p className="mt-3 text-xl font-semibold text-[#f5f7f5]">
                 {currentWorkout.workoutName}
               </p>
+
               <p className="mt-2 text-xs text-[#8fa098]">
+                Criado por {currentWorkout.teacherName}
+              </p>
+
+              <p className="mt-1 text-xs text-[#8fa098]">
                 Atribuído em {formatDate(currentWorkout.assignedAt)}
               </p>
             </div>
@@ -174,7 +205,7 @@ export function StudentCurrentWorkoutCard({
                 onClick={onStartAssigningWorkout}
                 className="inline-flex items-center gap-2 text-sm font-semibold text-[#a8b5ae] hover:text-[#70e39b]"
               >
-                Trocar
+                Atribuir outro
                 <ArrowRight aria-hidden="true" className="h-4 w-4" />
               </button>
             )}
@@ -183,8 +214,8 @@ export function StudentCurrentWorkoutCard({
           <div className="mt-3 grid gap-2 sm:grid-cols-3">
             {[
               ["Exercícios", String(currentWorkout.exercises.length)],
+              ["Dia", weekDayLabels[currentWorkout.weekDay]],
               ["Status", formatStatus(currentWorkout.status)],
-              ["Atribuição", formatDate(currentWorkout.assignedAt)],
             ].map(([label, value]) => (
               <div
                 key={label}
@@ -221,6 +252,7 @@ export function StudentCurrentWorkoutCard({
                     <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#20382a] text-xs font-semibold text-[#70e39b]">
                       {exercise.exerciseOrder}
                     </span>
+
                     <div>
                       <p className="text-sm font-semibold text-[#f5f7f5]">
                         {exercise.exerciseName}
@@ -232,6 +264,7 @@ export function StudentCurrentWorkoutCard({
                           : ""}
                       </p>
                     </div>
+
                     <div className="grid grid-cols-3 gap-2 md:contents">
                       <div>
                         <span className="text-[9px] uppercase text-[#748078] md:hidden">
@@ -241,6 +274,7 @@ export function StudentCurrentWorkoutCard({
                           {exercise.sets}
                         </p>
                       </div>
+
                       <div>
                         <span className="text-[9px] uppercase text-[#748078] md:hidden">
                           Repetições
@@ -249,6 +283,7 @@ export function StudentCurrentWorkoutCard({
                           {exercise.reps}
                         </p>
                       </div>
+
                       <div>
                         <span className="text-[9px] uppercase text-[#748078] md:hidden">
                           Descanso
