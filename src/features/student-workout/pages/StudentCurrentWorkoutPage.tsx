@@ -424,39 +424,39 @@ export function StudentCurrentWorkoutPage() {
   }
 
   if (isAuthenticatedUserError) {
-    return (
-      <Card>
-        <div
-          role="alert"
-          className="rounded-2xl border border-red-200 bg-red-50 p-4"
-        >
-          <p className="text-sm font-semibold text-red-700">
-            Não foi possível identificar o aluno autenticado.
-          </p>
+  return (
+    <Card>
+      <div
+        role="alert"
+        className="rounded-2xl border border-red-400/20 bg-red-500/10 p-4"
+      >
+        <p className="text-sm font-semibold text-red-200">
+          Não foi possível identificar o aluno autenticado.
+        </p>
 
-          <p className="mt-1 text-sm text-red-600">
-            Faça login novamente para acessar seu treino atual.
-          </p>
-        </div>
-      </Card>
-    );
-  }
+        <p className="mt-2 text-sm leading-6 text-red-100/80">
+          Faça login novamente para acessar seu treino atual.
+        </p>
+      </div>
+    </Card>
+  );
+}
 
   if (authenticatedUser?.role !== "STUDENT") {
-    return (
-      <Card>
-        <div className="rounded-2xl border border-yellow-200 bg-yellow-50 p-4">
-          <p className="text-sm font-semibold text-yellow-800">
-            Esta área é exclusiva para alunos.
-          </p>
+  return (
+    <Card>
+      <div className="rounded-2xl border border-yellow-400/20 bg-yellow-500/10 p-4">
+        <p className="text-sm font-semibold text-yellow-100">
+          Esta área é exclusiva para alunos.
+        </p>
 
-          <p className="mt-1 text-sm text-yellow-700">
-            Acesse com uma conta de aluno para visualizar o treino atual.
-          </p>
-        </div>
-      </Card>
-    );
-  }
+        <p className="mt-2 text-sm leading-6 text-yellow-100/80">
+          Acesse com uma conta de aluno para visualizar seu treino atual.
+        </p>
+      </div>
+    </Card>
+  );
+}
 
   if (isCurrentWorkoutError) {
     return (
