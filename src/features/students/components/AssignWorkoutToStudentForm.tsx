@@ -101,12 +101,8 @@ export function AssignWorkoutToStudentForm({
   });
 
   const selectedWeekDay = watch("weekDay");
-  const selectedWorkoutId = watch("workoutId");
-  const workoutAssignedToSelectedDay = occupiedWeekDays.get(selectedWeekDay);
 
-  const selectedWorkoutAlreadyAssigned = assignedWorkouts.find(
-    (workout) => workout.workoutId === selectedWorkoutId,
-  );
+  const workoutAssignedToSelectedDay = occupiedWeekDays.get(selectedWeekDay);
 
   const mutation = useMutation({
     mutationFn: (data: FormData) =>
@@ -128,19 +124,6 @@ export function AssignWorkoutToStudentForm({
 
   function handleAssignWorkout(data: FormData) {
     setLocalErrorMessage(null);
-
-    const alreadyAssignedWorkout = assignedWorkouts.find(
-      (workout) => workout.workoutId === data.workoutId,
-    );
-
-    if (alreadyAssignedWorkout) {
-      setLocalErrorMessage(
-        `Este aluno já possui o treino "${alreadyAssignedWorkout.workoutName}" atribuído em ${getWeekDayLabel(
-          alreadyAssignedWorkout.weekDay,
-        )}.`,
-      );
-      return;
-    }
 
     const alreadyHasActiveWorkoutForWeekDay = assignedWorkouts.find(
       (workout) =>
@@ -226,13 +209,6 @@ export function AssignWorkoutToStudentForm({
         {!isLoading && activeWorkouts.length === 0 && (
           <p className="mt-2 text-xs text-[#89948e]">
             Nenhum treino ativo disponível.
-          </p>
-        )}
-
-        {selectedWorkoutAlreadyAssigned && selectedWorkoutId > 0 && (
-          <p className="mt-2 rounded-xl border border-[#453b25] bg-[#211d14] px-3 py-2 text-xs leading-5 text-[#f2c97d]">
-            Este treino já está atribuído em{" "}
-            {getWeekDayLabel(selectedWorkoutAlreadyAssigned.weekDay)}.
           </p>
         )}
       </div>
