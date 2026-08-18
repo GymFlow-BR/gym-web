@@ -1,10 +1,4 @@
-import {
-  CheckCircle2,
-  ChevronDown,
-  Clock3,
-  ImageIcon,
-  PlayCircle,
-} from "lucide-react";
+import { CheckCircle2, ChevronDown, ImageIcon, Play } from "lucide-react";
 
 import type {
   StudentCurrentWorkoutExercise,
@@ -34,25 +28,6 @@ type StudentWorkoutExerciseCardProps = {
   onResumeRestTimer: () => void;
   onCancelRestTimer: () => void;
 };
-
-function formatRestTime(seconds: number | null) {
-  if (seconds === null) {
-    return "Não informado";
-  }
-
-  if (seconds < 60) {
-    return `${seconds}s`;
-  }
-
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = seconds % 60;
-
-  if (remainingSeconds === 0) {
-    return `${minutes}min`;
-  }
-
-  return `${minutes}min ${remainingSeconds}s`;
-}
 
 function formatRecommendedLoad(value: number | null) {
   if (value === null) {
@@ -207,17 +182,19 @@ export function StudentWorkoutExerciseCard({
               href={exercise.videoUrl}
               target="_blank"
               rel="noreferrer"
-              className="mt-3 block overflow-hidden rounded-[20px] border border-[#2b4535] bg-[#0d130f] transition hover:border-[#70e39b]/45"
+              className="group mt-3 block overflow-hidden rounded-[20px] border border-[#26322b] bg-[#0d130f] transition hover:border-[#70e39b]/40"
             >
-              <span className="relative flex h-36 items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_center,_#1d3828_0%,_#101812_48%,_#0d130f_100%)]">
-                <span className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,_rgba(255,255,255,0.03)_1px,_transparent_1px),linear-gradient(rgba(255,255,255,0.03)_1px,_transparent_1px)] bg-[size:28px_28px]" />
+              <span className="relative flex h-32 items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_center,_#16241b_0%,_#101812_52%,_#0d130f_100%)]">
+                <span className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,_rgba(255,255,255,0.025)_1px,_transparent_1px),linear-gradient(rgba(255,255,255,0.025)_1px,_transparent_1px)] bg-[size:28px_28px]" />
 
-                <span className="relative flex h-16 w-16 items-center justify-center rounded-full bg-[#70e39b] text-[#0d1b13] shadow-2xl shadow-[#70e39b]/20">
-                  <PlayCircle aria-hidden="true" className="h-8 w-8" />
+                <span className="relative flex h-12 w-12 items-center justify-center rounded-full bg-[#70e39b] text-[#0d1b13] shadow-lg shadow-black/20 transition group-hover:scale-105">
+                  <Play
+                    aria-hidden="true"
+                    className="ml-0.5 h-5 w-5 fill-[#0d1b13] stroke-[#0d1b13]"
+                  />
                 </span>
 
-                <span className="absolute bottom-3 left-3 inline-flex items-center gap-2 rounded-xl bg-black/55 px-3 py-2 text-xs font-semibold text-[#f5f7f5]">
-                  <PlayCircle aria-hidden="true" className="h-4 w-4" />
+                <span className="absolute bottom-3 left-3 rounded-xl border border-white/10 bg-black/45 px-3 py-2 text-[11px] font-semibold text-[#f5f7f5]">
                   Vídeo de execução
                 </span>
               </span>
@@ -225,7 +202,7 @@ export function StudentWorkoutExerciseCard({
           )}
 
           <div className="mt-3 overflow-hidden rounded-[18px] border border-[#253128] bg-[#0d130f]">
-            <div className="grid grid-cols-[72px_1fr_1fr] border-b border-[#253128] px-4 py-3 text-[10px] font-bold uppercase tracking-[0.12em] text-[#737c76]">
+            <div className="grid grid-cols-[0.8fr_1.2fr_1fr] border-b border-[#253128] px-4 py-3 text-center text-[10px] font-bold uppercase tracking-[0.12em] text-[#737c76]">
               <span>Série</span>
               <span>Repetições</span>
               <span>Carga</span>
@@ -235,12 +212,14 @@ export function StudentWorkoutExerciseCard({
               {exerciseRows.map((row) => (
                 <div
                   key={row.setNumber}
-                  className="grid grid-cols-[72px_1fr_1fr] px-4 py-3 text-sm"
+                  className="grid grid-cols-[0.8fr_1.2fr_1fr] px-4 py-3 text-center text-sm"
                 >
                   <span className="text-[#8f9b94]">{row.setNumber}</span>
+
                   <span className="font-semibold text-[#f5f7f5]">
                     {row.reps}
                   </span>
+
                   <span className="font-semibold text-[#f5f7f5]">
                     {row.load}
                   </span>
@@ -249,21 +228,14 @@ export function StudentWorkoutExerciseCard({
             </div>
           </div>
 
-          {exercise.notes && (
+          {(exercise.notes || exercise.description) && (
             <div className="mt-3 rounded-2xl border border-[#244b34] bg-[#17281d] px-4 py-3">
-              <p className="text-sm leading-6 text-[#cfd6d2]">
-                {exercise.notes}
+              <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#70e39b]">
+                {exercise.notes ? "Observações" : "Instruções"}
               </p>
-            </div>
-          )}
 
-          {exercise.description && (
-            <div className="mt-3 rounded-2xl border border-[#253128] bg-[#0d130f] px-4 py-3">
-              <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[#737c76]">
-                Orientação
-              </p>
               <p className="mt-2 text-sm leading-6 text-[#d9dedb]">
-                {exercise.description}
+                {exercise.notes || exercise.description}
               </p>
             </div>
           )}
@@ -273,20 +245,27 @@ export function StudentWorkoutExerciseCard({
               href={exercise.imageUrl}
               target="_blank"
               rel="noreferrer"
-              className="mt-3 flex items-center gap-3 rounded-2xl border border-[#253128] bg-[#0d130f] px-4 py-3 text-sm font-semibold text-[#f5f7f5] transition hover:border-[#70e39b]/35"
+              className="mt-3 flex items-center justify-between gap-3 rounded-2xl border border-[#253128] bg-[#0d130f] px-4 py-3 text-sm font-semibold text-[#d9dedb] transition hover:border-[#70e39b]/35 hover:bg-[#111611] hover:text-[#f5f7f5]"
             >
-              <ImageIcon aria-hidden="true" className="h-5 w-5" />
-              Ver imagem do exercício
+              <span className="flex items-center gap-3">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#17221b] text-[#70e39b]">
+                  <ImageIcon aria-hidden="true" className="h-4 w-4" />
+                </span>
+
+                <span>
+                  <span className="block text-sm font-semibold">
+                    Imagem do exercício
+                  </span>
+
+                  <span className="mt-0.5 block text-xs font-medium text-[#8f9b94]">
+                    Abrir referência visual
+                  </span>
+                </span>
+              </span>
+
+              <span className="text-xs font-bold text-[#70e39b]">Ver</span>
             </a>
           )}
-
-          {exercise.restTimeSeconds !== null &&
-            exercise.restTimeSeconds > 0 && (
-              <div className="mt-3 flex items-center gap-2 text-sm text-[#9aa39d]">
-                <Clock3 aria-hidden="true" className="h-4 w-4 text-[#70e39b]" />
-                {formatRestTime(exercise.restTimeSeconds)} de descanso
-              </div>
-            )}
 
           {exercise.restTimeSeconds !== null &&
             exercise.restTimeSeconds > 0 && (
@@ -325,6 +304,7 @@ export function StudentWorkoutExerciseCard({
               : isCompleted
                 ? "Reabrir exercício"
                 : "Concluir exercício"}
+
             {!isUpdating && !isCompleted && (
               <CheckCircle2 aria-hidden="true" className="h-5 w-5" />
             )}
