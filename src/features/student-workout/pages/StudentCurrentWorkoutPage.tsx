@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ArrowRight, CalendarDays } from "lucide-react";
+import { Link } from "react-router";
 
 import { Card } from "../../../components/ui/Card";
 import { useAuthenticatedUser } from "../../auth/hooks/useAuthenticatedUser";
@@ -7,12 +9,136 @@ import {
   completeStudentWorkoutExercise,
   getStudentCurrentWorkout,
   getStudentCurrentWorkoutProgress,
+  getStudentWorkouts,
   uncompleteStudentWorkoutExercise,
 } from "../services/studentWorkoutService";
 import { StudentWorkoutCompletionCard } from "../components/StudentWorkoutCompletionCard";
 import { StudentWorkoutGreeting } from "../components/StudentWorkoutGreeting";
 import { StudentWorkoutTodayCard } from "../components/StudentWorkoutTodayCard";
 import { StudentWorkoutExerciseCard } from "../components/StudentWorkoutExerciseCard";
+import type { StudentWorkout, WeekDay } from "../types/studentWorkout";
+
+const weekDayLabels: Record<WeekDay, string> = {
+  MONDAY: "Segunda-feira",
+  TUESDAY: "Terça-feira",
+  WEDNESDAY: "Quarta-feira",
+  THURSDAY: "Quinta-feira",
+  FRIDAY: "Sexta-feira",
+  SATURDAY: "Sábado",
+  SUNDAY: "Domingo",
+};
+
+const weekDayShortLabels: Record<WeekDay, string> = {
+  MONDAY: "SEG",
+  TUESDAY: "TER",
+  WEDNESDAY: "QUA",
+  THURSDAY: "QUI",
+  FRIDAY: "SEX",
+  SATURDAY: "SÁB",
+  SUNDAY: "DOM",
+};
+
+const weekDayOrder: Record<WeekDay, number> = {
+  MONDAY: 1,
+  TUESDAY: 2,
+  WEDNESDAY: 3,
+  THURSDAY: 4,
+  FRIDAY: 5,
+  SATURDAY: 6,
+  SUNDAY: 7,
+};
+
+type ActiveWeeklyRoutineSectionProps = {
+  activeWeeklyWorkouts: StudentWorkout[];
+  currentStudentWorkoutId?: number;
+};
+
+function ActiveWeeklyRoutineSection({
+  activeWeeklyWorkouts,
+  currentStudentWorkoutId,
+}: ActiveWeeklyRoutineSectionProps) {
+  if (activeWeeklyWorkouts.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="mt-7">
+      <div className="mb-4 flex items-end justify-between gap-4">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8fa098]">
+            Semana atual
+          </p>
+
+          <h2 className="mt-2 text-xl font-semibold tracking-[-0.035em] text-[#f5f7f5]">
+            Rotina semanal
+          </h2>
+        </div>
+
+        <p className="text-xs font-medium text-[#8fa098]">
+          {activeWeeklyWorkouts.length}
+        </p>
+      </div>
+
+      <div className="space-y-3">
+        {activeWeeklyWorkouts.map((workout) => {
+          const isTodayWorkout =
+            currentStudentWorkoutId === workout.studentWorkoutId;
+
+          return (
+            <Link
+              key={workout.studentWorkoutId}
+              to={`/student/workouts/${workout.studentWorkoutId}`}
+              className={[
+                "group flex items-center gap-4 rounded-[24px] border p-4 shadow-xl shadow-black/10 transition duration-200",
+                isTodayWorkout
+                  ? "border-[#70e39b]/35 bg-[#142019]"
+                  : "border-[#26322b] bg-[#111914] hover:-translate-y-0.5 hover:border-[#3b4a41] hover:bg-[#141a16]",
+              ].join(" ")}
+            >
+              <span
+                className={[
+                  "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-[11px] font-bold uppercase tracking-[0.06em]",
+                  isTodayWorkout
+                    ? "bg-[#70e39b] text-[#0d1b13]"
+                    : "bg-[#1d3828] text-[#70e39b]",
+                ].join(" ")}
+              >
+                {weekDayShortLabels[workout.weekDay]}
+              </span>
+
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="truncate text-base font-semibold text-[#f5f7f5]">
+                    {workout.workoutName}
+                  </h3>
+
+                  {isTodayWorkout && (
+                    <span className="rounded-full border border-[#70e39b]/25 bg-[#1d3828] px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.08em] text-[#70e39b]">
+                      Hoje
+                    </span>
+                  )}
+                </div>
+
+                <p className="mt-1 text-xs text-[#8fa098]">
+                  {weekDayLabels[workout.weekDay]}
+                </p>
+
+                <p className="mt-1 text-xs text-[#7f8a84]">
+                  Criado por {workout.teacherName}
+                </p>
+              </div>
+
+              <ArrowRight
+                aria-hidden="true"
+                className="h-4 w-4 shrink-0 text-[#7f8a84] transition group-hover:translate-x-1 group-hover:text-[#70e39b]"
+              />
+            </Link>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
 
 export function StudentCurrentWorkoutPage() {
   const queryClient = useQueryClient();
@@ -55,6 +181,12 @@ export function StudentCurrentWorkoutPage() {
     queryFn: () => getStudentCurrentWorkout(studentId!),
     enabled: !!studentId,
     retry: false,
+  });
+
+  const studentWorkoutsQuery = useQuery({
+    queryKey: ["student-workouts", studentId],
+    queryFn: () => getStudentWorkouts(studentId!),
+    enabled: Boolean(studentId),
   });
 
   const {
@@ -146,6 +278,7 @@ export function StudentCurrentWorkoutPage() {
   const isLoading =
     isLoadingAuthenticatedUser ||
     isLoadingCurrentWorkout ||
+    studentWorkoutsQuery.isLoading ||
     isLoadingCurrentWorkoutProgress;
 
   const workoutExercises = currentWorkout?.exercises;
@@ -165,6 +298,18 @@ export function StudentCurrentWorkoutPage() {
   const totalExercises =
     currentWorkoutProgress?.totalExercises ?? sortedExercises.length;
   const pendingExercises = Math.max(totalExercises - completedExercises, 0);
+
+  const activeWeeklyWorkouts =
+    studentWorkoutsQuery.data
+      ?.filter((workout) => workout.status === "ACTIVE")
+      .slice()
+      .sort(
+        (firstWorkout, secondWorkout) =>
+          weekDayOrder[firstWorkout.weekDay] -
+          weekDayOrder[secondWorkout.weekDay],
+      ) ?? [];
+
+  const hasActiveWeeklyRoutine = activeWeeklyWorkouts.length > 0;
 
   const isWorkoutCompleted = totalExercises > 0 && progressPercentage === 100;
 
@@ -264,7 +409,7 @@ export function StudentCurrentWorkoutPage() {
             </p>
 
             <p className="mt-1 text-sm text-[#C9C3B8]">
-              Estamos buscando seu treino atual e o progresso salvo.
+              Estamos buscando seu treino atual e sua rotina semanal.
             </p>
           </div>
 
@@ -315,23 +460,54 @@ export function StudentCurrentWorkoutPage() {
 
   if (isCurrentWorkoutError) {
     return (
-      <div className="rounded-2xl border border-white/10 bg-[#16221B] p-5 text-center shadow-lg shadow-black/10">
-        <p className="text-xs font-semibold uppercase tracking-wide text-[#9CA89F]">
-          Treino atual
-        </p>
+      <div className="space-y-7">
+        <StudentWorkoutGreeting
+          studentName={authenticatedUser.name}
+          description={
+            hasActiveWeeklyRoutine
+              ? "Você tem treinos ativos na semana, mas nenhum treino programado para hoje."
+              : "Quando seu professor atribuir um treino ativo para hoje, ele aparecerá nesta tela."
+          }
+        />
 
-        <p className="mt-2 text-lg font-semibold text-[#F6F4EF]">
-          Nenhum treino disponível no momento
-        </p>
+        <section className="relative overflow-hidden rounded-[26px] border border-[#26322b] bg-[#111914] p-5 text-center shadow-2xl shadow-black/20">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -right-12 -top-16 h-44 w-44 rounded-full border-[34px] border-[#1d3828]/35"
+          />
 
-        <p className="mt-2 text-sm text-[#C9C3B8]">
-          Seu professor ainda não atribuiu um treino ativo para você.
-        </p>
+          <div className="relative">
+            <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-[#1d3828] text-[#70e39b]">
+              <CalendarDays aria-hidden="true" className="h-6 w-6" />
+            </span>
 
-        <p className="mt-3 text-sm text-[#9CA89F]">
-          Quando um treino for liberado, ele aparecerá automaticamente nesta
-          tela para você acompanhar os exercícios.
-        </p>
+            <p className="mt-5 text-[10px] font-bold uppercase tracking-[0.16em] text-[#8fa098]">
+              Treino de hoje
+            </p>
+
+            <h2 className="mt-3 text-2xl font-semibold tracking-[-0.045em] text-[#f5f7f5]">
+              Nenhum treino para hoje
+            </h2>
+
+            <p className="mx-auto mt-4 max-w-[310px] text-sm leading-6 text-[#9aa39d]">
+              {hasActiveWeeklyRoutine
+                ? "Sua rotina semanal continua ativa. Consulte os próximos treinos preparados para os outros dias."
+                : "Seu professor ainda não atribuiu treinos ativos para a sua rotina."}
+            </p>
+
+            <Link
+              to="/student/workouts"
+              className="mt-6 inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-[#70e39b] px-5 text-sm font-bold text-[#0d1b13] transition hover:bg-[#83e8a8]"
+            >
+              Ver rotina semanal
+              <ArrowRight aria-hidden="true" className="h-4 w-4" />
+            </Link>
+          </div>
+        </section>
+
+        <ActiveWeeklyRoutineSection
+          activeWeeklyWorkouts={activeWeeklyWorkouts}
+        />
       </div>
     );
   }
@@ -354,6 +530,7 @@ export function StudentCurrentWorkoutPage() {
         <StudentWorkoutTodayCard
           workoutName={currentWorkout.workoutName}
           assignedAt={currentWorkout.assignedAt}
+          teacherName={currentWorkout.teacherName}
           totalExercises={totalExercises}
           completedExercises={completedExercises}
           pendingExercises={pendingExercises}
@@ -410,6 +587,11 @@ export function StudentCurrentWorkoutPage() {
             </p>
           </div>
         )}
+
+        <ActiveWeeklyRoutineSection
+          activeWeeklyWorkouts={activeWeeklyWorkouts}
+          currentStudentWorkoutId={currentWorkout.studentWorkoutId}
+        />
       </section>
 
       {sortedExercises.length === 0 && (
@@ -441,6 +623,7 @@ export function StudentCurrentWorkoutPage() {
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8fa098]">
                 Exercícios
               </p>
+
               <h2 className="mt-2 text-xl font-semibold tracking-[-0.035em] text-[#f5f7f5]">
                 Sua sequência de hoje
               </h2>

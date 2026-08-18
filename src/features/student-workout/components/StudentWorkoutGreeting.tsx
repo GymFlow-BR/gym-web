@@ -1,5 +1,6 @@
 type StudentWorkoutGreetingProps = {
   studentName?: string | null;
+  description?: string;
 };
 
 function getGreeting() {
@@ -38,6 +39,7 @@ function getFirstName(name?: string | null) {
 
 export function StudentWorkoutGreeting({
   studentName,
+  description = "Seu treino está pronto. Siga no seu ritmo, uma série de cada vez.",
 }: StudentWorkoutGreetingProps) {
   const firstName = getFirstName(studentName);
 
@@ -52,7 +54,7 @@ export function StudentWorkoutGreeting({
       </h1>
 
       <p className="mt-4 max-w-[320px] text-sm leading-6 text-[#9ca8a1]">
-        Seu treino está pronto. Siga no seu ritmo, uma série de cada vez.
+        {description}
       </p>
     </section>
   );

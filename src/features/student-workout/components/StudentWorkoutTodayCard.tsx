@@ -3,6 +3,7 @@ import { CheckCircle2, Dumbbell, ListTodo } from "lucide-react";
 type StudentWorkoutTodayCardProps = {
   workoutName: string;
   assignedAt: string;
+  teacherName: string;
   totalExercises: number;
   completedExercises: number;
   pendingExercises: number;
@@ -20,6 +21,7 @@ function formatAssignedDate(value: string) {
 export function StudentWorkoutTodayCard({
   workoutName,
   assignedAt,
+  teacherName,
   totalExercises,
   completedExercises,
   pendingExercises,
@@ -41,9 +43,15 @@ export function StudentWorkoutTodayCard({
           {workoutName}
         </h2>
 
-        <p className="mt-4 text-sm leading-6 text-[#9aa39d]">
-          Atribuído em {formatAssignedDate(assignedAt)}
-        </p>
+        <div className="mt-4 space-y-1">
+          <p className="text-sm leading-6 text-[#9aa39d]">
+            Criado por {teacherName}
+          </p>
+
+          <p className="text-xs leading-5 text-[#7f8a84]">
+            Atribuído em {formatAssignedDate(assignedAt)}
+          </p>
+        </div>
 
         <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3 text-sm text-[#c5ccc8]">
           <span className="inline-flex items-center gap-2">
