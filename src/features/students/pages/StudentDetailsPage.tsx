@@ -218,9 +218,14 @@ export function StudentDetailsPage() {
           />
 
           <StudentAssignedWorkoutsCard
+            studentId={studentId}
             studentWorkouts={studentWorkoutHistory}
             isLoading={studentWorkoutsQuery.isLoading}
             isError={studentWorkoutsQuery.isError}
+            onDeactivateSuccess={async () => {
+              await currentWorkoutQuery.refetch();
+              await studentWorkoutsQuery.refetch();
+            }}
           />
         </div>
       </div>
