@@ -16,7 +16,7 @@ import { StudentWorkoutCompletionCard } from "../components/StudentWorkoutComple
 import { StudentWorkoutGreeting } from "../components/StudentWorkoutGreeting";
 import { StudentWorkoutTodayCard } from "../components/StudentWorkoutTodayCard";
 import { StudentWorkoutExerciseCard } from "../components/StudentWorkoutExerciseCard";
-import type { WeekDay } from "../types/studentWorkout";
+import type { StudentWorkout, WeekDay } from "../types/studentWorkout";
 
 const weekDayLabels: Record<WeekDay, string> = {
   MONDAY: "Segunda-feira",
@@ -47,6 +47,98 @@ const weekDayOrder: Record<WeekDay, number> = {
   SATURDAY: 6,
   SUNDAY: 7,
 };
+
+type ActiveWeeklyRoutineSectionProps = {
+  activeWeeklyWorkouts: StudentWorkout[];
+  currentStudentWorkoutId?: number;
+};
+
+function ActiveWeeklyRoutineSection({
+  activeWeeklyWorkouts,
+  currentStudentWorkoutId,
+}: ActiveWeeklyRoutineSectionProps) {
+  if (activeWeeklyWorkouts.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="mt-7">
+      <div className="mb-4 flex items-end justify-between gap-4">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8fa098]">
+            Semana atual
+          </p>
+
+          <h2 className="mt-2 text-xl font-semibold tracking-[-0.035em] text-[#f5f7f5]">
+            Rotina semanal
+          </h2>
+        </div>
+
+        <p className="text-xs font-medium text-[#8fa098]">
+          {activeWeeklyWorkouts.length}
+        </p>
+      </div>
+
+      <div className="space-y-3">
+        {activeWeeklyWorkouts.map((workout) => {
+          const isTodayWorkout =
+            currentStudentWorkoutId === workout.studentWorkoutId;
+
+          return (
+            <Link
+              key={workout.studentWorkoutId}
+              to={`/student/workouts/${workout.studentWorkoutId}`}
+              className={[
+                "group flex items-center gap-4 rounded-[24px] border p-4 shadow-xl shadow-black/10 transition duration-200",
+                isTodayWorkout
+                  ? "border-[#70e39b]/35 bg-[#142019]"
+                  : "border-[#26322b] bg-[#111914] hover:-translate-y-0.5 hover:border-[#3b4a41] hover:bg-[#141a16]",
+              ].join(" ")}
+            >
+              <span
+                className={[
+                  "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-[11px] font-bold uppercase tracking-[0.06em]",
+                  isTodayWorkout
+                    ? "bg-[#70e39b] text-[#0d1b13]"
+                    : "bg-[#1d3828] text-[#70e39b]",
+                ].join(" ")}
+              >
+                {weekDayShortLabels[workout.weekDay]}
+              </span>
+
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="truncate text-base font-semibold text-[#f5f7f5]">
+                    {workout.workoutName}
+                  </h3>
+
+                  {isTodayWorkout && (
+                    <span className="rounded-full border border-[#70e39b]/25 bg-[#1d3828] px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.08em] text-[#70e39b]">
+                      Hoje
+                    </span>
+                  )}
+                </div>
+
+                <p className="mt-1 text-xs text-[#8fa098]">
+                  {weekDayLabels[workout.weekDay]}
+                </p>
+
+                <p className="mt-1 text-xs text-[#7f8a84]">
+                  Criado por {workout.teacherName}
+                </p>
+              </div>
+
+              <ArrowRight
+                aria-hidden="true"
+                className="h-4 w-4 shrink-0 text-[#7f8a84] transition group-hover:translate-x-1 group-hover:text-[#70e39b]"
+              />
+            </Link>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
 
 export function StudentCurrentWorkoutPage() {
   const queryClient = useQueryClient();
@@ -413,58 +505,9 @@ export function StudentCurrentWorkoutPage() {
           </div>
         </section>
 
-        {hasActiveWeeklyRoutine && (
-          <section>
-            <div className="mb-4 flex items-end justify-between gap-4">
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8fa098]">
-                  Semana atual
-                </p>
-
-                <h2 className="mt-2 text-xl font-semibold tracking-[-0.035em] text-[#f5f7f5]">
-                  Próximos treinos
-                </h2>
-              </div>
-
-              <p className="text-xs font-medium text-[#8fa098]">
-                {activeWeeklyWorkouts.length}
-              </p>
-            </div>
-
-            <div className="space-y-3">
-              {activeWeeklyWorkouts.map((workout) => (
-                <Link
-                  key={workout.studentWorkoutId}
-                  to={`/student/workouts/${workout.studentWorkoutId}`}
-                  className="group flex items-center gap-4 rounded-[24px] border border-[#26322b] bg-[#111914] p-4 shadow-xl shadow-black/10 transition hover:-translate-y-0.5 hover:border-[#3b4a41] hover:bg-[#141a16]"
-                >
-                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#1d3828] text-[11px] font-bold uppercase tracking-[0.06em] text-[#70e39b]">
-                    {weekDayShortLabels[workout.weekDay]}
-                  </span>
-
-                  <div className="min-w-0 flex-1">
-                    <h3 className="truncate text-base font-semibold text-[#f5f7f5]">
-                      {workout.workoutName}
-                    </h3>
-
-                    <p className="mt-1 text-xs text-[#8fa098]">
-                      {weekDayLabels[workout.weekDay]}
-                    </p>
-
-                    <p className="mt-1 text-xs text-[#7f8a84]">
-                      Criado por {workout.teacherName}
-                    </p>
-                  </div>
-
-                  <ArrowRight
-                    aria-hidden="true"
-                    className="h-4 w-4 shrink-0 text-[#7f8a84] transition group-hover:translate-x-1 group-hover:text-[#70e39b]"
-                  />
-                </Link>
-              ))}
-            </div>
-          </section>
-        )}
+        <ActiveWeeklyRoutineSection
+          activeWeeklyWorkouts={activeWeeklyWorkouts}
+        />
       </div>
     );
   }
@@ -544,6 +587,11 @@ export function StudentCurrentWorkoutPage() {
             </p>
           </div>
         )}
+
+        <ActiveWeeklyRoutineSection
+          activeWeeklyWorkouts={activeWeeklyWorkouts}
+          currentStudentWorkoutId={currentWorkout.studentWorkoutId}
+        />
       </section>
 
       {sortedExercises.length === 0 && (
