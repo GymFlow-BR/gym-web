@@ -31,6 +31,15 @@ export function getStudentWorkoutById(
   );
 }
 
+export function getStudentWorkoutDetails(
+  studentId: number,
+  studentWorkoutId: number,
+) {
+  return api.get<StudentCurrentWorkout>(
+    `/api/students/${studentId}/workouts/${studentWorkoutId}/details`,
+  );
+}
+
 export function updateStudentWorkout(
   studentId: number,
   studentWorkoutId: number,

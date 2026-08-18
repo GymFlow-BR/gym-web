@@ -146,7 +146,9 @@ export function AppRouter() {
         path="/student/workouts/:studentWorkoutId"
         element={
           <ProtectedRoute allowedRoles={["STUDENT"]}>
-            <StudentWorkoutDetailsPage />
+            <StudentLayout>
+              <StudentWorkoutDetailsPage />
+            </StudentLayout>
           </ProtectedRoute>
         }
       />
