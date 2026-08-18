@@ -209,18 +209,19 @@ export function StudentDetailsPage() {
               await currentWorkoutQuery.refetch();
               await studentWorkoutsQuery.refetch();
               setIsAssigningWorkout(false);
-              setWorkoutSuccessMessage(
-                currentWorkout
-                  ? "Treino atualizado com sucesso."
-                  : "Treino atribuído com sucesso.",
-              );
+              setWorkoutSuccessMessage("Rotina semanal atualizada com sucesso.");
             }}
           />
 
           <StudentAssignedWorkoutsCard
+            studentId={studentId}
             studentWorkouts={studentWorkoutHistory}
             isLoading={studentWorkoutsQuery.isLoading}
             isError={studentWorkoutsQuery.isError}
+            onDeactivateSuccess={async () => {
+              await currentWorkoutQuery.refetch();
+              await studentWorkoutsQuery.refetch();
+            }}
           />
         </div>
       </div>
