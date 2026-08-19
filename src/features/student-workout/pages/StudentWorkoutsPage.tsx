@@ -106,9 +106,7 @@ export function StudentWorkoutsPage() {
     currentWorkoutQuery.isLoading ||
     studentWorkoutsQuery.isLoading;
 
-  const isError =
-    isAuthenticatedUserError ||
-    (currentWorkoutQuery.isError && studentWorkoutsQuery.isError);
+  const isError = isAuthenticatedUserError || studentWorkoutsQuery.isError;
 
   const assignedWorkouts =
     studentWorkoutsQuery.data
@@ -122,6 +120,10 @@ export function StudentWorkoutsPage() {
   const activeWeeklyWorkouts = assignedWorkouts
     .filter((workout) => workout.status === "ACTIVE")
     .sort(sortByWeekDay);
+
+  const historicalWorkouts = assignedWorkouts.filter(
+    (workout) => workout.status !== "ACTIVE",
+  );
 
   const currentWorkout = currentWorkoutQuery.data;
 
@@ -297,28 +299,28 @@ export function StudentWorkoutsPage() {
             </p>
 
             <h2 className="mt-2 text-xl font-semibold tracking-[-0.035em] text-[#f5f7f5]">
-              Histórico simples
+              Histórico
             </h2>
           </div>
 
           <p className="text-xs font-medium text-[#8fa098]">
-            {assignedWorkouts.length}
+            {historicalWorkouts.length}
           </p>
         </div>
 
-        {assignedWorkouts.length === 0 ? (
+        {historicalWorkouts.length === 0 ? (
           <div className="rounded-[26px] border border-[#26322b] bg-[#111914] p-5 text-center shadow-xl shadow-black/10">
             <p className="text-sm font-semibold text-[#f5f7f5]">
-              Nenhum treino atribuído
+              Nenhum treino antigo
             </p>
 
             <p className="mt-2 text-sm leading-6 text-[#8fa098]">
-              Seus treinos atribuídos aparecerão nesta lista.
+              Treinos inativos ou arquivados aparecerão aqui quando existirem.
             </p>
           </div>
         ) : (
           <div className="space-y-3">
-            {assignedWorkouts.map((workout) => (
+            {historicalWorkouts.map((workout) => (
               <article
                 key={workout.studentWorkoutId}
                 className="rounded-[22px] border border-[#26322b] bg-[#111914] px-4 py-3.5 shadow-xl shadow-black/10"

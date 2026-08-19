@@ -25,6 +25,14 @@ const weekDayLabels: Record<WeekDay, string> = {
   SUNDAY: "Domingo",
 };
 
+function formatAssignedDate(value: string) {
+  return new Intl.DateTimeFormat("pt-BR", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  }).format(new Date(value));
+}
+
 export function StudentWorkoutDetailsPage() {
   const queryClient = useQueryClient();
   const params = useParams();
@@ -286,11 +294,11 @@ export function StudentWorkoutDetailsPage() {
         className="rounded-[26px] border border-[#26322b] bg-[#111914] p-5 shadow-xl shadow-black/10"
       >
         <p className="text-sm font-semibold text-[#f5f7f5]">
-          Carregando treino
+          Carregando seu treino
         </p>
 
         <p className="mt-2 text-sm leading-6 text-[#8fa098]">
-          Estamos buscando os detalhes completos deste treino.
+          Estamos buscando os detalhes, exercícios e progresso salvo.
         </p>
 
         <div className="mt-6 space-y-3">
@@ -358,12 +366,12 @@ export function StudentWorkoutDetailsPage() {
             className="rounded-2xl border border-red-400/20 bg-red-500/10 p-4"
           >
             <p className="text-sm font-semibold text-red-200">
-              Não foi possível carregar este treino.
+              Não foi possível abrir este treino.
             </p>
 
             <p className="mt-2 text-sm leading-6 text-red-100/80">
-              O treino pode estar inativo, removido ou não pertencer ao seu
-              perfil.
+              Ele pode estar inativo, removido ou não fazer parte da sua rotina
+              atual.
             </p>
           </div>
         </Card>
@@ -406,9 +414,16 @@ export function StudentWorkoutDetailsPage() {
             {studentWorkoutDetails.workoutName}
           </h2>
 
-          <p className="mt-4 text-sm leading-6 text-[#9aa39d]">
-            Criado por {studentWorkoutDetails.teacherName}
-          </p>
+          <div className="mt-4 space-y-1">
+            <p className="text-sm leading-6 text-[#9aa39d]">
+              Criado por {studentWorkoutDetails.teacherName}
+            </p>
+
+            <p className="text-xs leading-5 text-[#7f8a84]">
+              Atribuído em{" "}
+              {formatAssignedDate(studentWorkoutDetails.assignedAt)}
+            </p>
+          </div>
 
           <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3 text-sm text-[#c5ccc8]">
             <span className="inline-flex items-center gap-2">
@@ -506,11 +521,17 @@ export function StudentWorkoutDetailsPage() {
       {sortedExercises.length === 0 && (
         <div className="rounded-[26px] border border-[#26322b] bg-[#111914] p-5 text-center shadow-xl shadow-black/10">
           <p className="text-sm font-semibold text-[#f5f7f5]">
-            Nenhum exercício cadastrado
+            Treino em preparação
           </p>
 
           <p className="mt-2 text-sm leading-6 text-[#8fa098]">
-            Este treino ainda não possui exercícios cadastrados.
+            Este treino já faz parte da sua rotina, mas ainda não possui
+            exercícios cadastrados.
+          </p>
+
+          <p className="mt-3 text-sm leading-6 text-[#7f8a84]">
+            Fale com seu professor para confirmar quando a montagem for
+            finalizada.
           </p>
         </div>
       )}
