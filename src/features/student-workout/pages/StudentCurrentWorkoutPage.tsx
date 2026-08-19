@@ -4,6 +4,7 @@ import { ArrowRight, CalendarDays } from "lucide-react";
 import { Link } from "react-router";
 
 import { Card } from "../../../components/ui/Card";
+import { isApiError } from "../../../services/apiError";
 import { useAuthenticatedUser } from "../../auth/hooks/useAuthenticatedUser";
 import {
   completeStudentWorkoutExercise,
@@ -176,6 +177,7 @@ export function StudentCurrentWorkoutPage() {
 
   const {
     data: currentWorkout,
+    error: currentWorkoutError,
     isLoading: isLoadingCurrentWorkout,
     isError: isCurrentWorkoutError,
   } = useQuery({
@@ -312,6 +314,14 @@ export function StudentCurrentWorkoutPage() {
       ) ?? [];
 
   const hasActiveWeeklyRoutine = activeWeeklyWorkouts.length > 0;
+
+  const isCurrentWorkoutNotFound =
+    isCurrentWorkoutError &&
+    isApiError(currentWorkoutError) &&
+    currentWorkoutError.status === 404;
+
+  const isCurrentWorkoutUnexpectedError =
+    isCurrentWorkoutError && !isCurrentWorkoutNotFound;
 
   const otherActiveWeeklyWorkouts = currentWorkout
     ? activeWeeklyWorkouts.filter(
@@ -467,7 +477,27 @@ export function StudentCurrentWorkoutPage() {
     );
   }
 
-  if (isCurrentWorkoutError) {
+  if (isCurrentWorkoutUnexpectedError) {
+    return (
+      <Card>
+        <div
+          role="alert"
+          className="rounded-2xl border border-red-400/20 bg-red-500/10 p-4"
+        >
+          <p className="text-sm font-semibold text-red-200">
+            Não foi possível carregar seu treino de hoje.
+          </p>
+
+          <p className="mt-2 text-sm leading-6 text-red-100/80">
+            Tente recarregar a página. Se o problema continuar, faça login
+            novamente.
+          </p>
+        </div>
+      </Card>
+    );
+  }
+
+  if (isCurrentWorkoutNotFound) {
     return (
       <div className="space-y-7">
         <StudentWorkoutGreeting
