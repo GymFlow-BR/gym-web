@@ -37,4 +37,5 @@ export type AuthenticatedUser = {
 export type ChangePasswordRequest = {
   currentPassword: string;
   newPassword: string;
+  confirmNewPassword: string;
 };

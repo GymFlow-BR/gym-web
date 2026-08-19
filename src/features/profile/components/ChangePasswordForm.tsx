@@ -118,6 +118,7 @@ export function ChangePasswordForm({
     mutation.mutate({
       currentPassword: data.currentPassword,
       newPassword: data.newPassword,
+      confirmNewPassword: data.confirmPassword,
     });
   });
 
