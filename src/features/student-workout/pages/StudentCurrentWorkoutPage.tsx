@@ -51,11 +51,13 @@ const weekDayOrder: Record<WeekDay, number> = {
 type ActiveWeeklyRoutineSectionProps = {
   activeWeeklyWorkouts: StudentWorkout[];
   currentStudentWorkoutId?: number;
+  title?: string;
 };
 
 function ActiveWeeklyRoutineSection({
   activeWeeklyWorkouts,
   currentStudentWorkoutId,
+  title = "Rotina semanal",
 }: ActiveWeeklyRoutineSectionProps) {
   if (activeWeeklyWorkouts.length === 0) {
     return null;
@@ -70,7 +72,7 @@ function ActiveWeeklyRoutineSection({
           </p>
 
           <h2 className="mt-2 text-xl font-semibold tracking-[-0.035em] text-[#f5f7f5]">
-            Rotina semanal
+            {title}
           </h2>
         </div>
 
@@ -311,6 +313,13 @@ export function StudentCurrentWorkoutPage() {
 
   const hasActiveWeeklyRoutine = activeWeeklyWorkouts.length > 0;
 
+  const otherActiveWeeklyWorkouts = currentWorkout
+    ? activeWeeklyWorkouts.filter(
+        (workout) =>
+          workout.studentWorkoutId !== currentWorkout.studentWorkoutId,
+      )
+    : activeWeeklyWorkouts;
+
   const isWorkoutCompleted = totalExercises > 0 && progressPercentage === 100;
 
   function getExerciseProgress(workoutExerciseId: number) {
@@ -424,39 +433,39 @@ export function StudentCurrentWorkoutPage() {
   }
 
   if (isAuthenticatedUserError) {
-  return (
-    <Card>
-      <div
-        role="alert"
-        className="rounded-2xl border border-red-400/20 bg-red-500/10 p-4"
-      >
-        <p className="text-sm font-semibold text-red-200">
-          Não foi possível identificar o aluno autenticado.
-        </p>
+    return (
+      <Card>
+        <div
+          role="alert"
+          className="rounded-2xl border border-red-400/20 bg-red-500/10 p-4"
+        >
+          <p className="text-sm font-semibold text-red-200">
+            Não foi possível identificar o aluno autenticado.
+          </p>
 
-        <p className="mt-2 text-sm leading-6 text-red-100/80">
-          Faça login novamente para acessar seu treino atual.
-        </p>
-      </div>
-    </Card>
-  );
-}
+          <p className="mt-2 text-sm leading-6 text-red-100/80">
+            Faça login novamente para acessar seu treino atual.
+          </p>
+        </div>
+      </Card>
+    );
+  }
 
   if (authenticatedUser?.role !== "STUDENT") {
-  return (
-    <Card>
-      <div className="rounded-2xl border border-yellow-400/20 bg-yellow-500/10 p-4">
-        <p className="text-sm font-semibold text-yellow-100">
-          Esta área é exclusiva para alunos.
-        </p>
+    return (
+      <Card>
+        <div className="rounded-2xl border border-yellow-400/20 bg-yellow-500/10 p-4">
+          <p className="text-sm font-semibold text-yellow-100">
+            Esta área é exclusiva para alunos.
+          </p>
 
-        <p className="mt-2 text-sm leading-6 text-yellow-100/80">
-          Acesse com uma conta de aluno para visualizar seu treino atual.
-        </p>
-      </div>
-    </Card>
-  );
-}
+          <p className="mt-2 text-sm leading-6 text-yellow-100/80">
+            Acesse com uma conta de aluno para visualizar seu treino atual.
+          </p>
+        </div>
+      </Card>
+    );
+  }
 
   if (isCurrentWorkoutError) {
     return (
@@ -589,8 +598,9 @@ export function StudentCurrentWorkoutPage() {
         )}
 
         <ActiveWeeklyRoutineSection
-          activeWeeklyWorkouts={activeWeeklyWorkouts}
+          activeWeeklyWorkouts={otherActiveWeeklyWorkouts}
           currentStudentWorkoutId={currentWorkout.studentWorkoutId}
+          title="Outros treinos da semana"
         />
       </section>
 
