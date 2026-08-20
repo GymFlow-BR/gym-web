@@ -5,7 +5,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { ArrowLeft, CheckCircle2, Dumbbell, Trash2, Users } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Link, useParams } from "react-router";
 
 import { isApiError } from "../../../services/apiError";
@@ -80,6 +80,10 @@ export function WorkoutDetailsPage() {
   const queryClient = useQueryClient();
   const { workoutId } = useParams();
   const authenticatedUserQuery = useAuthenticatedUser();
+
+  const [workoutExerciseToRemove, setWorkoutExerciseToRemove] = useState<
+    number | null
+  >(null);
 
   const parsedWorkoutId = Number(workoutId);
   const isValidWorkoutId =
@@ -157,13 +161,27 @@ export function WorkoutDetailsPage() {
       : "Não foi possível remover o exercício do treino. Tente novamente.";
 
   function handleRemoveWorkoutExercise(workoutExerciseId: number) {
-    const confirmed = window.confirm(
-      "Deseja remover este exercício do treino?",
-    );
+    setWorkoutExerciseToRemove(workoutExerciseId);
+  }
 
-    if (confirmed) {
-      removeWorkoutExerciseMutation.mutate(workoutExerciseId);
+  function handleConfirmRemoveWorkoutExercise() {
+    if (workoutExerciseToRemove === null) {
+      return;
     }
+
+    removeWorkoutExerciseMutation.mutate(workoutExerciseToRemove, {
+      onSuccess: () => {
+        setWorkoutExerciseToRemove(null);
+      },
+    });
+  }
+
+  function handleCancelRemoveWorkoutExercise() {
+    if (removeWorkoutExerciseMutation.isPending) {
+      return;
+    }
+
+    setWorkoutExerciseToRemove(null);
   }
 
   const sortedWorkoutExercises = [...(workoutExercises ?? [])].sort(
@@ -487,6 +505,60 @@ export function WorkoutDetailsPage() {
           </>
         )}
       </div>
+
+      {workoutExerciseToRemove !== null && (
+        <div
+          className="fixed inset-0 z-50 grid place-items-center bg-black/75 px-4 py-8 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="remove-workout-exercise-title"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              handleCancelRemoveWorkoutExercise();
+            }
+          }}
+        >
+          <section className="w-full max-w-md rounded-[24px] border border-[#39413C] bg-[#171A18] p-6 text-white shadow-2xl shadow-black/50">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#FF8A8A]">
+              Ação sensível
+            </p>
+
+            <h2
+              id="remove-workout-exercise-title"
+              className="mt-3 text-2xl font-semibold tracking-[-0.04em]"
+            >
+              Remover exercício?
+            </h2>
+
+            <p className="mt-3 text-sm leading-6 text-[#91A097]">
+              Este exercício será removido da sequência deste treino. O cadastro
+              do exercício continuará disponível na biblioteca.
+            </p>
+
+            <div className="mt-6 grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={handleCancelRemoveWorkoutExercise}
+                disabled={removeWorkoutExerciseMutation.isPending}
+                className="h-12 rounded-xl border border-[#39413C] text-sm font-semibold text-[#EEF2EF] transition hover:bg-[#232825] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                Cancelar
+              </button>
+
+              <button
+                type="button"
+                onClick={handleConfirmRemoveWorkoutExercise}
+                disabled={removeWorkoutExerciseMutation.isPending}
+                className="h-12 rounded-xl bg-[#FF6B6B] text-sm font-semibold text-white transition hover:bg-[#FF7A7A] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {removeWorkoutExerciseMutation.isPending
+                  ? "Removendo..."
+                  : "Remover"}
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
     </main>
   );
 }
