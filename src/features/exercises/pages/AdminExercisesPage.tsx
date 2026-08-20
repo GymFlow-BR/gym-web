@@ -49,6 +49,8 @@ export function AdminExercisesPage() {
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [mediaPreview, setMediaPreview] = useState<MediaPreview | null>(null);
+  const [exerciseToDeactivate, setExerciseToDeactivate] =
+    useState<Exercise | null>(null);
 
   const {
     data: exercises = [],
@@ -147,6 +149,31 @@ export function AdminExercisesPage() {
         title: exercise.exerciseName,
       });
     }
+  }
+
+  function handleRequestDeactivateExercise(exercise: Exercise) {
+    setOpenMenuId(null);
+    setExerciseToDeactivate(exercise);
+  }
+
+  function handleConfirmDeactivateExercise() {
+    if (!exerciseToDeactivate) {
+      return;
+    }
+
+    deactivateExerciseMutation.mutate(exerciseToDeactivate, {
+      onSuccess: () => {
+        setExerciseToDeactivate(null);
+      },
+    });
+  }
+
+  function handleCancelDeactivateExercise() {
+    if (deactivateExerciseMutation.isPending) {
+      return;
+    }
+
+    setExerciseToDeactivate(null);
   }
 
   return (
@@ -399,7 +426,7 @@ export function AdminExercisesPage() {
                           <button
                             type="button"
                             onClick={() =>
-                              deactivateExerciseMutation.mutate(exercise)
+                              handleRequestDeactivateExercise(exercise)
                             }
                             disabled={deactivateExerciseMutation.isPending}
                             className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-[#ff7878] transition hover:bg-[#3a2020] disabled:opacity-50"
@@ -487,6 +514,63 @@ export function AdminExercisesPage() {
               </video>
             )}
           </div>
+        </div>
+      )}
+
+      {exerciseToDeactivate && (
+        <div
+          className="fixed inset-0 z-50 grid place-items-center bg-black/75 px-4 py-8 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="deactivate-exercise-title"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              handleCancelDeactivateExercise();
+            }
+          }}
+        >
+          <section className="w-full max-w-md rounded-[24px] border border-[#39413C] bg-[#171A18] p-6 text-white shadow-2xl shadow-black/50">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#FF8A8A]">
+              Ação sensível
+            </p>
+
+            <h2
+              id="deactivate-exercise-title"
+              className="mt-3 text-2xl font-semibold tracking-[-0.04em]"
+            >
+              Inativar exercício?
+            </h2>
+
+            <p className="mt-3 text-sm leading-6 text-[#91A097]">
+              O exercício{" "}
+              <span className="font-semibold text-white">
+                {exerciseToDeactivate.exerciseName}
+              </span>{" "}
+              deixará de aparecer como opção ativa para novos treinos.
+            </p>
+
+            <div className="mt-6 grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={handleCancelDeactivateExercise}
+                disabled={deactivateExerciseMutation.isPending}
+                className="h-12 rounded-xl border border-[#39413C] text-sm font-semibold text-[#EEF2EF] transition hover:bg-[#232825] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                Cancelar
+              </button>
+
+              <button
+                type="button"
+                onClick={handleConfirmDeactivateExercise}
+                disabled={deactivateExerciseMutation.isPending}
+                className="h-12 rounded-xl bg-[#FF6B6B] text-sm font-semibold text-white transition hover:bg-[#FF7A7A] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {deactivateExerciseMutation.isPending
+                  ? "Inativando..."
+                  : "Inativar"}
+              </button>
+            </div>
+          </section>
         </div>
       )}
     </div>

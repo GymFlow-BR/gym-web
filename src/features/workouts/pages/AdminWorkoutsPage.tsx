@@ -191,9 +191,8 @@ export function AdminWorkoutsPage() {
 
       const matchesFilter =
         filter === "ALL" ||
-        (filter === "ACTIVE"
-          ? workout.status === "ACTIVE"
-          : workout.status !== "ACTIVE");
+        (filter === "ACTIVE" && workout.status === "ACTIVE") ||
+        (filter === "INACTIVE" && workout.status === "INACTIVE");
 
       return matchesSearch && matchesFilter;
     });
@@ -208,16 +207,32 @@ export function AdminWorkoutsPage() {
     },
   });
 
+  const [workoutToDeactivate, setWorkoutToDeactivate] =
+    useState<Workout | null>(null);
+
   function handleDeactivate(workout: Workout) {
     setOpenMenuId(null);
+    setWorkoutToDeactivate(workout);
+  }
 
-    const confirmed = window.confirm(
-      `Deseja inativar o treino "${workout.workoutName}"?`,
-    );
-
-    if (confirmed) {
-      deactivateMutation.mutate(workout.workoutId);
+  function handleConfirmDeactivateWorkout() {
+    if (!workoutToDeactivate) {
+      return;
     }
+
+    deactivateMutation.mutate(workoutToDeactivate.workoutId, {
+      onSuccess: () => {
+        setWorkoutToDeactivate(null);
+      },
+    });
+  }
+
+  function handleCancelDeactivateWorkout() {
+    if (deactivateMutation.isPending) {
+      return;
+    }
+
+    setWorkoutToDeactivate(null);
   }
 
   return (
@@ -491,6 +506,61 @@ export function AdminWorkoutsPage() {
             window.setTimeout(() => setFeedback(null), 3500);
           }}
         />
+      )}
+
+      {workoutToDeactivate && (
+        <div
+          className="fixed inset-0 z-50 grid place-items-center bg-black/75 px-4 py-8 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="deactivate-workout-title"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              handleCancelDeactivateWorkout();
+            }
+          }}
+        >
+          <section className="w-full max-w-md rounded-[24px] border border-[#39413C] bg-[#171A18] p-6 text-white shadow-2xl shadow-black/50">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#FF8A8A]">
+              Ação sensível
+            </p>
+
+            <h2
+              id="deactivate-workout-title"
+              className="mt-3 text-2xl font-semibold tracking-[-0.04em]"
+            >
+              Inativar treino?
+            </h2>
+
+            <p className="mt-3 text-sm leading-6 text-[#91A097]">
+              O treino{" "}
+              <span className="font-semibold text-white">
+                {workoutToDeactivate.workoutName}
+              </span>{" "}
+              ficará indisponível para novas atribuições.
+            </p>
+
+            <div className="mt-6 grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={handleCancelDeactivateWorkout}
+                disabled={deactivateMutation.isPending}
+                className="h-12 rounded-xl border border-[#39413C] text-sm font-semibold text-[#EEF2EF] transition hover:bg-[#232825] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                Cancelar
+              </button>
+
+              <button
+                type="button"
+                onClick={handleConfirmDeactivateWorkout}
+                disabled={deactivateMutation.isPending}
+                className="h-12 rounded-xl bg-[#FF6B6B] text-sm font-semibold text-white transition hover:bg-[#FF7A7A] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {deactivateMutation.isPending ? "Inativando..." : "Inativar"}
+              </button>
+            </div>
+          </section>
+        </div>
       )}
     </main>
   );
