@@ -1,6 +1,7 @@
 import "@fontsource-variable/geist";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { GymFlowLogo } from "../brand/GymFlowLogo";
 import {
   Dumbbell,
   LayoutGrid,
@@ -81,18 +82,10 @@ function getInitials(name: string) {
 
 function Brand() {
   return (
-    <div className="flex items-center gap-3">
-      <span
-        aria-hidden="true"
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#70e39b] text-[#0b120e]"
-      >
-        <Dumbbell className="h-5 w-5" strokeWidth={2.2} />
-      </span>
-
-      <span className="text-[21px] font-semibold tracking-[-0.04em] text-[#f4f7f4]">
-        GymFlow
-      </span>
-    </div>
+    <GymFlowLogo
+      markClassName="h-10 w-10"
+      textClassName="text-[21px] font-semibold tracking-[-0.04em] text-[#f4f7f4]"
+    />
   );
 }
 

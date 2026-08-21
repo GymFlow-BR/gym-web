@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { GymFlowLogo } from "../../../components/brand/GymFlowLogo";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import type { SVGProps } from "react";
@@ -68,32 +69,6 @@ const registerSchema = z
   });
 
 type RegisterFormData = z.infer<typeof registerSchema>;
-
-function LogoMark({ className = "" }: { className?: string }) {
-  return (
-    <span
-      className={`flex items-center justify-center rounded-xl bg-[#74e29a] text-[#102117] ${className}`}
-    >
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        className="h-[62%] w-[62%]"
-        stroke="currentColor"
-        strokeWidth={2.2}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="m6.5 6.5 11 11" />
-        <path d="m21 21-1-1" />
-        <path d="m3 3 1 1" />
-        <path d="m18 22 4-4" />
-        <path d="m2 6 4-4" />
-        <path d="m3 10 7-7" />
-        <path d="m14 21 7-7" />
-      </svg>
-    </span>
-  );
-}
 
 function MailIcon(props: SVGProps<SVGSVGElement>) {
   return (
@@ -265,10 +240,10 @@ export function RegisterPage() {
         <span className="pointer-events-none absolute right-[-155px] top-[28%] h-[340px] w-[340px] rounded-full border border-[#74e29a]/[0.07]" />
 
         <header className="relative z-10 flex items-center justify-between gap-5">
-          <div className="flex items-center gap-3">
-            <LogoMark className="h-10 w-10" />
-            <strong className="text-xl tracking-[-0.04em]">GymFlow</strong>
-          </div>
+          <GymFlowLogo
+            markClassName="h-10 w-10"
+            textClassName="text-xl font-semibold tracking-[-0.04em] text-[#f4f7f4]"
+          />
           <span className="text-[12px] font-semibold uppercase tracking-[0.11em] text-[#dee8e1]/50">
             Plataforma de treinos
           </span>
@@ -315,23 +290,20 @@ export function RegisterPage() {
         }}
       >
         <div className="relative flex min-h-[210px] flex-col justify-between overflow-hidden bg-[radial-gradient(circle_at_90%_5%,rgba(173,255,196,0.24),transparent_13rem),linear-gradient(145deg,#28583a,#173724_72%,#142c1e)] px-5 pb-10 pt-[max(22px,env(safe-area-inset-top))] lg:hidden">
-          <div className="relative z-10 flex items-center gap-2.5">
-            <LogoMark className="h-8 w-8" />
-            <strong className="text-lg tracking-[-0.04em] text-white">
-              GymFlow
-            </strong>
-          </div>
+          <GymFlowLogo
+            className="relative z-10 mt-7 w-full justify-center gap-0"
+            markClassName="absolute left-1/2 h-10 w-11 -translate-x-[92px]"
+            textClassName="mx-auto text-[24px] font-semibold tracking-[-0.05em] text-white"
+          />
 
           <div className="relative z-10">
-            <span className="text-[9px] font-bold uppercase tracking-[0.12em] text-[#bdf8cf]">
-              Cadastro inicial
-            </span>
-            <strong className="mt-2 block text-[28px] font-semibold tracking-[-0.05em] text-white">
+            <strong className="block text-[28px] font-semibold tracking-[-0.05em] text-white">
               Crie sua conta.
             </strong>
-            <p className="mt-1 text-xs text-white/65">
-              Organização e administrador no mesmo fluxo.
-            </p>
+
+            <span className="mt-3 block text-[9px] font-bold uppercase tracking-[0.12em] text-[#bdf8cf]">
+              Cadastro inicial
+            </span>
           </div>
 
           <span className="pointer-events-none absolute -bottom-24 -right-16 h-64 w-64 rounded-full bg-[#74e29a]/20 blur-3xl" />
