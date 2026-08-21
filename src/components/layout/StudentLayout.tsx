@@ -1,4 +1,5 @@
 import { Dumbbell, Home, LogOut, UserCircle } from "lucide-react";
+import { GymFlowLogo } from "../brand/GymFlowLogo";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
@@ -80,15 +81,11 @@ export function StudentLayout({ children }: StudentLayoutProps) {
         <div className="mx-auto min-h-screen w-full max-w-[430px] border-x border-[#242824] bg-[#060907] pb-[104px] shadow-2xl shadow-black/40">
           <header className="sticky top-0 z-30 border-b border-[#202620] bg-[#080b09]/95 px-5 py-4 backdrop-blur-xl">
             <div className="flex items-center justify-between gap-4">
-              <div className="flex min-w-0 items-center gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#70e39b] text-[#0b130e]">
-                  <Dumbbell aria-hidden="true" className="h-5 w-5" />
-                </div>
-
-                <p className="truncate text-lg font-bold tracking-[-0.035em] text-[#f5f7f5]">
-                  GymFlow
-                </p>
-              </div>
+              <GymFlowLogo
+                className="min-w-0"
+                markClassName="h-10 w-10"
+                textClassName="truncate text-lg font-bold tracking-[-0.035em] text-[#f5f7f5]"
+              />
 
               <button
                 type="button"
