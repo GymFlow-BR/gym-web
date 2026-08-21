@@ -100,11 +100,22 @@ export function CreateStudentForm({
     }
 
     if (isApiError(createStudentMutation.error)) {
+      const errorMessage = createStudentMutation.error.message.toLowerCase();
+
+      if (createStudentMutation.error.status === 401) {
+        return "Sua sessão expirou. Faça login novamente para cadastrar alunos.";
+      }
+
       if (createStudentMutation.error.status === 403) {
         return "Você não possui permissão para cadastrar alunos.";
       }
 
-      if (createStudentMutation.error.status === 409) {
+      if (
+        createStudentMutation.error.status === 409 ||
+        errorMessage.includes("email already in use") ||
+        errorMessage.includes("e-mail já") ||
+        errorMessage.includes("email já")
+      ) {
         return "Já existe um usuário cadastrado com este e-mail.";
       }
 
