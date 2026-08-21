@@ -104,11 +104,22 @@ export function CreateTeacherForm({
     }
 
     if (isApiError(createTeacherMutation.error)) {
+      const errorMessage = createTeacherMutation.error.message.toLowerCase();
+
+      if (createTeacherMutation.error.status === 401) {
+        return "Sua sessão expirou. Faça login novamente para cadastrar professores.";
+      }
+
       if (createTeacherMutation.error.status === 403) {
         return "Você não possui permissão para cadastrar professores.";
       }
 
-      if (createTeacherMutation.error.status === 409) {
+      if (
+        createTeacherMutation.error.status === 409 ||
+        errorMessage.includes("email already in use") ||
+        errorMessage.includes("e-mail já") ||
+        errorMessage.includes("email já")
+      ) {
         return "Já existe um usuário cadastrado com este e-mail.";
       }
 
