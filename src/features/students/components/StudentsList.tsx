@@ -1,5 +1,5 @@
 import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
-import { ArrowRight, MoreHorizontal } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 
@@ -372,21 +372,13 @@ export function StudentsList({
 
         {selectedStudent && (
           <aside className="flex h-fit flex-col rounded-2xl border border-[#29302c] bg-[#171a18] p-5">
-            <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start gap-4">
               <span
                 aria-hidden="true"
                 className="flex h-[60px] w-[60px] items-center justify-center rounded-2xl bg-[#302d3b] text-base font-semibold text-[#caa5ff]"
               >
                 {getInitials(selectedStudent.name)}
               </span>
-
-              <button
-                type="button"
-                aria-label={`Mais opções para ${selectedStudent.name}`}
-                className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#303733] text-[#89948e] transition hover:border-[#465049] hover:text-[#f5f7f5]"
-              >
-                <MoreHorizontal aria-hidden="true" className="h-5 w-5" />
-              </button>
             </div>
 
             <div className="mt-6">

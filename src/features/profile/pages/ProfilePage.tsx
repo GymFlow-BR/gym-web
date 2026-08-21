@@ -100,7 +100,7 @@ export function ProfilePage() {
 
   return (
     <>
-      <div className="space-y-5">
+      <div className="mx-auto w-full max-w-[520px] space-y-5">
         <header className="pt-3">
           <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-[#8d958f]">
             Seu perfil
@@ -110,7 +110,7 @@ export function ProfilePage() {
             {user?.name ?? "Perfil"}
           </h1>
 
-          <p className="mt-4 max-w-[320px] text-sm leading-6 text-[#9aa39d]">
+          <p className="mt-4 max-w-[420px] text-sm leading-6 text-[#9aa39d]">
             Veja suas informações de acesso e mantenha sua conta segura.
           </p>
         </header>

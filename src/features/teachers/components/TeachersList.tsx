@@ -2,7 +2,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowRight,
   Mail,
-  MoreHorizontal,
   Pencil,
   Power,
   RotateCcw,
@@ -74,6 +73,9 @@ export function TeachersList({
   );
   const [isEditingTeacher, setIsEditingTeacher] = useState(false);
 
+  const [teacherPendingStatusToggle, setTeacherPendingStatusToggle] =
+    useState<Teacher | null>(null);
+
   useEffect(() => {
     if (teachers.length === 0) {
       setSelectedTeacherId(null);
@@ -106,6 +108,8 @@ export function TeachersList({
     onSuccess: async (updatedTeacher) => {
       await queryClient.invalidateQueries({ queryKey: ["teachers"] });
 
+      setTeacherPendingStatusToggle(null);
+
       onSuccessMessage(
         updatedTeacher.active
           ? `${updatedTeacher.name} foi reativado com sucesso.`
@@ -119,12 +123,28 @@ export function TeachersList({
     setIsEditingTeacher(false);
   }
 
-  function handleToggleTeacherStatus() {
+  function handleRequestToggleTeacherStatus() {
     if (!selectedTeacher) {
       return;
     }
 
-    toggleStatusMutation.mutate(selectedTeacher);
+    setTeacherPendingStatusToggle(selectedTeacher);
+  }
+
+  function handleCancelToggleTeacherStatus() {
+    if (toggleStatusMutation.isPending) {
+      return;
+    }
+
+    setTeacherPendingStatusToggle(null);
+  }
+
+  function handleConfirmToggleTeacherStatus() {
+    if (!teacherPendingStatusToggle) {
+      return;
+    }
+
+    toggleStatusMutation.mutate(teacherPendingStatusToggle);
   }
 
   if (isLoading) {
@@ -258,10 +278,10 @@ export function TeachersList({
 
         {selectedTeacher && (
           <aside className="self-start rounded-2xl border border-[#29302c] bg-[#171a18] p-5">
-            <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start gap-4">
               <span
                 aria-hidden="true"
-                className={`flex h-[60px] w-[60px] items-center justify-center rounded-2xl text-base font-semibold ${
+                className={`flex h-[60px] w-[60px] shrink-0 items-center justify-center rounded-2xl text-base font-semibold ${
                   avatarStyles[
                     selectedTeacherIndex >= 0
                       ? selectedTeacherIndex % avatarStyles.length
@@ -272,23 +292,15 @@ export function TeachersList({
                 {getInitials(selectedTeacher.name)}
               </span>
 
-              <button
-                type="button"
-                aria-label={`Mais opções para ${selectedTeacher.name}`}
-                className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#303733] text-[#89948e] transition hover:border-[#465049] hover:text-[#f5f7f5]"
-              >
-                <MoreHorizontal aria-hidden="true" className="h-5 w-5" />
-              </button>
-            </div>
+              <div className="min-w-0">
+                <h2 className="text-xl font-semibold tracking-[-0.025em] text-[#f5f7f5]">
+                  {selectedTeacher.name}
+                </h2>
 
-            <div className="mt-6">
-              <h2 className="text-xl font-semibold tracking-[-0.025em] text-[#f5f7f5]">
-                {selectedTeacher.name}
-              </h2>
-
-              <p className="mt-2 break-all text-xs text-[#89948e]">
-                {selectedTeacher.email}
-              </p>
+                <p className="mt-2 break-all text-xs text-[#89948e]">
+                  {selectedTeacher.email}
+                </p>
+              </div>
             </div>
 
             <dl className="mt-7 divide-y divide-[#29302c] border-y border-[#29302c]">
@@ -350,7 +362,7 @@ export function TeachersList({
 
               <button
                 type="button"
-                onClick={handleToggleTeacherStatus}
+                onClick={handleRequestToggleTeacherStatus}
                 disabled={toggleStatusMutation.isPending}
                 className={[
                   "inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl border px-4 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50",
@@ -375,6 +387,131 @@ export function TeachersList({
           </aside>
         )}
       </div>
+
+      {teacherPendingStatusToggle && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="toggle-teacher-status-title"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[#050706]/80 px-4 backdrop-blur-[5px]"
+          onMouseDown={(event) => {
+            if (
+              event.target === event.currentTarget &&
+              !toggleStatusMutation.isPending
+            ) {
+              handleCancelToggleTeacherStatus();
+            }
+          }}
+        >
+          <div className="w-full max-w-[460px] rounded-[22px] border border-[#39413c] bg-[#191c1a] p-6 shadow-2xl shadow-black/40">
+            <p
+              className={[
+                "text-[11px] font-semibold uppercase tracking-[0.17em]",
+                teacherPendingStatusToggle.active
+                  ? "text-[#ff8c87]"
+                  : "text-[#70e39b]",
+              ].join(" ")}
+            >
+              {teacherPendingStatusToggle.active
+                ? "Inativar professor"
+                : "Reativar professor"}
+            </p>
+
+            <h2
+              id="toggle-teacher-status-title"
+              className="mt-3 text-2xl font-semibold tracking-[-0.035em] text-[#f5f7f5]"
+            >
+              {teacherPendingStatusToggle.active
+                ? "Confirmar inativação"
+                : "Confirmar reativação"}
+            </h2>
+
+            <p className="mt-4 text-sm leading-6 text-[#a7b0aa]">
+              Tem certeza que deseja{" "}
+              {teacherPendingStatusToggle.active ? "inativar" : "reativar"}{" "}
+              <strong className="font-semibold text-[#f5f7f5]">
+                {teacherPendingStatusToggle.name}
+              </strong>
+              ?
+            </p>
+
+            <div
+              className={[
+                "mt-5 rounded-xl border px-4 py-3",
+                teacherPendingStatusToggle.active
+                  ? "border-[#453b25] bg-[#211d14]"
+                  : "border-[#2f5b40] bg-[#20382a]",
+              ].join(" ")}
+            >
+              <p
+                className={[
+                  "text-xs font-semibold",
+                  teacherPendingStatusToggle.active
+                    ? "text-[#f2c97d]"
+                    : "text-[#70e39b]",
+                ].join(" ")}
+              >
+                {teacherPendingStatusToggle.active
+                  ? "Atenção"
+                  : "Professor será reativado"}
+              </p>
+
+              <p
+                className={[
+                  "mt-1 text-xs leading-5",
+                  teacherPendingStatusToggle.active
+                    ? "text-[#b9a57d]"
+                    : "text-[#9eb5a8]",
+                ].join(" ")}
+              >
+                {teacherPendingStatusToggle.active
+                  ? "O professor continuará visível para consulta, mas não deverá acessar a gestão enquanto estiver inativo."
+                  : "Depois da reativação, este professor poderá acessar novamente a área de gestão."}
+              </p>
+            </div>
+
+            {toggleStatusMutation.isError && (
+              <div
+                role="alert"
+                className="mt-5 rounded-xl border border-[#633a3a] bg-[#251918] px-4 py-3"
+              >
+                <p className="text-xs leading-5 text-[#ff8c87]">
+                  {getToggleStatusErrorMessage(toggleStatusMutation.error)}
+                </p>
+              </div>
+            )}
+
+            <div className="mt-7 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={handleCancelToggleTeacherStatus}
+                disabled={toggleStatusMutation.isPending}
+                className="h-11 rounded-xl border border-[#39413c] px-5 text-sm font-semibold text-[#f5f7f5] transition hover:bg-[#222724] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+
+              <button
+                type="button"
+                onClick={handleConfirmToggleTeacherStatus}
+                disabled={toggleStatusMutation.isPending}
+                className={[
+                  "h-11 rounded-xl border px-5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50",
+                  teacherPendingStatusToggle.active
+                    ? "border-[#633a3a] bg-[#251918] text-[#ff8c87] hover:bg-[#2d1d1b]"
+                    : "border-[#2f5b40] bg-[#20382a] text-[#70e39b] hover:bg-[#254432]",
+                ].join(" ")}
+              >
+                {toggleStatusMutation.isPending
+                  ? "Atualizando..."
+                  : teacherPendingStatusToggle.active
+                    ? "Inativar professor"
+                    : "Reativar professor"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {selectedTeacher && isEditingTeacher && (
         <EditTeacherForm

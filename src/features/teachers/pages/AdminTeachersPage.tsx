@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Plus, Search, SlidersHorizontal } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { useAuthenticatedUser } from "../../auth/hooks/useAuthenticatedUser";
@@ -94,17 +94,6 @@ export function AdminTeachersPage() {
           </label>
 
           <div className="flex w-full gap-3 sm:w-auto">
-            <button
-              type="button"
-              className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-xl border border-[#303733] bg-[#151816] px-5 text-sm font-semibold text-[#f5f7f5] transition hover:border-[#465049] hover:bg-[#1a1e1b] sm:flex-none"
-            >
-              <SlidersHorizontal
-                aria-hidden="true"
-                className="h-[18px] w-[18px]"
-              />
-              Filtrar
-            </button>
-
             <button
               type="button"
               onClick={() => {
