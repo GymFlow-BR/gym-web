@@ -3,7 +3,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowRight, CalendarDays } from "lucide-react";
 import { Link } from "react-router";
 
-import { Card } from "../../../components/ui/Card";
 import { isApiError } from "../../../services/apiError";
 import { useAuthenticatedUser } from "../../auth/hooks/useAuthenticatedUser";
 import {
@@ -48,6 +47,76 @@ const weekDayOrder: Record<WeekDay, number> = {
   SATURDAY: 6,
   SUNDAY: 7,
 };
+
+type StudentErrorStateProps = {
+  title: string;
+  description: string;
+  actionLabel?: string;
+  onAction?: () => void;
+};
+
+function StudentErrorState({
+  title,
+  description,
+  actionLabel,
+  onAction,
+}: StudentErrorStateProps) {
+  return (
+    <div
+      role="alert"
+      className="rounded-[26px] border border-red-400/15 bg-[#111914] p-5 shadow-2xl shadow-black/20"
+    >
+      <div className="flex items-start gap-4">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-red-400/20 bg-red-500/10 text-sm font-black text-red-200">
+          !
+        </span>
+
+        <div className="min-w-0">
+          <p className="text-base font-semibold tracking-[-0.025em] text-[#f5f7f5]">
+            {title}
+          </p>
+
+          <p className="mt-2 text-sm leading-6 text-[#9aa39d]">{description}</p>
+
+          {actionLabel && onAction && (
+            <button
+              type="button"
+              onClick={onAction}
+              className="mt-4 inline-flex h-11 items-center justify-center rounded-2xl bg-[#70e39b] px-4 text-sm font-bold text-[#061009] transition hover:bg-[#83e8a8]"
+            >
+              {actionLabel}
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+type StudentNoticeStateProps = {
+  title: string;
+  description: string;
+};
+
+function StudentNoticeState({ title, description }: StudentNoticeStateProps) {
+  return (
+    <div className="rounded-[26px] border border-yellow-400/15 bg-[#111914] p-5 shadow-2xl shadow-black/20">
+      <div className="flex items-start gap-4">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-yellow-400/20 bg-yellow-500/10 text-sm font-black text-yellow-100">
+          !
+        </span>
+
+        <div className="min-w-0">
+          <p className="text-base font-semibold tracking-[-0.025em] text-[#f5f7f5]">
+            {title}
+          </p>
+
+          <p className="mt-2 text-sm leading-6 text-[#9aa39d]">{description}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 type ActiveWeeklyRoutineSectionProps = {
   activeWeeklyWorkouts: StudentWorkout[];
@@ -180,6 +249,7 @@ export function StudentCurrentWorkoutPage() {
     error: currentWorkoutError,
     isLoading: isLoadingCurrentWorkout,
     isError: isCurrentWorkoutError,
+    refetch: refetchCurrentWorkout,
   } = useQuery({
     queryKey: ["student-current-workout", studentId],
     queryFn: () => getStudentCurrentWorkout(studentId!),
@@ -444,56 +514,32 @@ export function StudentCurrentWorkoutPage() {
 
   if (isAuthenticatedUserError) {
     return (
-      <Card>
-        <div
-          role="alert"
-          className="rounded-2xl border border-red-400/20 bg-red-500/10 p-4"
-        >
-          <p className="text-sm font-semibold text-red-200">
-            Não foi possível identificar o aluno autenticado.
-          </p>
-
-          <p className="mt-2 text-sm leading-6 text-red-100/80">
-            Faça login novamente para acessar seu treino atual.
-          </p>
-        </div>
-      </Card>
+      <StudentErrorState
+        title="Não foi possível identificar sua sessão."
+        description="Faça login novamente para acessar seus treinos."
+      />
     );
   }
 
   if (authenticatedUser?.role !== "STUDENT") {
     return (
-      <Card>
-        <div className="rounded-2xl border border-yellow-400/20 bg-yellow-500/10 p-4">
-          <p className="text-sm font-semibold text-yellow-100">
-            Esta área é exclusiva para alunos.
-          </p>
-
-          <p className="mt-2 text-sm leading-6 text-yellow-100/80">
-            Acesse com uma conta de aluno para visualizar seu treino atual.
-          </p>
-        </div>
-      </Card>
+      <StudentNoticeState
+        title="Esta área é exclusiva para alunos."
+        description="Acesse com uma conta de aluno para visualizar seu treino atual."
+      />
     );
   }
 
   if (isCurrentWorkoutUnexpectedError) {
     return (
-      <Card>
-        <div
-          role="alert"
-          className="rounded-2xl border border-red-400/20 bg-red-500/10 p-4"
-        >
-          <p className="text-sm font-semibold text-red-200">
-            Não foi possível carregar seu treino de hoje.
-          </p>
-
-          <p className="mt-2 text-sm leading-6 text-red-100/80">
-            Tente recarregar a página. Se o problema continuar, faça login
-            novamente.
-          </p>
-        </div>
-      </Card>
+      <StudentErrorState
+        title="Não foi possível carregar seu treino de hoje."
+        description="Isso pode acontecer por instabilidade momentânea. Tente novamente em alguns segundos."
+        actionLabel="Tentar novamente"
+        onAction={() => {
+          void refetchCurrentWorkout();
+        }}
+      />
     );
   }
 
@@ -553,11 +599,15 @@ export function StudentCurrentWorkoutPage() {
 
   if (!currentWorkout) {
     return (
-      <Card>
-        <p className="text-sm text-[#6F6A62]">
-          Nenhum treino atual disponível no momento.
+      <div className="rounded-[26px] border border-[#26322b] bg-[#111914] p-5 text-center shadow-xl shadow-black/10">
+        <p className="text-sm font-semibold text-[#f5f7f5]">
+          Nenhum treino disponível no momento.
         </p>
-      </Card>
+
+        <p className="mt-2 text-sm leading-6 text-[#8fa098]">
+          Assim que houver um treino ativo para hoje, ele aparecerá nesta tela.
+        </p>
+      </div>
     );
   }
 
