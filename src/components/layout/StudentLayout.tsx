@@ -37,8 +37,8 @@ export function StudentLayout({ children }: StudentLayoutProps) {
 
   const logoutMutation = useMutation({
     mutationFn: logout,
-    onSuccess: () => {
-      queryClient.removeQueries({ queryKey: ["authenticated-user"] });
+    onSettled: () => {
+      queryClient.clear();
       navigate("/login", { replace: true });
     },
   });
